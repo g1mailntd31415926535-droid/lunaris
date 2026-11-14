@@ -15,6 +15,7 @@ REQUIRED_EXISTING = [
     "task02_lod_error.csv", "task02_geospatial_validation.json", "task02_validate_outputs.json",
     "task02_before_base_ui.png", "task02_after_base_ui.png", "task02_before_region_world.png", "task02_after_region_world.png",
     "task02_astar_routes.png", "task02_astar_routes.json",
+    "task02_performance.md", "task02_perf_views.json",
 ]
 PENDING = []
 

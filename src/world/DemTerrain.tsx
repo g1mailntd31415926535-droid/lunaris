@@ -15,7 +15,7 @@ export function DemGate({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-export const terrainStats = { tiles: 0, triangles: 0, pending: 0, levels: [0, 0, 0, 0, 0, 0, 0], finestLevel: 6 }
+export const terrainStats = { tiles: 0, triangles: 0, pending: 0, levels: [0, 0, 0, 0, 0, 0, 0], finestLevel: 6, detailScale: 1 }
 // Same colour as the canvas background: areas without NASA data simply show the dark backdrop.
 const MATTE: [number, number, number] = [9 / 255, 13 / 255, 30 / 255]
 const TILE = 32
@@ -27,33 +27,25 @@ const TILE = 32
  * There are no skirts or filler strips: the only geometry is the DEM surface itself. Where two LOD
  * levels meet, sub-pixel gaps can show the dark backdrop; tiles of the same level are watertight.
  */
-function buildTileGeometry(level: number, tx: number, ty: number, chunk: DemChunk, x0: number, z0: number) {
+interface TileData { positions: Float32Array; indices: Uint16Array; triangles: number; used: number }
+const TILE_VERTICES = (TILE + 1) * (TILE + 1)
+function buildTileData(level: number, tx: number, ty: number, chunk: DemChunk, x0: number, z0: number): TileData {
   const d = (1 << level) * 5, n1 = 257, ci0 = (tx & 7) * TILE, cj0 = (ty & 7) * TILE, row = TILE + 1
-  const positions: number[] = new Array(row * row * 3)
+  const positions = new Float32Array(TILE_VERTICES * 3)
   for (let j = 0; j <= TILE; j++) for (let i = 0; i <= TILE; i++) {
     const o = (j * row + i) * 3
     // Absolute region-local coordinates: a vertex shared by two tiles gets bit-identical floats, so tiles are watertight.
     positions[o] = x0 + i * d; positions[o + 1] = chunk.heights[(cj0 + j) * n1 + ci0 + i]; positions[o + 2] = z0 + j * d
   }
-  const indices: number[] = []
-  const valid = (i: number, j: number) => chunk.cells[(cj0 + j) * 256 + ci0 + i] === 1
+  const indices = new Uint16Array(chunk.tileCells[(ty & 7) * 8 + (tx & 7)] * 6)
+  let n = 0
   for (let j = 0; j < TILE; j++) for (let i = 0; i < TILE; i++) {
-    if (!valid(i, j)) continue
-    const a = j * row + i, b = a + 1, c = a + row, e = c + 1
-    indices.push(a, c, e, a, e, b)                       // split along (i,j) → (i+1,j+1), as in the LOD error report
+    if (chunk.cells[(cj0 + j) * 256 + ci0 + i] !== 1) continue
+    const v = j * row + i
+    // split along (i,j) → (i+1,j+1), as in the LOD error report
+    indices[n++] = v; indices[n++] = v + row; indices[n++] = v + row + 1; indices[n++] = v; indices[n++] = v + row + 1; indices[n++] = v + 1
   }
-  const terrainTriangles = indices.length / 3
-  if (!terrainTriangles) return null
-  const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  // Lighting uses the true face normals (flat shading). This constant attribute only feeds the shadow normal-bias.
-  const normals = new Float32Array(positions.length)
-  for (let i = 1; i < normals.length; i += 3) normals[i] = 1
-  geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3))
-  geometry.setIndex(indices)
-  geometry.computeBoundingSphere()
-  geometry.userData = { terrainTriangles, level }
-  return geometry
+  return { positions, indices, triangles: n / 3, used: 0 }
 }
 
 function blurredValidity() {
@@ -80,14 +72,16 @@ function blurredValidity() {
   return texture
 }
 
-interface Wanted { level: number; tx: number; ty: number; chunk: DemChunk; x0: number; z0: number }
+interface Wanted { level: number; tx: number; ty: number; chunk: DemChunk; x0: number; z0: number; triangles: number }
+// One merged mesh holds every visible tile, so the whole terrain is a single draw call.
+const MAX_TILES = 192
+/** Terrain triangle budget per frame (reports/task02_performance.md). The refinement distance shrinks until it fits. */
+const TRIANGLE_BUDGET = { high: 84_000, balanced: 56_000 }
 
 export function DemTerrain({ quality, onCoverage }: { quality: 'high' | 'balanced'; onCoverage: (coverage: CoverageClass) => void }) {
   const universe = useUniverse()
-  const group = useRef<THREE.Group>(null)
-  const active = useRef(new Map<string, THREE.Mesh>())
-  const cache = useRef(new Map<string, { geometry: THREE.BufferGeometry | null; used: number }>())
-  const timers = useRef({ update: 1, hint: 0, tick: 0, lastCoverage: -1 })
+  const cache = useRef(new Map<string, TileData>())
+  const state = useRef({ update: 1, hint: 0, tick: 0, lastCoverage: -1, signature: '', detailScale: 1 })
   const ground = useMemo(groundTexture, [])
   const validity = useMemo(blurredValidity, [])
   const uniforms = useMemo(() => {
@@ -123,15 +117,33 @@ export function DemTerrain({ quality, onCoverage }: { quality: 'high' | 'balance
     m.customProgramCacheKey = () => 'lunaris-nasa-dem-terrain-v1'
     return m
   }, [uniforms])
-  useEffect(() => () => {
-    material.dispose(); validity.dispose()
-    for (const entry of cache.current.values()) entry.geometry?.dispose()
-    cache.current.clear(); active.current.clear()
-  }, [material, validity])
+  const mesh = useMemo(() => {
+    const geometry = new THREE.BufferGeometry()
+    const position = new THREE.BufferAttribute(new Float32Array(MAX_TILES * TILE_VERTICES * 3), 3)
+    position.setUsage(THREE.DynamicDrawUsage)
+    // Lighting uses the true face normals (flat shading). This constant attribute only feeds the shadow normal-bias.
+    const normals = new Float32Array(MAX_TILES * TILE_VERTICES * 3)
+    for (let i = 1; i < normals.length; i += 3) normals[i] = 1
+    const index = new THREE.BufferAttribute(new Uint32Array(MAX_TILES * TILE * TILE * 6), 1)
+    index.setUsage(THREE.DynamicDrawUsage)
+    geometry.setAttribute('position', position)
+    geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3))
+    geometry.setIndex(index)
+    geometry.setDrawRange(0, 0)
+    const m = new THREE.Mesh(geometry, material)
+    m.name = 'dem-terrain-merged'
+    m.frustumCulled = false            // tiles are frustum-culled on the CPU before they are merged
+    m.layers.set(1)
+    m.receiveShadow = true             // receives the colony's shadows; the terrain itself does not cast (lighting is artistic)
+    m.userData = { source: 'NASA LOLA 5 m DEM (Site01 + Site04)', procedural: false }
+    return m
+  }, [material])
+  const scratch = useMemo(() => ({ frustum: new THREE.Frustum(), matrix: new THREE.Matrix4(), sphere: new THREE.Sphere() }), [])
+  useEffect(() => () => { material.dispose(); validity.dispose(); mesh.geometry.dispose(); cache.current.clear() }, [material, validity, mesh])
 
   useFrame(({ camera }, delta) => {
     uniforms.uStyleWeight.value = universe.current.styleDetail
-    const t = timers.current, u = universe.current
+    const t = state.current, u = universe.current
     t.update += delta; t.hint += delta
     if (t.hint > 0.25) {
       t.hint = 0
@@ -140,74 +152,96 @@ export function DemTerrain({ quality, onCoverage }: { quality: 'high' | 'balance
       if (cls >= 2 && u.altitudeM < 60_000) { const below = coverageAt(camera.position.x / METRE, camera.position.z / METRE); if (below < 2) cls = below }
       if (cls !== t.lastCoverage) { t.lastCoverage = cls; onCoverage(cls) }
     }
-    const pendingNow = pendingChunkCount()
-    if (t.update < 0.1 && pendingNow === terrainStats.pending) return
+    if (t.update < 0.066) return
     t.update = 0; t.tick++
     tickChunkCache()
-    const root = group.current
-    if (!root) return
     const meta = demMeta()!, origin = demOrigin(), circle = circleLocal()
     const ex = camera.position.x / METRE, ey = camera.position.y / METRE, ez = camera.position.z / METRE
     const rx = u.roverPosition.x, rz = u.roverPosition.z
-    // A tile is refined when the camera is closer than `detail` × its size (see reports/task02_performance.md
-    // for the measured triangle counts); the lower value is the lighter "Mượt mà" setting.
-    const detail = quality === 'high' ? 1.0 : 0.8
-    const wanted = new Map<string, Wanted>()
     // MILO always stands on 5 m data, even when the camera is far away and draws that area coarsely:
     // keep the fine height chunks under the rover in memory (data only, no extra triangles).
     for (const level of [0, 1]) {
       const span = 256 * (1 << level) * meta.grid.pixel_m
       for (const dz of [-60, 60]) for (const dx of [-60, 60]) requestChunk(level, Math.floor((rx + dx - origin.x) / span), Math.floor((rz + dz - origin.z) / span))
     }
-    const visit = (level: number, tx: number, ty: number) => {
-      const size = TILE * (1 << level) * meta.grid.pixel_m, x0 = origin.x + tx * size, z0 = origin.z + ty * size
-      const nx = Math.max(x0, Math.min(circle.x, x0 + size)), nz = Math.max(z0, Math.min(circle.z, z0 + size))
-      if ((nx - circle.x) ** 2 + (nz - circle.z) ** 2 > circle.radius ** 2) return
-      if (chunkStatus(level, tx >> 3, ty >> 3) === 'absent') return
-      const chunk = requestChunk(level, tx >> 3, ty >> 3)
-      if (!chunk) return
-      const index = (ty & 7) * 8 + (tx & 7)
-      if (!chunk.tileCells[index]) return
-      if (level > 0) {
-        const dx = Math.max(x0 - ex, 0, ex - x0 - size), dz = Math.max(z0 - ez, 0, ez - z0 - size), dy = Math.max(chunk.tileMin[index] - ey, 0, ey - chunk.tileMax[index])
-        if (Math.hypot(dx, dy, dz) < size * detail) {
-          let ready = true
-          for (let child = 0; child < 4; child++) {
-            const cx = (tx * 2 + (child & 1)) >> 3, cy = (ty * 2 + (child >> 1)) >> 3
-            if (chunkStatus(level - 1, cx, cy) === 'pending' && !requestChunk(level - 1, cx, cy)) ready = false
-          }
-          // A parent is replaced only when all four children can be drawn, so the ground never flickers out.
-          if (ready) { for (let child = 0; child < 4; child++) visit(level - 1, tx * 2 + (child & 1), ty * 2 + (child >> 1)); return }
-        }
-      }
-      wanted.set(`${level}:${tx}:${ty}`, { level, tx, ty, chunk, x0, z0 })
+    camera.updateMatrixWorld()
+    scratch.frustum.setFromProjectionMatrix(scratch.matrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse))
+    const inView = (x0: number, z0: number, size: number, min: number, max: number) => {
+      scratch.sphere.center.set((x0 + size / 2) * METRE, (min + max) / 2 * METRE, (z0 + size / 2) * METRE)
+      scratch.sphere.radius = (Math.hypot(size * 0.7072, (max - min) / 2) * 1.2 + 4) * METRE
+      return scratch.frustum.intersectsSphere(scratch.sphere)
     }
     const top = meta.tiling.levels - 1, roots = Math.ceil(meta.grid.size_px / (TILE * (1 << top)))
-    for (let ty = 0; ty < roots; ty++) for (let tx = 0; tx < roots; tx++) visit(top, tx, ty)
+    const budget = TRIANGLE_BUDGET[quality]
+    let wanted: Wanted[] = [], triangles = 0
+    const select = (detail: number) => {
+      wanted = []; triangles = 0
+      const visit = (level: number, tx: number, ty: number) => {
+        const size = TILE * (1 << level) * meta.grid.pixel_m, x0 = origin.x + tx * size, z0 = origin.z + ty * size
+        const nx = Math.max(x0, Math.min(circle.x, x0 + size)), nz = Math.max(z0, Math.min(circle.z, z0 + size))
+        if ((nx - circle.x) ** 2 + (nz - circle.z) ** 2 > circle.radius ** 2) return
+        if (chunkStatus(level, tx >> 3, ty >> 3) === 'absent') return
+        const chunk = requestChunk(level, tx >> 3, ty >> 3)
+        if (!chunk) return
+        const index = (ty & 7) * 8 + (tx & 7), cells = chunk.tileCells[index]
+        if (!cells) return
+        const min = chunk.tileMin[index], max = chunk.tileMax[index]
+        // Tiles outside the view are skipped here (with a margin), so only what the camera sees is merged and drawn.
+        if (!inView(x0, z0, size, min, max)) return
+        if (level > 0) {
+          const dx = Math.max(x0 - ex, 0, ex - x0 - size), dz = Math.max(z0 - ez, 0, ez - z0 - size), dy = Math.max(min - ey, 0, ey - max)
+          if (Math.hypot(dx, dy, dz) < size * detail) {
+            let ready = true
+            for (let child = 0; child < 4; child++) {
+              const cx = (tx * 2 + (child & 1)) >> 3, cy = (ty * 2 + (child >> 1)) >> 3
+              if (chunkStatus(level - 1, cx, cy) === 'pending' && !requestChunk(level - 1, cx, cy)) ready = false
+            }
+            // A parent is replaced only when all four children can be drawn, so the ground never flickers out.
+            if (ready) { for (let child = 0; child < 4; child++) visit(level - 1, tx * 2 + (child & 1), ty * 2 + (child >> 1)); return }
+          }
+        }
+        wanted.push({ level, tx, ty, chunk, x0, z0, triangles: cells * 2 }); triangles += cells * 2
+      }
+      for (let ty = 0; ty < roots; ty++) for (let tx = 0; tx < roots; tx++) visit(top, tx, ty)
+    }
+    // Automatic detail: shrink the refinement distance until the visible terrain fits the triangle budget,
+    // and let it grow back slowly when there is room. Only the mesh density changes, never the DEM values.
+    const base = quality === 'high' ? 1.0 : 0.8
+    select(base * t.detailScale)
+    for (let i = 0; i < 6 && (triangles > budget || wanted.length > MAX_TILES) && t.detailScale > 0.3; i++) { t.detailScale *= 0.88; select(base * t.detailScale) }
+    if (triangles < budget * 0.7 && t.detailScale < 1) t.detailScale = Math.min(1, t.detailScale * 1.04)
+    if (wanted.length > MAX_TILES) wanted.length = MAX_TILES
 
-    for (const [key, mesh] of active.current) if (!wanted.has(key)) { root.remove(mesh); active.current.delete(key) }
-    let triangles = 0, finest = top
+    const signature = wanted.map((w) => `${w.level}:${w.tx}:${w.ty}`).join('|')
+    let finest = top
     const levels = [0, 0, 0, 0, 0, 0, 0]
-    for (const [key, tile] of wanted) {
-      let entry = cache.current.get(key)
-      if (!entry) { entry = { geometry: buildTileGeometry(tile.level, tile.tx, tile.ty, tile.chunk, tile.x0, tile.z0), used: t.tick }; cache.current.set(key, entry) }
-      entry.used = t.tick
-      if (!entry.geometry) continue
-      triangles += entry.geometry.userData.terrainTriangles; levels[tile.level]++; finest = Math.min(finest, tile.level)
-      if (active.current.has(key)) continue
-      const mesh = new THREE.Mesh(entry.geometry, material)
-      mesh.name = `dem-tile:${key}`
-      mesh.layers.set(1)
-      mesh.receiveShadow = true    // receives the colony's shadows; the terrain itself does not cast (lighting is artistic)
-      root.add(mesh); active.current.set(key, mesh)
+    for (const w of wanted) { levels[w.level]++; if (w.level < finest) finest = w.level }
+    if (signature !== t.signature) {
+      t.signature = signature
+      const geometry = mesh.geometry, position = geometry.getAttribute('position') as THREE.BufferAttribute, index = geometry.getIndex()!
+      const positions = position.array as Float32Array, indices = index.array as Uint32Array
+      let vertexOffset = 0, indexOffset = 0
+      for (const w of wanted) {
+        const key = `${w.level}:${w.tx}:${w.ty}`
+        let tile = cache.current.get(key)
+        if (!tile) { tile = buildTileData(w.level, w.tx, w.ty, w.chunk, w.x0, w.z0); cache.current.set(key, tile) }
+        tile.used = t.tick
+        positions.set(tile.positions, vertexOffset * 3)
+        const source = tile.indices
+        for (let i = 0; i < source.length; i++) indices[indexOffset + i] = source[i] + vertexOffset
+        vertexOffset += TILE_VERTICES; indexOffset += source.length
+      }
+      position.clearUpdateRanges(); position.addUpdateRange(0, vertexOffset * 3); position.needsUpdate = true
+      index.clearUpdateRanges(); index.addUpdateRange(0, indexOffset); index.needsUpdate = true
+      geometry.setDrawRange(0, indexOffset)
+      if (cache.current.size > 700) {
+        const idle = [...cache.current.entries()].sort((p, q) => p[1].used - q[1].used)
+        for (const [key] of idle.slice(0, cache.current.size - 450)) cache.current.delete(key)
+      }
     }
-    if (cache.current.size > 420) {
-      const idle = [...cache.current.entries()].filter(([key]) => !active.current.has(key)).sort((a, b) => a[1].used - b[1].used)
-      for (const [key, entry] of idle.slice(0, cache.current.size - 300)) { entry.geometry?.dispose(); cache.current.delete(key) }
-    }
-    terrainStats.tiles = active.current.size; terrainStats.triangles = triangles; terrainStats.pending = pendingChunkCount(); terrainStats.levels = levels; terrainStats.finestLevel = finest
+    terrainStats.tiles = wanted.length; terrainStats.triangles = triangles; terrainStats.pending = pendingChunkCount(); terrainStats.levels = levels; terrainStats.finestLevel = finest; terrainStats.detailScale = t.detailScale
   })
-  return <group ref={group} name="lunar-terrain" userData={{ source: 'NASA LOLA 5 m DEM (Site01 + Site04)', procedural: false }} />
+  return <group name="lunar-terrain" userData={{ source: 'NASA LOLA 5 m DEM (Site01 + Site04)', procedural: false }}><primitive object={mesh} /></group>
 }
 
 function ZoneMarker({ zone, onFocus }: { zone: ScienceZone; onFocus: (x: number, z: number) => void }) {

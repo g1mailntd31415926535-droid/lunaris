@@ -1,0 +1,213 @@
+{
+  "label": "perf",
+  "capturedAt": "2026-11-14T10:15:19.237Z",
+  "url": "http://localhost:5173/?debug=1",
+  "commit": "35b43be + uncommitted changes",
+  "viewport": {
+    "width": 1366,
+    "height": 768
+  },
+  "deviceScaleFactor": 1,
+  "fovDeg": 40,
+  "cameraYawPolar": "mặc định của game (yaw 0.61, nearPolar 0.925)",
+  "browser": "Chrome 157.0.8103.51 headless",
+  "gpu": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "pageErrors": [],
+  "initialLoad": {
+    "readyMs": 8075,
+    "terrainBytes": 1633853,
+    "terrainRequests": 43,
+    "totalBytes": 37644784,
+    "note": "localhost, không giới hạn băng thông, dev server (module chưa bundle); readyMs = từ lúc mở trang tới khi cảnh 3D sẵn sàng"
+  },
+  "streamedAfterAllViews": {
+    "terrainBytes": 1691035,
+    "terrainRequests": 44
+  },
+  "views": [
+    {
+      "id": "base",
+      "altitudeM": 27,
+      "note": "Góc mặc định khi mở game (Căn cứ)",
+      "files": [
+        "reports/screenshots/perf_base_ui.png",
+        "reports/screenshots/perf_base_world.png"
+      ],
+      "cameraPositionKm": [
+        0.02272494926979283,
+        0.026940082458422863,
+        0.028866655784841152
+      ],
+      "cameraTargetKm": [
+        0.0022,
+        -0.0000599000030011004,
+        -0.0005
+      ],
+      "clearanceM": 31.15637927599594,
+      "mode": "base",
+      "sceneTimeS": 0,
+      "drawCalls": 69,
+      "triangles": 154172,
+      "drawCallsPeak": 91,
+      "trianglesPeak": 219072,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 38,
+        "triangles": 73042,
+        "pending": 0,
+        "levels": [
+          10,
+          5,
+          6,
+          6,
+          8,
+          3,
+          0
+        ],
+        "finestLevel": 0,
+        "detailScale": 0.88
+      },
+      "frameMs": 16.663901933118563,
+      "renderer": "WebGL2 / logarithmic depth",
+      "threeRevision": "185"
+    },
+    {
+      "id": "near",
+      "altitudeM": 89.99999999991878,
+      "note": "Cận cảnh địa hình quanh căn cứ",
+      "files": [
+        "reports/screenshots/perf_near_ui.png",
+        "reports/screenshots/perf_near_world.png"
+      ],
+      "cameraPositionKm": [
+        0.07050486227253262,
+        0.08994004163039021,
+        0.09722912693198507
+      ],
+      "cameraTargetKm": [
+        0.0022,
+        -0.0000599000030011004,
+        -0.0005
+      ],
+      "clearanceM": 102.90448232370795,
+      "mode": "base",
+      "sceneTimeS": 0,
+      "drawCalls": 69,
+      "triangles": 158268,
+      "drawCallsPeak": 91,
+      "trianglesPeak": 223168,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 40,
+        "triangles": 77138,
+        "pending": 0,
+        "levels": [
+          10,
+          6,
+          7,
+          6,
+          8,
+          3,
+          0
+        ],
+        "finestLevel": 0,
+        "detailScale": 0.88
+      },
+      "frameMs": 16.68475686535581,
+      "renderer": "WebGL2 / logarithmic depth",
+      "threeRevision": "185"
+    },
+    {
+      "id": "region",
+      "altitudeM": 899.9999999998339,
+      "note": "Nhìn khu vực quanh căn cứ",
+      "files": [
+        "reports/screenshots/perf_region_ui.png",
+        "reports/screenshots/perf_region_world.png"
+      ],
+      "cameraPositionKm": [
+        0.36167519788798885,
+        0.8999397928253313,
+        0.5138284816459656
+      ],
+      "cameraTargetKm": [
+        0.0022,
+        -0.0000599000030011004,
+        -0.0005
+      ],
+      "clearanceM": 997.5886480046113,
+      "mode": "region",
+      "sceneTimeS": 0,
+      "drawCalls": 69,
+      "triangles": 137148,
+      "drawCallsPeak": 91,
+      "trianglesPeak": 202048,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 29,
+        "triangles": 56018,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          12,
+          9,
+          5,
+          3,
+          0
+        ],
+        "finestLevel": 2,
+        "detailScale": 1
+      },
+      "frameMs": 16.739587083684555,
+      "renderer": "WebGL2 / logarithmic depth",
+      "threeRevision": "185"
+    },
+    {
+      "id": "wide",
+      "altitudeM": 5999.999999999932,
+      "note": "Nhìn rộng vùng cực Nam",
+      "files": [
+        "reports/screenshots/perf_wide_ui.png",
+        "reports/screenshots/perf_wide_world.png"
+      ],
+      "cameraPositionKm": [
+        8.231572411744237,
+        5.941049627352378,
+        11.773959402975665
+      ],
+      "cameraTargetKm": [
+        0.0021705205698710427,
+        -23.280769054654197,
+        -0.0004933001295161461
+      ],
+      "clearanceM": 5999.999999999932,
+      "mode": "region",
+      "sceneTimeS": 0,
+      "drawCalls": 3,
+      "triangles": 13296,
+      "drawCallsPeak": 25,
+      "trianglesPeak": 78196,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 11,
+        "triangles": 12496,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          7,
+          4
+        ],
+        "finestLevel": 5,
+        "detailScale": 1
+      },
+      "frameMs": 16.641402571316767,
+      "renderer": "WebGL2 / logarithmic depth",
+      "threeRevision": "185"
+    }
+  ]
+}

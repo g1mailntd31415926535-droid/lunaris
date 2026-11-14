@@ -6,7 +6,7 @@ import { Crosshair } from 'lucide-react'
 import { seededRandom } from './math'
 import { useVisualTime } from './clock'
 import { useUniverse } from './universe-context'
-import { buildMoonGlobe } from './planet-geometry'
+import { buildMoonGlobe, buildMoonMatteShell } from './planet-geometry'
 import { EARTH_POSITION, EARTH_RADIUS_KM, MOON_CENTER, MOON_RADIUS_KM, STAR_DISTANCE_KM, SUN_RADIUS_KM } from './space-config'
 
 export function Starfield() {
@@ -48,9 +48,19 @@ export function MoonGlobe() {
   }, [albedo, bump, matte])
   useFrame(() => { matte.value = 1 - THREE.MathUtils.smoothstep(Math.log(Math.max(1, universe.current.altitudeM)), Math.log(30_000), Math.log(220_000)) })
   useEffect(() => () => { geometry.dispose(); material.dispose() }, [geometry, material])
-  // This mesh is rebased to Artemis before upload. Its parent is still the real
+  // Near the surface the globe is only a dark backdrop, so a few-hundred-triangle shell with the same 50 km hole
+  // stands in for the 28k-triangle relief mesh. Above 30 km (where the relief starts to show) they swap back.
+  const shell = useMemo(() => buildMoonMatteShell(), [])
+  const shellMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(9 / 255, 13 / 255, 30 / 255, THREE.SRGBColorSpace), side: THREE.DoubleSide, toneMapped: false }), [])
+  const detailed = useRef<THREE.Mesh>(null), lite = useRef<THREE.Mesh>(null)
+  useFrame(() => { const near = universe.current.altitudeM <= 30_000; if (detailed.current) detailed.current.visible = !near; if (lite.current) lite.current.visible = near })
+  useEffect(() => () => { shell.dispose(); shellMaterial.dispose() }, [shell, shellMaterial])
+  // These meshes are rebased to Artemis before upload. Their parent is still the real
   // Moon centre; the child offset exactly cancels that centre in CPU precision.
-  return <mesh name="moon-surface" geometry={geometry} material={material} position={[0, MOON_RADIUS_KM, 0]} />
+  return <>
+    <mesh ref={detailed} name="moon-surface" geometry={geometry} material={material} position={[0, MOON_RADIUS_KM, 0]} />
+    <mesh ref={lite} name="moon-matte-shell" geometry={shell} material={shellMaterial} position={[0, MOON_RADIUS_KM, 0]} />
+  </>
 }
 
 const atmosphereVertex = `

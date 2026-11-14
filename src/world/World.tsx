@@ -153,12 +153,23 @@ function Diagnostics() {
   const { gl, scene, camera, size } = useThree(), universe = useUniverse()
   const clock = useVisualTime()
   const timer = useRef(0), average = useRef(16.7)
+  // Peak over the 0.12 s reporting window (> the 0.08 s shadow refresh), so frames that also render the shadow pass are counted.
+  const peak = useRef({ calls: 0, triangles: 0 })
+  useEffect(() => {
+    // Test-only handle for scripts/scene_breakdown.mjs (present only with ?debug=1).
+    if (!new URLSearchParams(location.search).has('debug')) return
+    window.__LUNARIS_SCENE__ = scene
+    return () => { delete window.__LUNARIS_SCENE__ }
+  }, [scene])
   const point = useMemo(() => new THREE.Vector3(), [])
   const frustum = useMemo(() => new THREE.Frustum(), []), projection = useMemo(() => new THREE.Matrix4(), [])
   useFrame((_, delta) => {
     timer.current += delta; average.current = average.current * 0.95 + delta * 1000 * 0.05
+    peak.current.calls = Math.max(peak.current.calls, gl.info.render.calls); peak.current.triangles = Math.max(peak.current.triangles, gl.info.render.triangles)
     if (timer.current < 0.12) return
     timer.current = 0
+    const peakCalls = peak.current.calls, peakTriangles = peak.current.triangles
+    peak.current.calls = 0; peak.current.triangles = 0
     scene.updateMatrixWorld(); camera.updateMatrixWorld()
     projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse); frustum.setFromProjectionMatrix(projection)
     const moon = scene.getObjectByName('celestial:moon')!, base = scene.getObjectByName('artemis-base')!, earth = scene.getObjectByName('celestial:earth')!, sun = scene.getObjectByName('celestial:sun')!
@@ -170,7 +181,7 @@ function Diagnostics() {
     const u = universe.current
     point.copy(u.roverPosition).multiplyScalar(METRE); point.y += 0.0008; point.project(camera)
     const rover = { ...u.roverStatus, position: u.roverPosition.toArray(), nominal: u.roverNominal.toArray(), screen: { x: (point.x * 0.5 + 0.5) * size.width, y: (0.5 - point.y * 0.5) * size.height }, follow: u.followRover, groundError: Math.abs(u.roverPosition.y - actualTerrainHeight(u.roverPosition.x, u.roverPosition.z)) || 0 }
-    window.__LUNARIS__ = { revision: THREE.REVISION, renderer: 'WebGL2 / logarithmic depth', camera: camera.position.toArray(), target: u.cameraTarget.toArray(), drawCalls: gl.info.render.calls, triangles: gl.info.render.triangles, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures, frameMs: average.current, mode: u.mode, time: clock.current.time, actors, sceneId: scene.uuid, moonId: moon.uuid, baseId: base.uuid, earthId: earth.uuid, sunId: sun.uuid, terrainGeometryId: 'nasa-lola-dem-tiles', moonGeometryId: globe.geometry.uuid, baseScale: base.getWorldScale(new THREE.Vector3()).toArray(), moonCenter: moon.getWorldPosition(new THREE.Vector3()).toArray(), baseAnchor: base.getWorldPosition(new THREE.Vector3()).toArray(), earthPosition: earth.getWorldPosition(new THREE.Vector3()).toArray(), sunPosition: sun.getWorldPosition(new THREE.Vector3()).toArray(), altitudeM: u.altitudeM, clearanceM: u.clearanceM, styleDetail: u.styleDetail, targets, celestialVisibility: { moon: visible(moon), earth: visible(earth), sun: visible(sun) }, rover, cameraTravel: { ...u.cameraTravel }, terrain: { source: 'NASA LOLA 5 m DEM (Site01 + Site04)', ...terrainStats }, terrainPending: terrainStats.pending > 0 ? 1 : 0 }
+    window.__LUNARIS__ = { revision: THREE.REVISION, renderer: 'WebGL2 / logarithmic depth', camera: camera.position.toArray(), target: u.cameraTarget.toArray(), drawCalls: gl.info.render.calls, triangles: gl.info.render.triangles, drawCallsPeak: peakCalls, trianglesPeak: peakTriangles, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures, frameMs: average.current, mode: u.mode, time: clock.current.time, actors, sceneId: scene.uuid, moonId: moon.uuid, baseId: base.uuid, earthId: earth.uuid, sunId: sun.uuid, terrainGeometryId: 'nasa-lola-dem-tiles', moonGeometryId: globe.geometry.uuid, baseScale: base.getWorldScale(new THREE.Vector3()).toArray(), moonCenter: moon.getWorldPosition(new THREE.Vector3()).toArray(), baseAnchor: base.getWorldPosition(new THREE.Vector3()).toArray(), earthPosition: earth.getWorldPosition(new THREE.Vector3()).toArray(), sunPosition: sun.getWorldPosition(new THREE.Vector3()).toArray(), altitudeM: u.altitudeM, clearanceM: u.clearanceM, styleDetail: u.styleDetail, targets, celestialVisibility: { moon: visible(moon), earth: visible(earth), sun: visible(sun) }, rover, cameraTravel: { ...u.cameraTravel }, terrain: { source: 'NASA LOLA 5 m DEM (Site01 + Site04)', ...terrainStats }, terrainPending: terrainStats.pending > 0 ? 1 : 0 }
   })
   return null
 }

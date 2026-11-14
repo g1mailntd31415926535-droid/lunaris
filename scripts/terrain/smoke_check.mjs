@@ -20,6 +20,21 @@ check('terrain source is the NASA DEM', d.terrain.source.includes('NASA LOLA'), 
 check('base view draws 5 m tiles', d.terrain.finestLevel === 0, `levels ${d.terrain.levels}`)
 check('rover stands on the DEM at the depot', d.rover.groundError < 0.02, `error ${d.rover.groundError.toFixed(4)} m`)
 
+// Buildings are drawn by the merged colony batch; clicks must still reach each building's pick volume.
+{
+  const targets = await page.evaluate(() => window.__LUNARIS__.targets)
+  const picked = []
+  for (const t of targets) {
+    if (t.x < 380 || t.x > 1000 || t.y < 200 || t.y > 530) continue          // skip spots under the HUD panels
+    await page.mouse.click(t.x, t.y); await page.waitForTimeout(400)
+    const title = await page.$eval('.building-title h3', (n) => n.textContent).catch(() => null)
+    picked.push(`${t.id}→${title}`)
+  }
+  const titles = new Set(picked.map((p) => p.split('→')[1]))
+  check('building clicks reach the pick volumes (batched models)', picked.length >= 3 && titles.size === picked.length && !titles.has('null'), picked.join(', '))
+  await page.keyboard.press('Escape'); await page.waitForTimeout(300)
+}
+
 // Drive: seek the presentation clock to mid-leg and to the turn-back point.
 await page.evaluate(() => window.__LUNARIS_ROVER__.seek(400)); await page.waitForTimeout(4000)
 d = await diag()

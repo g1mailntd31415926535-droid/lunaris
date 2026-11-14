@@ -5,7 +5,9 @@ import * as THREE from 'three'
 import type { BuildingData, BuildingId, CameraMode, DemoAction } from '../types'
 import { BUILDINGS } from '../data'
 import { BuildingIcon } from '../components/Icons'
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import { createBuildingModel } from './models'
+import { createSettlementDetailsModel } from './Terrain'
 import { screenTexture } from './textures'
 import { heightAt } from './terrain-field'
 import { MATERIALS as M } from './model-kit'
@@ -52,16 +54,29 @@ function WaterActivity({ demo, reducedMotion }: { demo: DemoAction | null; reduc
   </group>
 }
 
+/** Position-only merge of a building model: never drawn (invisible material), only raycast for picking. */
+function buildingPickGeometry(id: BuildingId) {
+  const model = createBuildingModel(id), parts: THREE.BufferGeometry[] = []
+  model.traverse((node) => {
+    if (!(node instanceof THREE.Mesh)) return
+    const g = node.geometry as THREE.BufferGeometry, part = new THREE.BufferGeometry()
+    part.setAttribute('position', g.attributes.position); if (g.index) part.setIndex(g.index)
+    parts.push(part.index ? part.toNonIndexed() : part)
+  })
+  const merged = mergeGeometries(parts, false)!
+  merged.computeBoundingSphere(); merged.computeBoundingBox()
+  model.traverse((node) => { if (node instanceof THREE.Mesh) node.geometry.dispose() })
+  return merged
+}
+
 function Building({ data, selected, onSelect, mode, labels, demo, reducedMotion, onHover }: { data: BuildingData; selected: boolean; onSelect: (id: BuildingId) => void; mode: CameraMode; labels: boolean; demo: DemoAction | null; reducedMotion: boolean; onHover: (hover: boolean) => void }) {
   const [hover, setHover] = useState(false)
-  const model = useMemo(() => createBuildingModel(data.id), [data.id])
   const screen = useMemo(() => screenTexture(data.id, data.accent), [data.id, data.accent])
   const ring = useRef<THREE.Mesh>(null)
   const activity = useRef<THREE.MeshStandardMaterial>(null)
   const clock = useVisualTime()
   const screenPlacement = SCREEN_PLACEMENT[data.id]
   const operating = demo?.phase === 'working' && (demo.kind === data.id || (demo.kind === 'radiation' && data.id === 'shelter'))
-  useEffect(() => () => { model.traverse((node) => { if (node instanceof THREE.Mesh) node.geometry.dispose() }) }, [model])
   useFrame(() => {
     if (ring.current) {
       const pulse = reducedMotion ? 0 : Math.sin(clock.current.time * 2.0) * 0.008
@@ -70,11 +85,14 @@ function Building({ data, selected, onSelect, mode, labels, demo, reducedMotion,
     if (activity.current) activity.current.emissiveIntensity = operating ? 2 + (reducedMotion ? 0 : Math.sin(clock.current.time * 3.5) * 0.45) : 0.85
   })
   const height = heightAt(data.position[0], data.position[2]) + 0.02
+  const pick = useMemo(() => buildingPickGeometry(data.id), [data.id])
+  useEffect(() => () => pick.dispose(), [pick])
   return <group name={`interactive:${data.id}`} position={[data.position[0], height, data.position[2]]}
     onClick={(event) => { event.stopPropagation(); if (event.delta < 6) onSelect(data.id) }}
     onPointerOver={(event) => { event.stopPropagation(); setHover(true); onHover(true) }}
     onPointerOut={() => { setHover(false); onHover(false) }}>
-    <primitive object={model} />
+    {/* The visible model lives in the merged colony batch; an unseen copy of its exact shape keeps the building clickable. */}
+    <mesh geometry={pick}><meshBasicMaterial visible={false} /></mesh>
     <mesh position={screenPlacement.position}><planeGeometry args={screenPlacement.size} /><meshStandardMaterial ref={activity} map={screen} emissiveMap={screen} emissive="#ffffff" emissiveIntensity={0.85} roughness={0.5} /></mesh>
     {data.id === 'water' && <WaterActivity demo={demo} reducedMotion={reducedMotion} />}
     {data.id === 'greenhouse' && <mesh position={[0, 0.83, 0]}><sphereGeometry args={[2.5, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshPhysicalMaterial color="#a1e2dc" roughness={0.13} metalness={0.25} transparent opacity={0.17} side={THREE.DoubleSide} depthWrite={false} /></mesh>}
@@ -91,6 +109,41 @@ function Building({ data, selected, onSelect, mode, labels, demo, reducedMotion,
   </group>
 }
 
+/**
+ * Every static part of the base (eight building models, paths, lamps, cargo, landing pad) merged into one
+ * mesh per shared material. The models and their look are unchanged; only the number of draw calls drops
+ * (from one mesh per building per material to one mesh per material).
+ */
+function ColonyStaticBatch() {
+  const batch = useMemo(() => {
+    const buckets = new Map<THREE.Material, THREE.BufferGeometry[]>()
+    const collect = (model: THREE.Group, x = 0, y = 0, z = 0) => {
+      for (const child of model.children) {
+        const mesh = child as THREE.Mesh, geometry = mesh.geometry
+        if (x || y || z) geometry.translate(x, y, z)
+        const material = mesh.material as THREE.Material, bucket = buckets.get(material) ?? []
+        bucket.push(geometry); buckets.set(material, bucket)
+      }
+    }
+    for (const data of BUILDINGS) collect(createBuildingModel(data.id), data.position[0], heightAt(data.position[0], data.position[2]) + 0.02, data.position[2])
+    collect(createSettlementDetailsModel())
+    const group = new THREE.Group()
+    group.name = 'colony-static-batch'
+    for (const [material, parts] of buckets) {
+      const merged = mergeGeometries(parts, false)!
+      merged.computeBoundingBox(); merged.computeBoundingSphere()
+      const mesh = new THREE.Mesh(merged, material)
+      const emissive = material instanceof THREE.MeshStandardMaterial && material.emissiveIntensity > 0.8 && material.emissive.getHex() !== 0
+      mesh.castShadow = !emissive; mesh.receiveShadow = true      // same rule as ModelKit.build()
+      group.add(mesh)
+      parts.forEach((part) => part.dispose())
+    }
+    return group
+  }, [])
+  useEffect(() => () => { batch.traverse((node) => { if (node instanceof THREE.Mesh) node.geometry.dispose() }) }, [batch])
+  return <primitive object={batch} />
+}
+
 export function Buildings({ selected, onSelect, mode, labels, demo, reducedMotion, onHover }: { selected: BuildingId | null; onSelect: (id: BuildingId) => void; mode: CameraMode; labels: boolean; demo: DemoAction | null; reducedMotion: boolean; onHover: (hover: boolean) => void }) {
-  return <group name="artemis-colony">{BUILDINGS.map((data) => <Building key={data.id} data={data} selected={selected === data.id} onSelect={onSelect} mode={mode} labels={labels} demo={demo} reducedMotion={reducedMotion} onHover={onHover} />)}</group>
+  return <group name="artemis-colony"><ColonyStaticBatch />{BUILDINGS.map((data) => <Building key={data.id} data={data} selected={selected === data.id} onSelect={onSelect} mode={mode} labels={labels} demo={demo} reducedMotion={reducedMotion} onHover={onHover} />)}</group>
 }

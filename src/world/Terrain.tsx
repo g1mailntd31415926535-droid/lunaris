@@ -41,8 +41,8 @@ function Rocks() {
   return <group name="illustrative-rocks" userData={{ provenance: 'ILLUSTRATIVE_RECONSTRUCTION', label: 'chi tiết minh họa tái dựng' }}><instancedMesh ref={small} args={[geometry, material, 550]} castShadow receiveShadow /><instancedMesh ref={large} args={[geometry, material, 55]} castShadow receiveShadow /></group>
 }
 
-function SettlementDetails() {
-  const model = useMemo(() => {
+/** Paths, lamps, cargo and the landing pad. Returned as a model so it can be merged with the buildings by material. */
+export function createSettlementDetailsModel() {
     const kit = new ModelKit()
     // Short, pressurized connectors use a single material compiler.
     kit.tube([[-3.22, 0.88, -2.0], [-4.2, 0.88, -2], [-5.35, 0.76, -2]], 0.49, M.shell)
@@ -90,16 +90,12 @@ function SettlementDetails() {
       kit.part('cone', [0.3, h, 0.3], [x, heightAt(x, z) + h / 2, z], M.blueLight, [0.2, i, 0.14])
     }
     return kit.build()
-  }, [])
-  useEffect(() => () => { model.traverse((node) => { if (node instanceof THREE.Mesh) node.geometry.dispose() }) }, [model])
-  return <primitive object={model} />
 }
 
 export function ColonyDecorations() {
   const badge = useMemo(() => screenTexture('command', '#cfb9ff'), [])
   return <group name="colony-decoration">
     <Rocks />
-    <SettlementDetails />
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-11.7, 0.081, 7.8]}><planeGeometry args={[1.15, 1.15]} /><meshBasicMaterial map={badge} transparent opacity={0.65} /></mesh>
   </group>
 }

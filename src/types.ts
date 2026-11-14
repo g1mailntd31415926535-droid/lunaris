@@ -69,6 +69,8 @@ export interface SceneDiagnostics {
   camera: number[]
   target: number[]
   drawCalls: number
+  drawCallsPeak?: number
+  trianglesPeak?: number
   triangles: number
   geometries: number
   textures: number
@@ -95,7 +97,7 @@ export interface SceneDiagnostics {
   celestialVisibility: { moon: boolean; earth: boolean; sun: boolean }
   rover: RoverStatus & { position: number[]; nominal: number[]; screen: { x: number; y: number }; follow: boolean; groundError: number }
   cameraTravel: { moving: boolean; destination: CameraMode }
-  terrain: { source: string; tiles: number; triangles: number; pending: number; levels: number[]; finestLevel: number }
+  terrain: { source: string; tiles: number; triangles: number; pending: number; levels: number[]; finestLevel: number; detailScale: number }
   terrainPending: number
 }
 
@@ -105,5 +107,6 @@ declare global {
     __LUNARIS_CONTROLS__?: { orbit: (yaw: number, polar: number) => void; altitude: (metres: number) => void }
     __LUNARIS_ROVER__?: { seek: (seconds: number) => void }
     __LUNARIS_TEST_FOCUS__?: (x: number, z: number) => void
+    __LUNARIS_SCENE__?: import('three').Scene
   }
 }

@@ -52,3 +52,21 @@ export function buildMoonGlobe() {
   geometry.userData = { owner: 'moon-global', units: 'km', capRadiusMetres: CAP_RADIUS_M, thetaStart, vertices, triangles: indices.length / 3 }
   return geometry
 }
+
+/** Smooth, unlit stand-in for the globe at close range: same centre, same 50 km hole, no relief. */
+export function buildMoonMatteShell() {
+  const width = 40, rows = 10, thetaStart = Math.asin(CAP_RADIUS_M / MOON_RADIUS_M), radius = MOON_RADIUS_M * METRE
+  const position: number[] = [], indices: number[] = []
+  for (let j = 0; j <= rows; j++) {
+    const theta = thetaStart + (Math.PI - thetaStart) * j / rows
+    for (let i = 0; i <= width; i++) {
+      const phi = i / width * Math.PI * 2
+      position.push(Math.sin(theta) * Math.cos(phi) * radius, (Math.cos(theta) - 1) * radius, Math.sin(theta) * Math.sin(phi) * radius)
+      if (j < rows && i < width) { const a = j * (width + 1) + i, b = a + width + 1; indices.push(a, a + 1, b, b, a + 1, b + 1) }
+    }
+  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(position, 3)); geometry.setIndex(indices)
+  geometry.computeBoundingSphere()
+  return geometry
+}
