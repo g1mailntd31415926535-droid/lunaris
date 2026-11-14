@@ -1,0 +1,253 @@
+{
+  "generated_utc": "2026-11-14T09:56:58+00:00",
+  "route_nominal_slope_limit_deg": 15.0,
+  "slope_limit_provenance": "MEASURED + SCENARIO (docs/EVIDENCE.md G17): 15° là độ dốc vận hành danh định tối đa của NASA VIPER [S10]; LUNARIS dùng làm ngưỡng quy hoạch bảo thủ. Vượt ngưỡng = NOT_NOMINAL, cần xem xét; không phải giới hạn vật lý của mọi rover.",
+  "slope_layer": "slp 5 m gốc của NASA (nguồn theo source_mask_5m.png), không làm mượt, không resample",
+  "method": "A* trực tiếp trên lưới 5 m, 8 hướng, không cắt góc; chi phí = quãng đường phẳng; kiểm tra lại bằng lấy mẫu 1 m trên raster gốc",
+  "criteria": "mỗi pixel trên tuyến: trong hình tròn, có DEM, slp ≤ 15°",
+  "not_assessed": [
+    "footprint/bề rộng xe",
+    "chiếu sáng và năng lượng",
+    "nhiệt",
+    "liên lạc",
+    "đá và chướng ngại nhỏ hơn 5 m",
+    "độ bất định slperr (chỉ báo cáo)"
+  ],
+  "safe_route_claimed": false,
+  "depot_xy_m": [
+    -10991.4,
+    -12011.2
+  ],
+  "grid": {
+    "x_min": -21000.0,
+    "y_max": 2000.0,
+    "pixel_m": 5.0,
+    "size_px": 5000
+  },
+  "move_codes": "chuỗi số 0–7 theo thứ tự (di, dj) = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]; i = cột (đông), j = hàng (nam)",
+  "allowed_percent_of_valid": 54.687,
+  "reachable_from_depot_percent_of_valid": 49.976,
+  "routes": {
+    "A": {
+      "zone": "A",
+      "name": "PSR #1470",
+      "anchor_xy_m": [
+        -16970.0,
+        -8485.0
+      ],
+      "anchor_moved": false,
+      "anchor_pixel_slope_deg": 10.0,
+      "anchor_pixel_within_threshold": true,
+      "anchor_connected_to_depot": true,
+      "straight_line_from_depot_m": 6941.0,
+      "route_status": "NOMINAL_SLOPE_ROUTE_FOUND",
+      "reaches_anchor_pixel": true,
+      "route_length_m": 19296.6,
+      "route_length_3d_m": 19439.5,
+      "detour_factor_vs_straight_line": 2.781,
+      "pixels_on_route": 3577,
+      "max_slope_deg": 14.99,
+      "mean_slope_deg": 9.87,
+      "percent_route_within_1deg_of_threshold": 6.15,
+      "percent_route_where_slope_plus_slperr_exceeds_threshold": 13.36,
+      "max_slope_plus_slperr_deg": 19.22,
+      "height_start_m": 1943.43,
+      "height_end_m": 1295.88,
+      "height_min_m": 944.42,
+      "height_max_m": 1946.61,
+      "total_ascent_m": 623.9,
+      "total_descent_m": 1271.4,
+      "seam_crossings": [
+        {
+          "at_m": 2499.8,
+          "step_m": 0.231
+        },
+        {
+          "at_m": 11144.1,
+          "step_m": 0.05
+        }
+      ],
+      "recheck_on_5m_rasters": {
+        "samples_1m": 19297,
+        "max_slope_deg": 14.991,
+        "pixels_over_threshold": 0,
+        "pixels_nodata": 0,
+        "samples_outside_circle": 0,
+        "pass": true
+      },
+      "astar": {
+        "grid": "5 m, 8-connected, no corner cutting",
+        "heuristic": "octile (admissible)",
+        "expansions": 1984831,
+        "seconds": 24.5
+      },
+      "start_pixel_rc": [
+        2802,
+        2001
+      ]
+    },
+    "B": {
+      "zone": "B",
+      "name": "PSR #921",
+      "anchor_xy_m": [
+        -4240.0,
+        -12345.0
+      ],
+      "anchor_moved": false,
+      "anchor_pixel_slope_deg": 7.18,
+      "anchor_pixel_within_threshold": true,
+      "anchor_connected_to_depot": true,
+      "straight_line_from_depot_m": 6759.6,
+      "route_status": "NOMINAL_SLOPE_ROUTE_FOUND",
+      "reaches_anchor_pixel": true,
+      "route_length_m": 7425.0,
+      "route_length_3d_m": 7496.3,
+      "detour_factor_vs_straight_line": 1.098,
+      "pixels_on_route": 1375,
+      "max_slope_deg": 14.99,
+      "mean_slope_deg": 8.87,
+      "percent_route_within_1deg_of_threshold": 5.75,
+      "percent_route_where_slope_plus_slperr_exceeds_threshold": 10.98,
+      "max_slope_plus_slperr_deg": 18.67,
+      "height_start_m": 1943.43,
+      "height_end_m": 1157.51,
+      "height_min_m": 1134.41,
+      "height_max_m": 1943.43,
+      "total_ascent_m": 46.0,
+      "total_descent_m": 831.9,
+      "seam_crossings": [
+        {
+          "at_m": 2116.6,
+          "step_m": 0.187
+        }
+      ],
+      "recheck_on_5m_rasters": {
+        "samples_1m": 7426,
+        "max_slope_deg": 14.992,
+        "pixels_over_threshold": 0,
+        "pixels_nodata": 0,
+        "samples_outside_circle": 0,
+        "pass": true
+      },
+      "astar": {
+        "grid": "5 m, 8-connected, no corner cutting",
+        "heuristic": "octile (admissible)",
+        "expansions": 293765,
+        "seconds": 3.9
+      },
+      "start_pixel_rc": [
+        2802,
+        2001
+      ]
+    },
+    "C": {
+      "zone": "C",
+      "name": "Connecting Ridge C1",
+      "anchor_xy_m": [
+        -12467.0,
+        -13001.0
+      ],
+      "anchor_moved": false,
+      "anchor_pixel_slope_deg": 6.84,
+      "anchor_pixel_within_threshold": true,
+      "anchor_connected_to_depot": true,
+      "straight_line_from_depot_m": 1776.8,
+      "route_status": "NOMINAL_SLOPE_ROUTE_FOUND",
+      "reaches_anchor_pixel": true,
+      "route_length_m": 1885.1,
+      "route_length_3d_m": 1891.1,
+      "detour_factor_vs_straight_line": 1.06,
+      "pixels_on_route": 296,
+      "max_slope_deg": 14.28,
+      "mean_slope_deg": 5.18,
+      "percent_route_within_1deg_of_threshold": 0.68,
+      "percent_route_where_slope_plus_slperr_exceeds_threshold": 1.35,
+      "max_slope_plus_slperr_deg": 16.96,
+      "height_start_m": 1943.43,
+      "height_end_m": 1869.18,
+      "height_min_m": 1869.18,
+      "height_max_m": 1958.73,
+      "total_ascent_m": 25.2,
+      "total_descent_m": 99.4,
+      "seam_crossings": [],
+      "recheck_on_5m_rasters": {
+        "samples_1m": 1886,
+        "max_slope_deg": 14.279,
+        "pixels_over_threshold": 0,
+        "pixels_nodata": 0,
+        "samples_outside_circle": 0,
+        "pass": true
+      },
+      "astar": {
+        "grid": "5 m, 8-connected, no corner cutting",
+        "heuristic": "octile (admissible)",
+        "expansions": 18787,
+        "seconds": 0.2
+      },
+      "start_pixel_rc": [
+        2802,
+        2001
+      ]
+    },
+    "D": {
+      "zone": "D",
+      "name": "Shackleton Rim S",
+      "anchor_xy_m": [
+        -2606.0,
+        -6502.0
+      ],
+      "anchor_moved": false,
+      "anchor_pixel_slope_deg": 15.6,
+      "anchor_pixel_within_threshold": false,
+      "anchor_connected_to_depot": false,
+      "straight_line_from_depot_m": 10033.3,
+      "closest_reachable_xy_m": [
+        -2607.5,
+        -6497.5
+      ],
+      "closest_reachable_distance_to_anchor_m": 4.7,
+      "no_route_reason": "pixel anchor dốc hơn ngưỡng",
+      "route_status": "NO_NOMINAL_ROUTE",
+      "reaches_anchor_pixel": false,
+      "route_length_m": 11644.8,
+      "route_length_3d_m": 11734.6,
+      "detour_factor_vs_straight_line": 1.16,
+      "pixels_on_route": 1987,
+      "max_slope_deg": 14.99,
+      "mean_slope_deg": 10.28,
+      "percent_route_within_1deg_of_threshold": 9.61,
+      "percent_route_where_slope_plus_slperr_exceeds_threshold": 18.32,
+      "max_slope_plus_slperr_deg": 20.01,
+      "height_start_m": 1943.43,
+      "height_end_m": 1702.39,
+      "height_min_m": 1348.74,
+      "height_max_m": 1946.61,
+      "total_ascent_m": 484.5,
+      "total_descent_m": 725.6,
+      "seam_crossings": [
+        {
+          "at_m": 2468.7,
+          "step_m": 0.259
+        }
+      ],
+      "recheck_on_5m_rasters": {
+        "samples_1m": 11645,
+        "max_slope_deg": 14.991,
+        "pixels_over_threshold": 0,
+        "pixels_nodata": 0,
+        "samples_outside_circle": 0,
+        "pass": true
+      },
+      "astar": {
+        "grid": "5 m, 8-connected, no corner cutting",
+        "heuristic": "octile (admissible)",
+        "expansions": 564501,
+        "seconds": 6.0
+      },
+      "start_pixel_rc": [
+        2802,
+        2001
+      ]
+    }
+  }
+}

@@ -62,15 +62,23 @@ test('colony plane follows the real slope at BASE', opts, async () => {
   assert.ok(Math.abs(y - dem.demHeight(x, z)) < 0.02, 'colony heights land on the real surface')
 })
 
-test('rover destinations are the real anchors and never certified as safe', opts, async () => {
+test('rover legs are the offline A* routes; zones without a route get no leg', opts, async () => {
   await dem.loadDem()
-  const sites = surveySites()
+  const sites = surveySites(), routes = dem.roverRoutes()
   assert.deepEqual(sites.map((s) => s.id).sort(), ['A', 'B', 'C', 'D'])
   for (const site of sites) assert.ok(Math.hypot(...site.position) > 1500, `${site.id} is kilometres away, not pulled to the base`)
-  for (const leg of surveyLegs()) {
+  const legs = surveyLegs()
+  const found = Object.values(routes).filter((r) => r.route_status === 'NOMINAL_SLOPE_ROUTE_FOUND').map((r) => r.zone).sort()
+  assert.deepEqual(legs.map((l) => l.site.id).sort(), found, 'exactly the zones with a nominal-slope route have a leg')
+  assert.ok(found.length >= 1)
+  const point = { x: 0, y: 0, z: 0, set(x, y, z) { this.x = x; this.y = y; this.z = z; return this } }
+  for (const leg of legs) {
     assert.notEqual(leg.status, 'SAFE_ROUTE')
-    assert.equal(leg.site.zone.route_check.crosses_nodata, false)
-    const first = leg.site.zone.route_check.first_block_at_m
-    if (first !== null) assert.ok(leg.reachM < first, `${leg.site.id}: MILO stops before the first over-limit stretch`)
+    assert.ok(Math.abs(leg.length - leg.route.route_length_m) < 12, `${leg.site.id}: leg ${leg.length} vs route ${leg.route.route_length_m}`)
+    leg.curve.getPointAt(1, point)
+    assert.ok(Math.hypot(point.x - leg.site.position[0], point.z - leg.site.position[1]) < 3.6, `${leg.site.id}: the leg ends in the anchor pixel`)
+    let onData = 0
+    for (let i = 0; i <= 400; i++) { leg.curve.getPointAt(i / 400, point); if (dem.coverageAt(point.x, point.z) >= 2) onData++ }
+    assert.equal(onData, 401, `${leg.site.id}: every sampled point is on NASA data`)
   }
 })

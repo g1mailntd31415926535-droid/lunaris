@@ -25,12 +25,14 @@ await page.evaluate(() => window.__LUNARIS_ROVER__.seek(400)); await page.waitFo
 d = await diag()
 check('rover is driving toward a real anchor', d.rover.phase === 'outbound' && /Hướng tới [ABCD]/.test(d.rover.site), `${d.rover.phase} · ${d.rover.site} · ${d.rover.distance.toFixed(0)} m from base`)
 check('rover stays on the DEM away from the camera', d.rover.groundError < 0.05, `error ${d.rover.groundError.toFixed(4)} m`)
+check('rover status names the A* route and its limits', /Tuyến A\*/.test(await page.evaluate(() => window.__LUNARIS__.rover.note ?? '')) , await page.evaluate(() => window.__LUNARIS__.rover.note))
 check('rover speed is the 0.7 m/s scenario value', Math.abs(d.rover.speed - 0.7) < 0.01, `${d.rover.speed}`)
 
 // Science zone markers at region scale.
 await page.evaluate(() => window.__LUNARIS_CONTROLS__.altitude(3000)); await page.waitForTimeout(6000)
 const zones = await page.$$eval('.zone-marker', (nodes) => nodes.map((n) => n.textContent))
 check('four science zone markers exist', zones.length === 4, zones.map((z) => z.slice(0, 1)).join(''))
+check('markers report the A* result per zone (A, B, C route; D none)', ['A', 'B', 'C'].every((id) => /có tuyến dốc ≤ 15°/.test(zones.find((z) => z.startsWith(id)) ?? '')) && /không có tuyến dốc ≤ 15°/.test(zones.find((z) => z.startsWith('D')) ?? ''))
 check('markers say ice is unconfirmed and await the rover', zones.every((z) => /chưa xác nhận/.test(z) && /chờ rover xác minh/.test(z)))
 
 // Fly to zone D (Site04) through its marker; the camera must end over valid data near D.

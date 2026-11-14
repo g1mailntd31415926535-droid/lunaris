@@ -218,12 +218,13 @@ function ZoneMarker({ zone, onFocus }: { zone: ScienceZone; onFocus: (x: number,
     const h = universe.current.altitudeM, visible = h > 140 && h < 400_000
     if (label.current) { label.current.style.opacity = visible ? '1' : '0'; label.current.style.pointerEvents = visible ? 'auto' : 'none' }
   })
-  const blocked = zone.route_status !== 'UNVERIFIED'
+  const route = zone.route
+  const routeText = !route ? 'tuyến chưa tính' : route.route_status === 'NOMINAL_SLOPE_ROUTE_FOUND' ? `có tuyến dốc ≤ 15°: ${(route.route_length_m / 1000).toFixed(1)} km` : 'không có tuyến dốc ≤ 15° tới điểm này'
   return <Html center position={[zone.local_xz_m[0], y + 6, zone.local_xz_m[1]]} zIndexRange={[26, 11]} style={{ pointerEvents: 'none' }}>
     <div ref={label} className="zone-marker-anchor">
       <button className="zone-marker" onClick={() => onFocus(zone.local_xz_m[0], zone.local_xz_m[1])} aria-label={`Điểm ${zone.id}: ${zone.name}. ${zone.UI_label}. ${zone.verification_needed}`}>
         <b>{zone.id}</b>
-        <span>{zone.name}<small>{zone.UI_label}</small><small>{zone.verification_needed} · cách căn cứ {(zone.straight_line_from_base_m / 1000).toFixed(1)} km{blocked ? ' · đường thẳng có đoạn vượt 15° (ngưỡng danh định VIPER)' : ' · tuyến chưa kiểm chứng'}</small></span>
+        <span>{zone.name}<small>{zone.UI_label}</small><small>{zone.verification_needed} · cách căn cứ {(zone.straight_line_from_base_m / 1000).toFixed(1)} km đường thẳng · {routeText}</small></span>
       </button>
     </div>
   </Html>

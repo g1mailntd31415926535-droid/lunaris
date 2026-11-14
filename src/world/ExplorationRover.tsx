@@ -9,6 +9,7 @@ import { sampleTerrain } from './terrain-query'
 import { createRoverModel } from './models'
 import { MATERIALS as M } from './model-kit'
 import { ROVER_DEPOT, roverPresentation } from './rover-plan'
+import { routeSlopeLimitDeg } from './dem'
 import type { SurveyLeg } from './rover-plan'
 
 type Polyline = [number, number, number][]
@@ -58,8 +59,7 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
     root.current.quaternion.slerp(s.desired, 1 - Math.exp(-12 * Math.min(delta, 0.1)))
     root.current.position.fromArray(sample.point).addScaledVector(s.normal, -0.0835)
     u.roverPosition.fromArray(sample.point); u.roverNominal.copy(s.nominal); u.roverNormal.copy(s.normal)
-    const limit = leg?.site.zone.route_check.route_nominal_slope_limit_deg ?? 15
-    const note = !leg ? 'Chưa có tuyến nào được kiểm chứng' : leg.reachesSite ? 'Tuyến chưa kiểm chứng · chỉ quan sát' : `Quay lại sau ${Math.round(leg.reachM)} m: phía trước dốc hơn ${limit}° (ngưỡng danh định NASA VIPER) · tuyến chưa kiểm chứng`
+    const note = !leg ? `Chưa có tuyến nào đạt ngưỡng dốc ${routeSlopeLimitDeg()}°` : `Tuyến A* ${(leg.route.route_length_m / 1000).toFixed(1)} km · mọi ô 5 m dốc ≤ ${routeSlopeLimitDeg()}° (ngưỡng danh định NASA VIPER) · chưa xét chiếu sáng, nhiệt, liên lạc`
     u.roverStatus = { phase, site: phase === 'docked' || !leg ? 'Căn cứ Artemis' : `Hướng tới ${leg.site.id} · ${leg.site.name}`, siteId: leg?.site.id ?? 'base', trip, distance: Math.hypot(sample.point[0], sample.point[2]), speed, note }
     if (Math.floor(clock.current.time * 2) !== lastStatus.current) { lastStatus.current = Math.floor(clock.current.time * 2); onStatus(u.roverStatus) }
 
@@ -94,7 +94,6 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
   const dash = Math.max(0.4, universe.current.altitudeM * 0.004), gap = Math.max(0.65, universe.current.altitudeM * 0.007)
   return <group ref={system} name="autonomous-exploration-system">
     {(selected || follow) && showRoute && route.driven.length > 1 && <Line name="milo-current-route" points={route.driven} color="#9bd8e0" lineWidth={1.1} dashed dashSize={dash} gapSize={gap} transparent opacity={0.4} />}
-    {/* The rest of the straight check line is NOT driven: it contains stretches steeper than the scenario limit. */}
     {(selected || follow) && showRoute && route.beyond.length > 1 && <Line name="milo-unverified-line" points={route.beyond} color="#ff8f7d" lineWidth={1} dashed dashSize={dash * 0.6} gapSize={gap * 1.4} transparent opacity={0.42} />}
     <lineLoop ref={ring} geometry={radarGeometry} visible={false}><lineBasicMaterial color="#91e8d8" transparent opacity={0.5} depthWrite={false} /></lineLoop>
     <primitive ref={beam} object={beamObject} visible={false} />
@@ -111,9 +110,6 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
 
 function buildRoute(leg: SurveyLeg) {
   const point = new THREE.Vector3()
-  const driven = groundLine(Math.max(60, Math.min(900, Math.ceil(leg.length / 4))), (t) => { leg.curve.getPointAt(t, point); return [point.x, point.z] }, 0.35)
-  const [sx, sz] = leg.site.position, ux = sx / leg.lineLengthM, uz = sz / leg.lineLengthM
-  const rest = leg.lineLengthM - leg.reachM
-  const beyond = leg.reachesSite ? [] : groundLine(Math.max(40, Math.min(900, Math.ceil(rest / 10))), (t) => [ux * (leg.reachM + rest * t), uz * (leg.reachM + rest * t)], 0.6)
-  return { driven, beyond }
+  const driven = groundLine(Math.max(60, Math.min(1400, Math.ceil(leg.length / 10))), (t) => { leg.curve.getPointAt(t, point); return [point.x, point.z] }, 0.35)
+  return { driven, beyond: [] as Polyline }
 }

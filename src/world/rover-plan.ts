@@ -1,16 +1,17 @@
 import * as THREE from 'three'
-import { scienceZones } from './dem.ts'
-import type { ScienceZone } from './dem.ts'
+import { demMeta, roverRoutes, scienceZones } from './dem.ts'
+import type { RoverRoute, ScienceZone } from './dem.ts'
 
 // Task 02: the 20 invented survey points that were pulled to 65–85 m from the base are gone, and so
 // are the procedural crater/peak obstacles. MILO's only destinations are the four published science
 // anchors A–D at their real coordinates (kilometres away). Nothing is snapped, offset or shortened.
 //
-// No route is certified. The straight BASE → site line is checked offline against the native 5 m
-// NASA slope layer (scripts/terrain/build_terrain.py → reports/task02_route_slope.*). MILO only
-// drives the part of that line before its first stretch steeper than the 15° nominal threshold
-// (NASA VIPER nominal operating slope, docs/EVIDENCE.md G17; a planning threshold for LUNARIS), never
-// crosses NoData, and the leg is always presented as UNVERIFIED — an observation demo, not a safe route.
+// Routes are NOT made up here. They come from public/lunar/task02/routes.json, computed offline by
+// scripts/terrain/plan_routes.py: A* on the native 5 m NASA slope layer, entering only pixels with
+// slope ≤ 15° (NASA VIPER nominal operating slope, docs/EVIDENCE.md G17, used as a planning
+// threshold) and never crossing NoData. A zone without such a route gets no leg at all — MILO is
+// not sent part-way and nothing is forced. "Route found" covers slope and data coverage only
+// (not lighting, heat, comms or the vehicle footprint), so no leg is ever called a safe route.
 
 export const ROVER_DEPOT: [number, number] = [8.6, 11.2]
 /**
@@ -19,41 +20,61 @@ export const ROVER_DEPOT: [number, number] = [8.6, 11.2]
  * and is never used to publish travel times.
  */
 export const ROVER_CRUISE_SPEED = 0.7
-const STOP_BEFORE_STEEP_M = 15
-const JOIN_LINE_AT_M = 30
-const MIN_USEFUL_REACH_M = 60
+// (di, dj) per move code in routes.json: i = column (east, +x), j = row (south, +z).
+const MOVES: [number, number][] = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]]
 
-export interface SurveySite { id: string; name: string; position: [number, number]; zone: ScienceZone }
-export interface SurveyLeg {
-  curve: THREE.CatmullRomCurve3; length: number; duration: number; site: SurveySite
-  /** Distance along the BASE → site line where MILO turns back. */
-  reachM: number
-  lineLengthM: number
-  reachesSite: boolean
-  stopReason: 'steep' | null
-  status: string
+/** A piecewise-linear path through 5 m pixel centres, with the two curve calls the rover uses. */
+export class PolylinePath {
+  readonly length: number
+  private readonly cumulative: Float64Array
+  private readonly xz: Float64Array
+  constructor(xz: Float64Array) {
+    this.xz = xz
+    const count = xz.length / 2
+    this.cumulative = new Float64Array(count)
+    for (let i = 1; i < count; i++) this.cumulative[i] = this.cumulative[i - 1] + Math.hypot(xz[i * 2] - xz[i * 2 - 2], xz[i * 2 + 1] - xz[i * 2 - 1])
+    this.length = this.cumulative[count - 1]
+  }
+  private at(distance: number, target: THREE.Vector3) {
+    const d = Math.max(0, Math.min(this.length, distance)), c = this.cumulative
+    let low = 0, high = c.length - 1
+    while (high - low > 1) { const mid = (low + high) >> 1; if (c[mid] <= d) low = mid; else high = mid }
+    const span = c[high] - c[low] || 1, t = (d - c[low]) / span
+    return target.set(this.xz[low * 2] + (this.xz[high * 2] - this.xz[low * 2]) * t, 0, this.xz[low * 2 + 1] + (this.xz[high * 2 + 1] - this.xz[low * 2 + 1]) * t)
+  }
+  getPointAt(u: number, target: THREE.Vector3) { return this.at(u * this.length, target) }
+  /** Heading averaged over ±6 m so the 45° grid steps do not make the rover twitch. */
+  getTangentAt(u: number, target: THREE.Vector3) {
+    const d = u * this.length
+    const ahead = this.at(d + 6, new THREE.Vector3())
+    this.at(d - 6, target)
+    return target.subVectors(ahead, target).normalize()
+  }
 }
+
+export interface SurveySite { id: string; name: string; position: [number, number]; zone: ScienceZone; route: RoverRoute | null }
+export interface SurveyLeg { curve: PolylinePath; length: number; duration: number; site: SurveySite; route: RoverRoute; status: string }
 
 let cache: { sites: SurveySite[]; legs: SurveyLeg[] } | null = null
 function plan() {
   if (cache) return cache
-  const sites: SurveySite[] = scienceZones().filter((zone) => zone.valid_dem).map((zone) => ({ id: zone.id, name: zone.name, position: [zone.local_xz_m[0], zone.local_xz_m[1]], zone }))
+  const meta = demMeta()!, routes = roverRoutes()
+  const sites: SurveySite[] = scienceZones().filter((zone) => zone.valid_dem).map((zone) => ({ id: zone.id, name: zone.name, position: [zone.local_xz_m[0], zone.local_xz_m[1]], zone, route: routes[zone.id] ?? null }))
   const legs: SurveyLeg[] = []
   for (const site of sites) {
-    const check = site.zone.route_check, full = Math.hypot(...site.position)
-    if (check.crosses_nodata) continue                                   // never plan across missing data
-    const reach = check.first_block_at_m === null ? full : Math.max(0, check.first_block_at_m - STOP_BEFORE_STEEP_M)
-    if (reach < MIN_USEFUL_REACH_M) continue
-    const ux = site.position[0] / full, uz = site.position[1] / full
-    const controls = [new THREE.Vector3(ROVER_DEPOT[0], 0, ROVER_DEPOT[1])]
-    for (let along = JOIN_LINE_AT_M; along < reach - 20; along += 60) controls.push(new THREE.Vector3(ux * along, 0, uz * along))
-    controls.push(new THREE.Vector3(ux * reach, 0, uz * reach))
-    const curve = new THREE.CatmullRomCurve3(controls, false, 'centripetal')
-    curve.arcLengthDivisions = Math.min(4000, Math.max(200, Math.ceil(reach / 2))); curve.updateArcLengths()
-    const length = curve.getLength(), reachesSite = check.first_block_at_m === null
-    legs.push({ curve, length, duration: length / ROVER_CRUISE_SPEED + 3, site, reachM: reach, lineLengthM: full, reachesSite, stopReason: reachesSite ? null : 'steep', status: site.zone.route_status })
+    const route = site.route
+    if (!route || route.route_status !== 'NOMINAL_SLOPE_ROUTE_FOUND' || !route.reaches_anchor_pixel) continue   // no route: no leg
+    const { x_min, y_max, pixel_m } = meta.grid, [baseX, baseY] = meta.base.xy_m
+    let [row, col] = route.start_pixel_rc
+    const xz = new Float64Array((route.moves.length + 2) * 2)
+    xz[0] = ROVER_DEPOT[0]; xz[1] = ROVER_DEPOT[1]
+    const put = (index: number) => { xz[index * 2] = x_min + (col + 0.5) * pixel_m - baseX; xz[index * 2 + 1] = baseY - (y_max - (row + 0.5) * pixel_m) }
+    put(1)
+    for (let i = 0; i < route.moves.length; i++) { const [di, dj] = MOVES[route.moves.charCodeAt(i) - 48]; col += di; row += dj; put(i + 2) }
+    const curve = new PolylinePath(xz)
+    legs.push({ curve, length: curve.length, duration: curve.length / ROVER_CRUISE_SPEED + 3, site, route, status: route.route_status })
   }
-  legs.sort((a, b) => a.lineLengthM - b.lineLengthM)
+  legs.sort((a, b) => a.length - b.length)
   cache = { sites, legs }
   return cache
 }

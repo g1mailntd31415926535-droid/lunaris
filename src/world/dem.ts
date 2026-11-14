@@ -25,8 +25,12 @@ export interface ScienceZone {
   valid_dem: boolean; source_tile: string; height_m: number; slope_deg: number
   ice_status: string; verification_needed: string; UI_label: string
   straight_line_from_base_m: number; route_status: string
+  /** A* result summary written by plan_routes.py (absent only if that step has not been run). */
+  route?: { route_status: string; reaches_anchor_pixel: boolean; route_length_m: number; route_length_3d_m: number; max_slope_deg: number; mean_slope_deg: number; closest_reachable_distance_to_anchor_m?: number; no_route_reason?: string }
   route_check: { route_nominal_slope_limit_deg: number; max_slope_deg: number; percent_over_limit: number; segments_over_limit_count: number; crosses_nodata: boolean; first_block_at_m: number | null; segments_over_limit: [number, number, number][] }
 }
+/** One A* route on the 5 m slope grid (scripts/terrain/plan_routes.py). `moves` is a string of direction codes 0–7. */
+export interface RoverRoute { zone: string; route_status: string; reaches_anchor_pixel: boolean; route_length_m: number; route_length_3d_m: number; max_slope_deg: number; mean_slope_deg: number; start_pixel_rc: [number, number]; moves: string; closest_reachable_distance_to_anchor_m?: number }
 export interface DemChunk {
   level: number; cx: number; cy: number
   /** (cells + 1)² local heights in metres (h − h_base). Invalid vertices hold a copied neighbour and must be ignored. */
@@ -53,6 +57,8 @@ export function setDemFetcher(next: Fetcher) { fetcher = next }
 let meta: DemMeta | null = null
 let coverage: Uint8Array | null = null
 let zones: ScienceZone[] = []
+let routes: Record<string, RoverRoute> = {}
+let routeLimitDeg = 15
 const chunks = new Map<string, DemChunk>()
 const pending = new Map<string, Promise<DemChunk | null>>()
 const pinned = new Set<string>()
@@ -142,6 +148,8 @@ export const demOrigin = () => ({ x: originX, z: originZ })
 export const demMeta = () => meta
 export const demReady = () => meta !== null
 export const scienceZones = () => zones
+export const roverRoutes = () => routes
+export const routeSlopeLimitDeg = () => routeLimitDeg
 export function localToProjected(x: number, z: number): [number, number] { return [meta!.base.xy_m[0] + x, meta!.base.xy_m[1] - z] }
 export function insideCircle(x: number, z: number) { const dx = x - circleX, dz = z - circleZ; return dx * dx + dz * dz <= circleR2 }
 export const circleLocal = () => ({ x: circleX, z: circleZ, radius: Math.sqrt(circleR2) })
@@ -251,6 +259,8 @@ export function loadDem(): Promise<void> {
     meta = m
     coverage = new Uint8Array(coverageRaw)
     zones = (JSON.parse(text.decode(zonesRaw)) as { zones: ScienceZone[] }).zones
+    // Routes are optional data: without the file MILO simply has no legs (it never falls back to invented paths).
+    try { const doc = JSON.parse(text.decode(await fetcher('routes.json'))) as { route_nominal_slope_limit_deg: number; routes: Record<string, RoverRoute> }; routes = doc.routes; routeLimitDeg = doc.route_nominal_slope_limit_deg } catch { routes = {} }
     const jobs: Promise<unknown>[] = []
     for (let level = 2; level < LEVELS; level++) for (const name of Object.keys(m.levels[level].chunks)) { const [cx, cy] = name.split('_').map(Number); jobs.push(loadChunk(level, cx, cy)) }
     for (const level of [0, 1]) {

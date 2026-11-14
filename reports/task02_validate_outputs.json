@@ -89,27 +89,52 @@
     {
       "check": "anchor A unmoved, on valid DEM, height equals raw sample",
       "pass": true,
-      "detail": "Site01 h=1295.88 m route=NOT_NOMINAL"
+      "detail": "Site01 h=1295.88 m route=NOMINAL_SLOPE_ROUTE_FOUND"
     },
     {
       "check": "anchor B unmoved, on valid DEM, height equals raw sample",
       "pass": true,
-      "detail": "Site04 h=1157.51 m route=NOT_NOMINAL"
+      "detail": "Site04 h=1157.51 m route=NOMINAL_SLOPE_ROUTE_FOUND"
     },
     {
       "check": "anchor C unmoved, on valid DEM, height equals raw sample",
       "pass": true,
-      "detail": "Site01 h=1869.18 m route=NOT_NOMINAL"
+      "detail": "Site01 h=1869.18 m route=NOMINAL_SLOPE_ROUTE_FOUND"
     },
     {
       "check": "anchor D unmoved, on valid DEM, height equals raw sample",
       "pass": true,
-      "detail": "Site04 h=1701.84 m route=NOT_NOMINAL"
+      "detail": "Site04 h=1701.84 m route=NO_NOMINAL_ROUTE"
     },
     {
       "check": "BASE on valid DEM at its locked coordinates",
       "pass": true,
       "detail": ""
+    },
+    {
+      "check": "route threshold is the 15 deg nominal value and no route is called safe",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "route A: every pixel <= 15 deg on raw slp, no NoData, no corner cutting; status honest",
+      "pass": true,
+      "detail": "NOMINAL_SLOPE_ROUTE_FOUND · 19.30 km · max 14.99° · ends at anchor pixel: True"
+    },
+    {
+      "check": "route B: every pixel <= 15 deg on raw slp, no NoData, no corner cutting; status honest",
+      "pass": true,
+      "detail": "NOMINAL_SLOPE_ROUTE_FOUND · 7.43 km · max 14.99° · ends at anchor pixel: True"
+    },
+    {
+      "check": "route C: every pixel <= 15 deg on raw slp, no NoData, no corner cutting; status honest",
+      "pass": true,
+      "detail": "NOMINAL_SLOPE_ROUTE_FOUND · 1.89 km · max 14.28° · ends at anchor pixel: True"
+    },
+    {
+      "check": "route D: every pixel <= 15 deg on raw slp, no NoData, no corner cutting; status honest",
+      "pass": true,
+      "detail": "NO_NOMINAL_ROUTE · 11.64 km · max 14.99° · ends at anchor pixel: False"
     }
   ]
 }

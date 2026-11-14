@@ -149,6 +149,46 @@ def main() -> int:
         raw_h = float(z1[r, c] if mask[r, c] == 2 else z4[r, c])
         check(f"anchor {a['id']} unmoved, on valid DEM, height equals raw sample", bool(on_data) and z['anchor_xy_m'] == list(a['xy']) and abs(z['height_m'] - raw_h) < 0.006 and z['route_status'] != 'SAFE_ROUTE' and z['ice_status'] == 'CANDIDATE_UNVERIFIED',
               f"{z['source_tile']} h={z['height_m']} m route={z['route_status']}")
+    # ── A* routes: decode the move string and re-check every step against the RAW slope rasters ──
+    routes_path = pub / 'routes.json'
+    if not routes_path.exists():
+        check('routes.json present (run plan_routes.py after build_terrain.py)', False)
+    else:
+        doc = json.loads(routes_path.read_text(encoding='utf-8'))
+        limit = doc['route_nominal_slope_limit_deg']
+        slope = np.full((N, N), np.nan, dtype=np.float32)
+        for site, code in (('Site01', 2), ('Site04', 3)):
+            with rasterio.open(raw / f'{site}_final_adj_5mpp_slp.tif') as ds:
+                arr, b = ds.read(1), ds.bounds
+            c0, r0 = int(round((b.left - FRAME['x_min']) / PX)), int(round((FRAME['y_max'] - b.top) / PX))
+            rs, cs, re, ce = max(0, r0), max(0, c0), min(N, r0 + arr.shape[0]), min(N, c0 + arr.shape[1])
+            sel = mask[rs:re, cs:ce] == code
+            slope[rs:re, cs:ce][sel] = arr[rs - r0:re - r0, cs - c0:ce - c0][sel]
+        ok_px = (mask >= 2) & (slope <= limit)
+        moves = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
+        check('route threshold is the 15 deg nominal value and no route is called safe', limit == 15.0 and doc['safe_route_claimed'] is False)
+        for a in ANCHORS:
+            if a['id'] == 'BASE':
+                continue
+            r = doc['routes'][a['id']]
+            row, col = r['start_pixel_rc']
+            bad, length, worst = 0 if ok_px[row, col] else 1, 0.0, float(slope[row, col])
+            for ch in r['moves']:
+                di, dj = moves[int(ch)]
+                if di and dj and not (ok_px[row, col + di] and ok_px[row + dj, col]):
+                    bad += 1                                              # corner cutting
+                row, col = row + dj, col + di
+                if not ok_px[row, col]:
+                    bad += 1
+                worst = max(worst, float(slope[row, col]))
+                length += PX * (2 ** 0.5 if (di and dj) else 1.0)
+            ar, ac = int((FRAME['y_max'] - a['xy'][1]) // PX), int((a['xy'][0] - FRAME['x_min']) // PX)
+            at_anchor = (row, col) == (ar, ac)
+            found = r['route_status'] == 'NOMINAL_SLOPE_ROUTE_FOUND'
+            consistent = (found == at_anchor) and (found or not ok_px[ar, ac] or not r['anchor_connected_to_depot']) and zones[a['id']]['route_status'] == r['route_status']
+            check(f"route {a['id']}: every pixel <= {limit:g} deg on raw slp, no NoData, no corner cutting; status honest",
+                  bad == 0 and abs(length - r['route_length_m']) < 0.6 and worst <= limit and consistent,
+                  f"{r['route_status']} · {length / 1000:.2f} km · max {worst:.2f}° · ends at anchor pixel: {at_anchor}")
     failed = [c for c in checks if not c['pass']]
     return finish('FAIL' if failed else 'PASS', 1 if failed else 0)
 

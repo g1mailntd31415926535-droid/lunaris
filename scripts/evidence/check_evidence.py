@@ -14,8 +14,9 @@ REQUIRED_EXISTING = [
     "task02_coverage.png", "task02_seams.png", "task02_overlap_difference.png", "task02_route_slope.png",
     "task02_lod_error.csv", "task02_geospatial_validation.json", "task02_validate_outputs.json",
     "task02_before_base_ui.png", "task02_after_base_ui.png", "task02_before_region_world.png", "task02_after_region_world.png",
+    "task02_astar_routes.png", "task02_astar_routes.json",
 ]
-PENDING = ["task02_astar_routes.png"]
+PENDING = []
 
 if not EVID.is_file():
     raise SystemExit("FAIL: missing docs/EVIDENCE.md")
