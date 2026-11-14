@@ -3,3 +3,35 @@ dist/
 *.tsbuildinfo
 artifacts/failure.png
 artifacts/unified/failure.png
+
+# Raw terrain / planetary data (kept outside the web bundle, too large for Git)
+raw_task02/
+*.tif
+*.tiff
+*.img
+*.jp2
+
+# Python environments
+.venv/
+.venv_*/
+venv/
+__pycache__/
+*.pyc
+
+# Secrets and local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.token
+*.secret
+id_rsa
+id_ed25519
+
+# Local tooling
+.claude/
+.vercel/
+

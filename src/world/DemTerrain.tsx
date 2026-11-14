@@ -148,7 +148,7 @@ export function DemTerrain({ quality, onCoverage }: { quality: 'high' | 'balance
     if (t.hint > 0.25) {
       t.hint = 0
       // Label the dark backdrop whenever the camera looks at, or hovers over, an area without NASA data.
-      let cls: CoverageClass = u.altitudeM < 60_000 ? coverageAt(u.cameraTarget.x / METRE, u.cameraTarget.z / METRE) : 2
+      let cls: CoverageClass = u.altitudeM < 60_000 ? coverageAt(u.viewCentre.x / METRE, u.viewCentre.z / METRE) : 2
       if (cls >= 2 && u.altitudeM < 60_000) { const below = coverageAt(camera.position.x / METRE, camera.position.z / METRE); if (below < 2) cls = below }
       if (cls !== t.lastCoverage) { t.lastCoverage = cls; onCoverage(cls) }
     }

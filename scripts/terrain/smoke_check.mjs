@@ -50,6 +50,18 @@ check('four science zone markers exist', zones.length === 4, zones.map((z) => z.
 check('markers report the A* result per zone (A, B, C route; D none)', ['A', 'B', 'C'].every((id) => /có tuyến dốc ≤ 15°/.test(zones.find((z) => z.startsWith(id)) ?? '')) && /không có tuyến dốc ≤ 15°/.test(zones.find((z) => z.startsWith('D')) ?? ''))
 check('markers say ice is unconfirmed and await the rover', zones.every((z) => /chưa xác nhận/.test(z) && /chờ rover xác minh/.test(z)))
 
+// Zoomed out, the screen centre frames the middle of the NASA data circle (local (2500, −1500) m), not empty backdrop.
+{
+  await page.evaluate(() => window.__LUNARIS_CONTROLS__.altitude(6000)); await page.waitForTimeout(7000)
+  const c = await page.evaluate(() => window.__LUNARIS__.viewCentre.map((v) => v * 1000))
+  const off = Math.hypot(c[0] - 2500, c[2] + 1500)
+  check('6 km view is centred on the map circle', off < 250, `screen centre at (${c[0].toFixed(0)}, ${c[2].toFixed(0)}) m, ${off.toFixed(0)} m from circle centre`)
+  check('no "outside NASA data" label at the centred 6 km view', (await page.$('.nodata-chip')) === null)
+  await page.evaluate(() => window.__LUNARIS_CONTROLS__.altitude(520)); await page.waitForTimeout(6000)
+  const t = await page.evaluate(() => window.__LUNARIS__.viewCentre.map((v) => v * 1000))
+  check('region view (520 m) still frames the base', Math.hypot(t[0], t[2]) < 60, `screen centre at (${t[0].toFixed(0)}, ${t[2].toFixed(0)}) m`)
+}
+
 // Fly to zone D (Site04) through its marker; the camera must end over valid data near D.
 await page.$$eval('.zone-marker', (nodes) => nodes.find((n) => n.textContent.startsWith('D')).click()); await page.waitForTimeout(7000)
 d = await diag()

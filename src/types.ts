@@ -70,6 +70,7 @@ export interface SceneDiagnostics {
   target: number[]
   drawCalls: number
   drawCallsPeak?: number
+  viewCentre?: number[]
   trianglesPeak?: number
   triangles: number
   geometries: number

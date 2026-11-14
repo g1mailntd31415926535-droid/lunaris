@@ -9,6 +9,7 @@ import { CAMERA_ALTITUDES_M, CAP_RADIUS_M, MAX_ALTITUDE_M, METRE, MIN_ALTITUDE_M
 import { smoothstep } from './math'
 import { useUniverse } from './universe-context'
 import { createCameraFlight, sampleCameraFlight } from './camera-travel'
+import { circleLocal } from './dem'
 import type { CameraChannels, CameraFlight } from './camera-travel'
 
 export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest; followRover: boolean; onStopFollow: () => void; reducedMotion: boolean; onMode: (mode: CameraMode) => void; onTravel: (moving: boolean, destination: CameraMode) => void }>(function PlanetCameraRig({ request, followRover, onStopFollow, reducedMotion, onMode, onTravel }, ref) {
@@ -23,7 +24,7 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
   const reduced = useRef(reducedMotion); reduced.current = reducedMotion
   const requestedId = useRef(-1)
   const currentSize = useRef(size); currentSize.current = size
-  const scratch = useRef({ moon: new THREE.Vector3(...MOON_CENTER), farDirection: new THREE.Vector3(), nearDirection: new THREE.Vector3(0, 1, 0), surfaceX: new THREE.Vector3(), surfaceZ: new THREE.Vector3(), nearOffset: new THREE.Vector3(), nearEye: new THREE.Vector3(), farEye: new THREE.Vector3(), eye: new THREE.Vector3(), target: new THREE.Vector3(), delta: new THREE.Vector3(), q: new THREE.Quaternion(), identity: new THREE.Quaternion() })
+  const scratch = useRef({ moon: new THREE.Vector3(...MOON_CENTER), farDirection: new THREE.Vector3(), nearDirection: new THREE.Vector3(0, 1, 0), surfaceX: new THREE.Vector3(), surfaceZ: new THREE.Vector3(), nearOffset: new THREE.Vector3(), nearEye: new THREE.Vector3(), farEye: new THREE.Vector3(), eye: new THREE.Vector3(), target: new THREE.Vector3(), delta: new THREE.Vector3(), mapFrom: new THREE.Vector3(), mapTo: new THREE.Vector3(), mapTurn: new THREE.Quaternion(), q: new THREE.Quaternion(), identity: new THREE.Quaternion() })
   const capture = (): CameraChannels => { const s = state.current; return { logAltitude: s.logAlt, yaw: s.yaw, polar: s.polar, nearYaw: s.nearYaw, nearPolar: s.nearPolar, panX: s.panX, panZ: s.panZ } }
   const apply = (pose: CameraChannels, syncWanted = false) => {
     const s = state.current
@@ -165,6 +166,29 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
     p.nearOffset.copy(p.nearDirection).multiplyScalar(h * METRE).addScaledVector(p.surfaceX, Math.sin(s.nearYaw) * Math.tan(s.nearPolar) * h * METRE).addScaledVector(p.surfaceZ, Math.cos(s.nearYaw) * Math.tan(s.nearPolar) * h * METRE)
     p.nearEye.copy(p.target).add(p.nearOffset)
     p.eye.copy(p.farEye).lerp(p.nearEye, near)
+    // Map-centre framing: once zoomed out past the base (1.5 km → 6 km), eye and look-at move together so the centre of
+    // the screen lands on the centre of the NASA data circle instead of the base 2.9 km away. The move is a rotation
+    // about the Moon's centre (not a flat x/z shift): height above the ground and the view angle against the local
+    // surface stay exactly as they were, even when the view ray meets the ground hundreds of km away during the orbit
+    // blend. A flat shift there dragged the eye down to the surface (all-dark screen at 60 km). User pan and rover follow
+    // keep working on top of it. It fades out again between 60 km and 250 km (the switch to orbit mode).
+    const mapWeight = smoothstep(Math.log(1_500), Math.log(6_000), s.logAlt) * (1 - smoothstep(Math.log(60_000), Math.log(250_000), s.logAlt)) * (1 - s.followWeight)
+    p.mapTurn.identity()
+    if (mapWeight > 0.0001) {
+      p.delta.copy(p.target).lerp(p.moon, 1 - focus).sub(p.eye).normalize()   // final view ray
+      // Where the ray meets the base-level sphere (radius = Moon centre → base origin).
+      p.mapFrom.copy(p.eye).sub(p.moon)
+      const b = p.mapFrom.dot(p.delta), c = p.mapFrom.lengthSq() - MOON_RADIUS_KM * MOON_RADIUS_KM, disc = b * b - c
+      const t = disc >= 0 ? -b - Math.sqrt(disc) : -1
+      if (t > 0) {
+        p.mapFrom.addScaledVector(p.delta, t).normalize()
+        // The circle centre plus the user's own pan is where that hit point should go.
+        const circle = circleLocal()
+        p.mapTo.set((circle.x + s.panX - s.panAnchorX) * METRE, 0, (circle.z + s.panZ - s.panAnchorZ) * METRE).sub(p.moon).normalize()
+        p.mapTurn.setFromUnitVectors(p.mapFrom, p.mapTo).slerp(p.identity, 1 - mapWeight)
+        p.eye.sub(p.moon).applyQuaternion(p.mapTurn).add(p.moon)
+      }
+    }
     // Sphere clearance and local terrain clearance are independent safety gates.
     p.delta.copy(p.eye).sub(p.moon)
     const radius = p.delta.length(); p.delta.normalize()
@@ -174,13 +198,15 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
     const ground = insideHole ? actualTerrainHeight(p.eye.x / METRE, p.eye.z / METRE) : Number.NEGATIVE_INFINITY
     if (!insideHole && radius < solidRadius + SURFACE_CLEARANCE_M * METRE) p.eye.copy(p.moon).addScaledVector(p.delta, solidRadius + SURFACE_CLEARANCE_M * METRE)
     if (Number.isFinite(ground)) p.eye.y = Math.max(p.eye.y, (ground + SURFACE_CLEARANCE_M) * METRE)
-    p.target.lerp(p.moon, 1 - focus)
-    camera.position.copy(p.eye); camera.up.set(0, 1, 0).lerp(p.nearDirection, near).normalize(); camera.lookAt(p.target)
+    p.target.lerp(p.moon, 1 - focus).sub(p.moon).applyQuaternion(p.mapTurn).add(p.moon)
+    camera.position.copy(p.eye); camera.up.set(0, 1, 0).lerp(p.nearDirection, near).applyQuaternion(p.mapTurn).normalize(); camera.lookAt(p.target)
     const perspective = camera as THREE.PerspectiveCamera
     const nextNear = THREE.MathUtils.clamp(h * METRE * 0.001, 0.000015, 1)
     if (Math.abs(perspective.near - nextNear) > nextNear * 0.015) { perspective.near = nextNear; perspective.updateProjectionMatrix() }
     const u = universe.current
     u.altitudeM = h; u.clearanceM = insideHole ? (Number.isFinite(ground) ? p.eye.y / METRE - ground : h) : (p.eye.distanceTo(p.moon) - solidRadius) / METRE; u.cameraTarget.copy(p.target)
+    p.delta.copy(p.target).sub(p.eye)
+    if (p.delta.y < -1e-9) u.viewCentre.copy(p.eye).addScaledVector(p.delta, -p.eye.y / p.delta.y); else u.viewCentre.copy(p.target)
     u.styleDetail = 1 - smoothstep(Math.log(110), Math.log(2200), s.logAlt)
     const mode: CameraMode = h < 130 ? 'base' : h < 250_000 ? 'region' : 'orbit'
     if (mode !== s.lastMode) { s.lastMode = mode; u.mode = mode; onMode(mode) }

@@ -10,6 +10,8 @@ export interface UniverseState {
   mode: CameraMode
   styleDetail: number
   cameraTarget: Vector3
+  /** Where the centre of the screen meets the base level (km, world). Differs from cameraTarget once the orbit blend starts. */
+  viewCentre: Vector3
   sunDirection: Vector3
   sunPosition: Vector3
   roverPosition: Vector3
@@ -21,7 +23,7 @@ export interface UniverseState {
 }
 
 export function initialUniverseState(): UniverseState {
-  return { altitudeM: CAMERA_ALTITUDES_M.base, clearanceM: 27, mode: 'base', styleDetail: 1, cameraTarget: new Vector3(0.0022, 0, -0.0005), sunDirection: new Vector3(-0.76, 0.4, -0.51).normalize(), sunPosition: new Vector3(...MOON_CENTER), roverPosition: new Vector3(8.6, 0, 11.2), roverNominal: new Vector3(8.6, 0, 11.2), roverNormal: new Vector3(0, 1, 0), roverStatus: { phase: 'docked', site: 'Artemis', siteId: 'base', trip: 0, distance: 0, speed: 0 }, followRover: false, cameraTravel: { moving: false, destination: 'base' } }
+  return { altitudeM: CAMERA_ALTITUDES_M.base, clearanceM: 27, mode: 'base', styleDetail: 1, cameraTarget: new Vector3(0.0022, 0, -0.0005), viewCentre: new Vector3(0.0022, 0, -0.0005), sunDirection: new Vector3(-0.76, 0.4, -0.51).normalize(), sunPosition: new Vector3(...MOON_CENTER), roverPosition: new Vector3(8.6, 0, 11.2), roverNominal: new Vector3(8.6, 0, 11.2), roverNormal: new Vector3(0, 1, 0), roverStatus: { phase: 'docked', site: 'Artemis', siteId: 'base', trip: 0, distance: 0, speed: 0 }, followRover: false, cameraTravel: { moving: false, destination: 'base' } }
 }
 
 export const UniverseContext = createContext<MutableRefObject<UniverseState> | null>(null)

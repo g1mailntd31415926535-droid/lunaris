@@ -48,7 +48,7 @@ for (const view of VIEWS) {
     last = now
   }
   await page.waitForTimeout(1500)
-  const info = await page.evaluate(() => { const d = window.__LUNARIS__; return { cameraPositionKm: d.camera, cameraTargetKm: d.target, altitudeM: d.altitudeM, clearanceM: d.clearanceM, mode: d.mode, sceneTimeS: d.time, drawCalls: d.drawCalls, triangles: d.triangles, drawCallsPeak: d.drawCallsPeak, trianglesPeak: d.trianglesPeak, terrain: d.terrain, frameMs: d.frameMs, renderer: d.renderer, threeRevision: d.revision } })
+  const info = await page.evaluate(() => { const d = window.__LUNARIS__; return { cameraPositionKm: d.camera, cameraTargetKm: d.target, viewCentreKm: d.viewCentre, altitudeM: d.altitudeM, clearanceM: d.clearanceM, mode: d.mode, sceneTimeS: d.time, drawCalls: d.drawCalls, triangles: d.triangles, drawCallsPeak: d.drawCallsPeak, trianglesPeak: d.trianglesPeak, terrain: d.terrain, frameMs: d.frameMs, renderer: d.renderer, threeRevision: d.revision } })
   const withUi = `${out}/${label}_${view.id}_ui.png`, worldOnly = `${out}/${label}_${view.id}_world.png`
   await page.screenshot({ path: withUi })
   await page.addStyleTag({ content: '.lunaris-app > *:not(.world){visibility:hidden!important}' }).then(async (tag) => { await page.waitForTimeout(300); await page.screenshot({ path: worldOnly }); await tag.evaluate((n) => n.remove()) })
