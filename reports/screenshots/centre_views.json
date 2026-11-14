@@ -1,8 +1,8 @@
 {
   "label": "centre",
-  "capturedAt": "2026-11-14T10:23:50.196Z",
+  "capturedAt": "2026-11-14T10:49:14.011Z",
   "url": "http://localhost:5173/?debug=1",
-  "commit": "647136e + uncommitted changes",
+  "commit": "07b63c7 + uncommitted changes",
   "viewport": {
     "width": 1366,
     "height": 768
@@ -14,15 +14,15 @@
   "gpu": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
   "pageErrors": [],
   "initialLoad": {
-    "readyMs": 9089,
+    "readyMs": 6606,
     "terrainBytes": 1633853,
     "terrainRequests": 43,
-    "totalBytes": 37649776,
+    "totalBytes": 37652566,
     "note": "localhost, không giới hạn băng thông, dev server (module chưa bundle); readyMs = từ lúc mở trang tới khi cảnh 3D sẵn sàng"
   },
   "streamedAfterAllViews": {
-    "terrainBytes": 1633853,
-    "terrainRequests": 43
+    "terrainBytes": 1691035,
+    "terrainRequests": 44
   },
   "views": [
     {
@@ -40,19 +40,19 @@
       ],
       "cameraTargetKm": [
         0.0022,
-        -0.0000599000030011004,
+        -0.00005990000295241771,
         -0.0005
       ],
       "viewCentreKm": [
-        0.002245535011906566,
+        0.0022455350118696406,
         0,
-        -0.0004348494847299447
+        -0.000434849484782774
       ],
       "clearanceM": 31.15637927599594,
       "mode": "base",
       "sceneTimeS": 0,
-      "drawCalls": 91,
-      "triangles": 219072,
+      "drawCalls": 69,
+      "triangles": 154172,
       "drawCallsPeak": 91,
       "trianglesPeak": 219072,
       "terrain": {
@@ -72,34 +72,34 @@
         "finestLevel": 0,
         "detailScale": 0.88
       },
-      "frameMs": 17.426071311685362,
+      "frameMs": 16.65330922721249,
       "renderer": "WebGL2 / logarithmic depth",
       "threeRevision": "185"
     },
     {
       "id": "near",
-      "altitudeM": 89.99999999993453,
+      "altitudeM": 89.99999999992501,
       "note": "Cận cảnh địa hình quanh căn cứ",
       "files": [
         "reports/screenshots/centre_near_ui.png",
         "reports/screenshots/centre_near_world.png"
       ],
       "cameraPositionKm": [
-        0.07050486227254425,
-        0.08994004163040593,
-        0.0972291269320017
+        0.07050486227253723,
+        0.08994004163039643,
+        0.09722912693199165
       ],
       "cameraTargetKm": [
         0.0022,
-        -0.0000599000030011004,
+        -0.00005990000295241771,
         -0.0005
       ],
       "viewCentreKm": [
-        0.0022454607123166825,
+        0.0022454607122797676,
         0,
-        -0.0004349557911896562
+        -0.00043495579124248895
       ],
-      "clearanceM": 102.90448232372638,
+      "clearanceM": 102.90448232371537,
       "mode": "base",
       "sceneTimeS": 0,
       "drawCalls": 69,
@@ -123,34 +123,34 @@
         "finestLevel": 0,
         "detailScale": 0.88
       },
-      "frameMs": 17.90288697779143,
+      "frameMs": 16.705972473318596,
       "renderer": "WebGL2 / logarithmic depth",
       "threeRevision": "185"
     },
     {
       "id": "region",
-      "altitudeM": 899.999999999849,
+      "altitudeM": 899.9999999998347,
       "note": "Nhìn khu vực quanh căn cứ",
       "files": [
         "reports/screenshots/centre_region_ui.png",
         "reports/screenshots/centre_region_world.png"
       ],
       "cameraPositionKm": [
-        0.36167519788799135,
-        0.8999397928253392,
-        0.5138284816459693
+        0.3616751978879889,
+        0.8999397928253318,
+        0.5138284816459657
       ],
       "cameraTargetKm": [
         0.0022,
-        -0.0000599000030011004,
+        -0.00005990000295241771,
         -0.0005
       ],
       "viewCentreKm": [
-        0.0022239250808682165,
+        0.0022239250808487876,
         0,
-        -0.00046576856876767714
+        -0.0004657685687954327
       ],
-      "clearanceM": 997.5886480046199,
+      "clearanceM": 997.5886480046117,
       "mode": "region",
       "sceneTimeS": 0,
       "drawCalls": 69,
@@ -174,34 +174,34 @@
         "finestLevel": 2,
         "detailScale": 1
       },
-      "frameMs": 16.679266363462435,
+      "frameMs": 16.73656047114196,
       "renderer": "WebGL2 / logarithmic depth",
       "threeRevision": "185"
     },
     {
       "id": "wide",
-      "altitudeM": 5999.999999998812,
+      "altitudeM": 5999.999999998983,
       "note": "Nhìn rộng vùng cực Nam",
       "files": [
         "reports/screenshots/centre_wide_ui.png",
         "reports/screenshots/centre_wide_world.png"
       ],
       "cameraPositionKm": [
-        4.229661784669779,
-        5.941049627351028,
-        1.0391459022713505
+        4.171970585678351,
+        5.995031596898571,
+        0.8710251829507455
       ],
       "cameraTargetKm": [
-        -3.9997401064976232,
-        -23.280769054633172,
-        -10.735306800823867
+        -3.9894057270783,
+        -23.318934897105464,
+        -10.72029847299084
       ],
       "viewCentreKm": [
-        2.5565528802953796,
+        2.5028785206668323,
         0,
-        -1.3547026327999192
+        -1.4995291936281259
       ],
-      "clearanceM": 6368.653609593328,
+      "clearanceM": 6382.041375214635,
       "mode": "region",
       "sceneTimeS": 0,
       "drawCalls": 69,
@@ -225,7 +225,7 @@
         "finestLevel": 5,
         "detailScale": 1
       },
-      "frameMs": 16.67316533674866,
+      "frameMs": 16.66552273527797,
       "renderer": "WebGL2 / logarithmic depth",
       "threeRevision": "185"
     }

@@ -1,0 +1,70 @@
+[
+  {
+    "requestedAltitudeM": 6000,
+    "darkPct": 0,
+    "alt": 5999.999999999367,
+    "viewCentreKm": [
+      2.502878520666909,
+      0,
+      -1.4995291936280162
+    ],
+    "cameraKm": [
+      4.171970585678616,
+      5.995031596898798,
+      0.8710251829511343
+    ],
+    "nodata": false,
+    "file": "reports/screenshots/centre_dark_6000.png"
+  },
+  {
+    "requestedAltitudeM": 30000,
+    "darkPct": 67.9,
+    "alt": 29999.999999998785,
+    "viewCentreKm": [
+      2.5027957506449177,
+      0,
+      -1.499647854566076
+    ],
+    "cameraKm": [
+      9.82939614019033,
+      29.950235148848606,
+      8.892556520864423
+    ],
+    "nodata": false,
+    "file": "reports/screenshots/centre_dark_30000.png"
+  },
+  {
+    "requestedAltitudeM": 60000,
+    "darkPct": 87.8,
+    "alt": 59999.99999999896,
+    "viewCentreKm": [
+      2.502653802888,
+      7.105427357601002e-15,
+      -1.499851011973666
+    ],
+    "cameraKm": [
+      13.68323889075983,
+      59.890852279479304,
+      14.314536761516797
+    ],
+    "nodata": false,
+    "file": "reports/screenshots/centre_dark_60000.png"
+  },
+  {
+    "requestedAltitudeM": 400000,
+    "darkPct": 11.2,
+    "alt": 399999.9999999966,
+    "viewCentreKm": [
+      606.0914195705263,
+      0,
+      867.1836347822334
+    ],
+    "cameraKm": [
+      639.9815610351257,
+      84.80883868723822,
+      915.6730058764821
+    ],
+    "nodata": false,
+    "file": "reports/screenshots/centre_dark_400000.png"
+  }
+]

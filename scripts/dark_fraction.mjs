@@ -1,4 +1,4 @@
-// Share of the world-only frame that shows the plain dark backdrop (#091E1E ≈ rgb(9,13,30), ±6 per channel),
+// Share of the world-only frame that shows the plain dark backdrop (rgb(9,13,30) = #090D1E, ±6 per channel),
 // i.e. "no NASA data" — at given camera heights. Usage: node scripts/dark_fraction.mjs <label> [alt_m ...]
 import { chromium } from 'playwright'
 import { mkdirSync, writeFileSync } from 'node:fs'

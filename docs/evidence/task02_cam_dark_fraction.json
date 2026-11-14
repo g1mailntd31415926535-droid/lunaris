@@ -1,0 +1,135 @@
+{
+  "metric": "share of world-only frame within ±6/channel of the dark backdrop rgb(9,13,30) = no NASA data shown; scripts/dark_fraction.mjs; 1366x768, DPR 1, Chrome headless, dev server",
+  "before": {
+    "code": "647136e (PlanetCameraRig.tsx at HEAD)",
+    "rows": [
+      {
+        "requestedAltitudeM": 6000,
+        "darkPct": 81.3,
+        "alt": 5999.999999999878,
+        "viewCentreKm": [
+          0.0022,
+          0,
+          -0.0005
+        ],
+        "cameraKm": [
+          8.231572411743931,
+          5.941049627352159,
+          11.773959402975429
+        ],
+        "nodata": true
+      },
+      {
+        "requestedAltitudeM": 60000,
+        "darkPct": 5.9,
+        "alt": 59999.9999999996,
+        "viewCentreKm": [
+          0.0022,
+          0,
+          -0.0005
+        ],
+        "cameraKm": [
+          278.98848846407617,
+          -7.2335731803191265,
+          399.16926671186246
+        ],
+        "nodata": true
+      },
+      {
+        "requestedAltitudeM": 400000,
+        "darkPct": 11.2,
+        "alt": 399999.99999999587,
+        "viewCentreKm": [
+          0.0022,
+          0,
+          -0.0005
+        ],
+        "cameraKm": [
+          639.9815610351251,
+          84.80883868723754,
+          915.6730058764815
+        ],
+        "nodata": false
+      }
+    ],
+    "note": "60 km: whole frame is the grey globe shell (not backdrop colour, so only 5.9 % counts as dark) and no DEM visible; the NoData label shows; viewCentreKm in \"before\" is the unset initial value (that code did not compute it)",
+    "images": [
+      "docs/evidence/task02_cam_before_6km_world.png (same 6 km camera, from capture \"perf\")",
+      "docs/evidence/task02_cam_before_60km_world.png"
+    ]
+  },
+  "after": {
+    "code": "647136e + mục 3 (rotation about Moon centre)",
+    "rows": [
+      {
+        "requestedAltitudeM": 6000,
+        "darkPct": 0,
+        "alt": 5999.999999999367,
+        "viewCentreKm": [
+          2.502878520666909,
+          0,
+          -1.4995291936280162
+        ],
+        "cameraKm": [
+          4.171970585678616,
+          5.995031596898798,
+          0.8710251829511343
+        ],
+        "nodata": false
+      },
+      {
+        "requestedAltitudeM": 30000,
+        "darkPct": 67.9,
+        "alt": 29999.999999998785,
+        "viewCentreKm": [
+          2.5027957506449177,
+          0,
+          -1.499647854566076
+        ],
+        "cameraKm": [
+          9.82939614019033,
+          29.950235148848606,
+          8.892556520864423
+        ],
+        "nodata": false
+      },
+      {
+        "requestedAltitudeM": 60000,
+        "darkPct": 87.8,
+        "alt": 59999.99999999896,
+        "viewCentreKm": [
+          2.502653802888,
+          7.105427357601002e-15,
+          -1.499851011973666
+        ],
+        "cameraKm": [
+          13.68323889075983,
+          59.890852279479304,
+          14.314536761516797
+        ],
+        "nodata": false
+      },
+      {
+        "requestedAltitudeM": 400000,
+        "darkPct": 11.2,
+        "alt": 399999.9999999966,
+        "viewCentreKm": [
+          606.0914195705263,
+          0,
+          867.1836347822334
+        ],
+        "cameraKm": [
+          639.9815610351257,
+          84.80883868723822,
+          915.6730058764821
+        ],
+        "nodata": false
+      }
+    ],
+    "images": [
+      "docs/evidence/task02_cam_after_6km_world.png",
+      "docs/evidence/task02_cam_after_60km_world.png"
+    ],
+    "note": "30-60 km: the whole 25 km data map sits in the middle of the frame; the remaining dark share is real no-data area around it. 400 km unchanged (framing is fully faded out)"
+  }
+}

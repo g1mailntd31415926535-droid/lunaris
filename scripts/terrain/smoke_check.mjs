@@ -57,6 +57,11 @@ check('markers say ice is unconfirmed and await the rover', zones.every((z) => /
   const off = Math.hypot(c[0] - 2500, c[2] + 1500)
   check('6 km view is centred on the map circle', off < 250, `screen centre at (${c[0].toFixed(0)}, ${c[2].toFixed(0)}) m, ${off.toFixed(0)} m from circle centre`)
   check('no "outside NASA data" label at the centred 6 km view', (await page.$('.nodata-chip')) === null)
+  // At 60 km the framing is still on (it fades 60 → 250 km): the camera must stay 60 km up, not be dragged to the ground.
+  await page.evaluate(() => window.__LUNARIS_CONTROLS__.altitude(60000)); await page.waitForTimeout(8000)
+  const far = await page.evaluate(() => ({ c: window.__LUNARIS__.viewCentre.map((v) => v * 1000), clearance: window.__LUNARIS__.clearanceM }))
+  const farOff = Math.hypot(far.c[0] - 2500, far.c[2] + 1500)
+  check('60 km view keeps its height and the map circle in the centre', far.clearance > 54000 && farOff < 250 && (await page.$('.nodata-chip')) === null, `clearance ${(far.clearance / 1000).toFixed(1)} km, screen centre ${farOff.toFixed(0)} m from circle centre`)
   await page.evaluate(() => window.__LUNARIS_CONTROLS__.altitude(520)); await page.waitForTimeout(6000)
   const t = await page.evaluate(() => window.__LUNARIS__.viewCentre.map((v) => v * 1000))
   check('region view (520 m) still frames the base', Math.hypot(t[0], t[2]) < 60, `screen centre at (${t[0].toFixed(0)}, ${t[2].toFixed(0)}) m`)
