@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ArrowDownRight, ArrowRight, BadgeCheck, Bookmark, Check, ChevronDown, ChevronRight, CircleCheck, Clock3, FlaskConical, Focus, Lightbulb, LoaderCircle, Moon, Orbit, PanelRightClose, PanelRightOpen, Radio, ShieldCheck, Sparkles, Sun, TriangleAlert, Trophy } from 'lucide-react'
 import { BUILDING_BY_ID, FORECASTS, JOURNAL, MISSIONS } from '../data'
 import type { BuildingId, DemoAction, DemoKind, RoverStatus, Section } from '../types'
+import type { A1ChoiceId, GameState } from '../game/types'
+import { A1_OPTIONS } from '../game/balance'
 import { BuildingIcon, SectionIcon } from './Icons'
 import { IconButton, Meter, StatusDot } from './Common'
 import { MiniMap } from './MiniMap'
@@ -25,6 +27,20 @@ interface PanelProps {
   roverStatus: RoverStatus
   followRover: boolean
   onFollowRover: (follow: boolean) => void
+  game: GameState
+}
+
+// Buildings whose metric is a real GameState resource (gameplay-assumption units).
+const GAME_METRIC: Partial<Record<BuildingId, 'electricity' | 'water' | 'oxygen'>> = { water: 'water', battery: 'electricity', oxygen: 'oxygen' }
+const A1_CHOICE: Partial<Record<BuildingId, A1ChoiceId>> = { water: 'recycle-water', battery: 'charge-battery' }
+
+function A1Card({ building, game, onAction }: { building: BuildingId; game: GameState; onAction: (kind: DemoKind) => void }) {
+  const choice = A1_CHOICE[building]
+  if (!choice || game.stage !== 'A1' && game.a1.phase !== 'done') return null
+  const option = A1_OPTIONS[choice]
+  const chosen = game.a1.choiceId === choice
+  if (game.a1.phase === 'done' || game.a1.phase === 'executing') return <div className={`a1-card ${chosen ? 'chosen' : 'skipped'}`}><small>CHẶNG A1</small><p>{chosen ? game.a1.phase === 'done' ? <><Check size={13} /> Bạn đã chọn việc này.</> : <><LoaderCircle size={13} className="spin" /> Phi hành gia đang làm việc này…</> : 'Lần này bạn đã ưu tiên việc khác.'}</p></div>
+  return <div className="a1-card"><small>CHẶNG A1 · CHỈ CHỌN MỘT LẦN</small><strong>{option.title}</strong><p className="gain"><b>Được:</b> {option.gain}</p><p className="cost"><b>Đánh đổi:</b> {option.cost}</p><button className="building-action" disabled={game.a1.phase !== 'choose'} onClick={() => onAction(option.building)}><BuildingIcon id={building} size={15} /><span>Chọn việc này</span><ArrowRight size={15} /></button></div>
 }
 
 export function ContextPanel(props: PanelProps) {
@@ -42,13 +58,15 @@ export function ContextPanel(props: PanelProps) {
   </aside>
 }
 
-function BasePanel({ selected, onSelect, onAction, onFocus, demo, completed, roverStatus, followRover, onFollowRover }: PanelProps) {
+function BasePanel({ selected, onSelect, onAction, onFocus, demo, completed, roverStatus, followRover, onFollowRover, game }: PanelProps) {
   const [fact, setFact] = useState(false)
   const building = BUILDING_BY_ID[selected ?? 'command']
   const busy = demo && demo.phase !== 'complete'
   const operating = busy && (demo.kind === building.id || (building.id === 'shelter' && demo.kind === 'radiation'))
   const kind = building.id === 'shelter' ? 'radiation' : building.id
-  const value = operating && demo.phase === 'working' ? Math.min(100, building.value + 16) : completed.has(kind) ? Math.min(100, building.value + 16) : building.value
+  const metricKey = GAME_METRIC[building.id]
+  const isA1 = !!A1_CHOICE[building.id]
+  const value = metricKey ? Math.round(game.resources[metricKey]) : operating && demo.phase === 'working' ? Math.min(100, building.value + 16) : completed.has(kind) ? Math.min(100, building.value + 16) : building.value
   return <>
     <div className="base-title"><div><h2>Artemis <span>01</span></h2><p>Ngôi nhà nhỏ trên Mặt Trăng</p></div><span className="nominal-badge"><StatusDot /> Ổn định</span></div>
     <MiniMap selected={building.id} onSelect={onSelect} />
@@ -59,9 +77,10 @@ function BasePanel({ selected, onSelect, onAction, onFocus, demo, completed, rov
       <div className="building-title"><span className="building-icon"><BuildingIcon id={building.id} size={25} /></span><div><h3>{building.name}</h3><p><StatusDot color={operating ? building.accent : undefined} pulse={!!operating} />{operating ? 'Đang hoạt động' : 'Sẵn sàng khám phá'}</p></div></div>
       <p className="building-description">{building.description}</p>
       {building.id === 'rover' && <div className="rover-status-detail"><strong>MILO · TỰ ĐỘNG THÁM HIỂM</strong><span>{roverStatus.phase === 'scanning' ? 'Đang quét địa hình' : roverStatus.phase === 'returning' ? 'Đang trở về căn cứ' : roverStatus.phase === 'docked' ? 'Kiểm tra & nghỉ tại căn cứ' : 'Đang khám phá'}</span><p>{roverStatus.site}</p><small>20 điểm gần căn cứ · Cách căn cứ {Math.round(roverStatus.distance)} m · {roverStatus.speed.toFixed(1)} m/s</small></div>}
-      <div className="building-metric"><span>{building.metric}</span><strong>{value}<small>{building.unit}</small></strong></div><Meter value={value} color={building.accent} label={building.metric} />
+      <div className="building-metric"><span>{building.metric}</span><strong>{value}<small>{metricKey ? '/100' : building.unit}</small></strong></div><Meter value={value} color={building.accent} label={building.metric} />
       <div className="system-status"><Radio size={12} /><span>{building.id === 'command' ? 'Đường truyền tốt' : building.id === 'solar' ? '6 tấm pin · đang đón nắng' : building.id === 'water' ? 'Hệ thống lọc sẵn sàng' : building.id === 'shelter' ? 'Đủ chỗ cho cả đội' : building.id === 'rover' ? 'MILO đang ở ngoài căn cứ' : 'Mọi thiết bị đều ổn định'}</span><Check size={13} /></div>
-      <button className="building-action" disabled={!!busy} onClick={() => onAction(building.id === 'shelter' ? 'radiation' : building.id)}>{operating ? <LoaderCircle className="spin" size={15} /> : <BuildingIcon id={building.id} size={15} />}<span>{operating ? demo.phase === 'walking' ? 'Phi hành gia đang đến…' : 'Đang vận hành…' : building.action}</span>{!operating && <ArrowRight size={15} />}</button>
+      {building.id === 'water' && <p className="game-muted water-tank-note">Nước đã dùng chờ tái chế: {Math.round(game.resources.wastewater)}</p>}
+      {isA1 ? <A1Card building={building.id} game={game} onAction={onAction} /> : <button className="building-action" disabled={!!busy} onClick={() => onAction(building.id === 'shelter' ? 'radiation' : building.id)}>{operating ? <LoaderCircle className="spin" size={15} /> : <BuildingIcon id={building.id} size={15} />}<span>{operating ? demo.phase === 'walking' ? 'Phi hành gia đang đến…' : 'Đang vận hành…' : building.action}</span>{!operating && <ArrowRight size={15} />}</button>}
       <div className="building-secondary"><button onClick={() => onFocus(building.id)}><Focus size={13} /> Định vị</button><button className={fact ? 'active' : ''} onClick={() => setFact(!fact)}><Lightbulb size={13} /> Bạn có biết?<ChevronDown size={11} className={fact ? 'rotate' : ''} /></button></div>
       {building.id === 'rover' && <button className="rover-follow-button" onClick={() => onFollowRover(!followRover)}><BuildingIcon id="rover" size={15} />{followRover ? 'Dừng theo dõi MILO' : 'Theo dõi MILO'}<ArrowRight size={13} /></button>}
       <AnimatePresence>{fact && <motion.div className="science-note" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}><p><Sparkles size={13} />{building.fact}</p></motion.div>}</AnimatePresence>

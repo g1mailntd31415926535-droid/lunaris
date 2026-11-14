@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, ChevronRight, Cpu, ExternalLink, Eye, Flag, Headphones, Keyboard, Leaf, Monitor, MousePointer2, Move, Orbit, Radio, Shield, Sparkles, Volume2 } from 'lucide-react'
+import { Check, ChevronRight, Cpu, ExternalLink, Eye, Flag, Headphones, Keyboard, Leaf, Monitor, MousePointer2, Move, Orbit, Radio, RotateCcw, Shield, Sparkles, Volume2 } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import type { Notification, Preferences } from '../types'
 import { Modal, StatusDot, Toggle } from './Common'
@@ -7,7 +7,7 @@ import { MoonMark } from './Icons'
 import { CREW } from '../world/actor-plan'
 import { portraitUrl } from '../world/textures'
 
-export function SettingsDialog({ preferences, onChange, onClose }: { preferences: Preferences; onChange: (preferences: Preferences) => void; onClose: () => void }) {
+export function SettingsDialog({ preferences, onChange, onClose, onRestart }: { preferences: Preferences; onChange: (preferences: Preferences) => void; onClose: () => void; onRestart: () => void }) {
   const [tab, setTab] = useState('experience')
   const update = (patch: Partial<Preferences>) => onChange({ ...preferences, ...patch })
   return <Modal title="Theo nhịp của bạn." eyebrow="BỘ ĐIỀU KHIỂN NHỎ CỦA BẠN" onClose={onClose} className="settings-modal">
@@ -17,7 +17,10 @@ export function SettingsDialog({ preferences, onChange, onClose }: { preferences
       <div className="settings-row"><Flag size={19} /><div><strong>Lộ trình của MILO</strong><small>Một đường chấm nhỏ trên mặt đất</small></div><Toggle label="Hiện lộ trình rover" checked={preferences.showRoutes} onChange={(value) => update({ showRoutes: value })} /></div>
       <div className="settings-row"><Move size={19} /><div><strong>Giảm chuyển động</strong><small>Ít chuyển động nền, camera vẫn chuyển mượt</small></div><Toggle label="Giảm chuyển động" checked={preferences.reducedMotion} onChange={(value) => update({ reducedMotion: value })} /></div>
       <div className="settings-row"><Volume2 size={19} /><div><strong>Âm thanh giao diện</strong><small>Những tiếng chuông nhỏ khi tương tác</small></div><Toggle label="Âm thanh giao diện" checked={preferences.sound} onChange={(value) => update({ sound: value })} /></div>
-      <div className="settings-note"><Shield size={15} /><p>Tất cả chỉ số và sự kiện đều là minh họa. Đây là một bản thử nghiệm giao diện, chưa phải trò chơi hoàn chỉnh.</p></div>
+      <div className="settings-section-title"><Flag size={14} /><span>CHẾ ĐỘ CHƠI</span></div>
+      <div className="game-modes"><button className="selected" aria-pressed="true"><strong>Câu chuyện</strong><small>Đang chơi</small><Check size={13} /></button><button disabled aria-disabled="true"><strong>Nâng cao</strong><small>Sắp ra mắt · chưa kiểm thử</small></button></div>
+      <div className="settings-row"><RotateCcw size={19} /><div><strong>Chơi lại từ đầu</strong><small>Xóa tiến trình đã lưu trên máy này</small></div><button className="secondary-action restart-button" onClick={onRestart}>Chơi lại</button></div>
+      <div className="settings-note"><Shield size={15} /><p>Điện, nước, oxy dùng số cân bằng giả định của trò chơi, không phải số liệu NASA. Tiến trình chỉ lưu trên máy này.</p></div>
     </div> : <div className="about-content"><MoonMark className="about-logo" /><h3>LUNARIS</h3><span>LITTLE STEPS. BIG DISCOVERIES.</span><p>Một ngôi nhà nhỏ ở cực Nam Mặt Trăng, dành cho những nhà thám hiểm 7–12 tuổi.</p><div className="about-challenge">Ý tưởng dự án · NASA Space Apps Challenge 2026</div><div className="credits"><strong>THẾ GIỚI ĐƯỢC DỰNG BẰNG MÃ</strong><p>Mặt Trăng, Trái Đất, mây, Mặt Trời và địa hình đều được tạo bằng mã. Không dùng ảnh vệ tinh, ảnh nền hoặc ảnh chụp căn cứ trong cảnh 3D.</p><a href="https://science.nasa.gov/moon/facts/" target="_blank" rel="noreferrer">Tham khảo kiến thức Mặt Trăng · NASA<ExternalLink size={12} /></a><p>Địa hình, lục địa và dự báo ánh sáng là minh họa nghệ thuật, không phải dữ liệu đo đạc hay dự báo thiên văn chính xác.</p><span>Pixel sprites & colony models · original LUNARIS art</span></div></div>}
   </Modal>
 }

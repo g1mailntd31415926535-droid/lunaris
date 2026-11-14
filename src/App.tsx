@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { CarFront, Check, LoaderCircle, Pause, Play, ShieldCheck, Sparkles, TriangleAlert, X } from 'lucide-react'
 import type { BuildingId, CameraMode, CameraRequest, DemoAction, DemoKind, DemoPhase, Notification, Preferences, RoverStatus, Section, WorldHandle } from './types'
@@ -9,10 +9,21 @@ import { ContextPanel } from './components/Panels'
 import { ActivityDialog, CrewDialog, HelpDialog, SettingsDialog } from './components/Dialogs'
 import { playUiTone } from './audio'
 import { useHudBounds } from './hooks/useHudBounds'
+import { A1_OPTIONS, SIM_MINUTES_PER_REAL_SECOND, browserStorage, clearSave, createInitialState, gameReducer, loadGame, missionTime, saveGame } from './game'
+import type { A1ChoiceId, GameState, ResourceKey } from './game'
+import { A1ConfirmDialog, RESOURCE_LABEL, RestartDialog, TimelineDialog, TutorialBriefing } from './components/GameDialogs'
 
+const A1_BY_BUILDING: Partial<Record<DemoKind, A1ChoiceId>> = { water: 'recycle-water', battery: 'charge-battery' }
+
+function initialGame(): { state: GameState; status: string } {
+  const result = loadGame(browserStorage())
+  return result.status === 'loaded' ? { state: result.state, status: 'loaded' } : { state: createInitialState(), status: result.status }
+}
+
+// Water/battery results now come from GameState (see onPhase), not from these demo texts.
 const DEMO_RESULTS: Record<DemoKind, { title: string; detail: string }> = {
-  water: { title: 'Mỗi giọt nước đều quý!', detail: 'Hoạt ảnh tái chế đã hoàn tất. Nước dự trữ: 72% (minh họa).' },
-  battery: { title: 'Một tia nắng đã được để dành!', detail: 'Hoạt ảnh sạc pin đã hoàn tất. Dung lượng minh họa: 88%.' },
+  water: { title: 'Mỗi giọt nước đều quý!', detail: 'Máy lọc đã chạy xong.' },
+  battery: { title: 'Một tia nắng đã được để dành!', detail: 'Pin đã sạc xong.' },
   solar: { title: 'Những tấm pin sáng bóng!', detail: 'Kai và Linh đã lau pin. Hiệu suất minh họa được cập nhật.' },
   radiation: { title: 'Toàn đội đã an toàn!', detail: 'Diễn tập hoàn tất. MILO vẫn có thể khám phá ở bên ngoài.' },
   rover: { title: 'MILO đã sẵn sàng đi xa!', detail: 'Theo đường chấm sáng để cùng khám phá lộ trình dựng sẵn.' },
@@ -35,19 +46,23 @@ export default function App() {
   const [roverStatus, setRoverStatus] = useState<RoverStatus>({ phase: 'docked', site: 'Căn cứ Artemis', siteId: 'base', trip: 0, distance: 0, speed: 0 })
   const [section, setSection] = useState<Section>('base')
   const [selected, setSelected] = useState<BuildingId | null>('command')
-  const [paused, setPaused] = useState(false)
+  const [boot] = useState(initialGame)
+  const [game, dispatch] = useReducer(gameReducer, boot.state)
+  const gameRef = useRef(game)
+  gameRef.current = game
+  const paused = game.isPaused
+  const setPaused = useCallback((next: boolean) => dispatch({ type: 'clock/setPaused', paused: next }), [])
+  const [a1Pending, setA1Pending] = useState<A1ChoiceId | null>(null)
   const [speed, setSpeed] = useState(1)
   const [panelOpen, setPanelOpen] = useState(() => window.innerWidth >= 1050)
   const [commanderCollapsed, setCommanderCollapsed] = useState(() => window.innerWidth < 1000)
   const [hour, setHour] = useState(0)
   const [demo, setDemo] = useState<DemoAction | null>(null)
   const [completed, setCompleted] = useState(new Set<DemoKind>())
-  const [resources, setResources] = useState({ electricity: 72, water: 56, oxygen: 68 })
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [history, setHistory] = useState<Notification[]>([{ id: -1, title: 'Chào mừng tới Artemis!', detail: 'Đội phi hành gia và tám công trình đang chờ bạn.', tone: 'success' }, { id: -2, title: 'Mọi hệ thống đã sẵn sàng', detail: 'Một ngày khám phá mới bắt đầu.', tone: 'info' }])
-  const [modal, setModal] = useState<'settings' | 'crew' | 'help' | 'activity' | null>(null)
+  const [modal, setModal] = useState<'settings' | 'crew' | 'help' | 'activity' | 'timeline' | 'restart' | null>(null)
   const [ready, setReady] = useState(false)
-  const [mockSeconds, setMockSeconds] = useState(0)
   const [preferences, setPreferences] = useState<Preferences>({ quality: 'high', reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches, showLabels: false, showRoutes: true, sound: false })
   const world = useRef<WorldHandle>(null)
   const root = useRef<HTMLElement>(null), footer = useRef<HTMLDivElement>(null)
@@ -55,7 +70,7 @@ export default function App() {
   const ids = useRef(0)
   const demoIds = useRef(0)
   const modalActive = useRef(false)
-  modalActive.current = modal !== null
+  modalActive.current = modal !== null || a1Pending !== null || game.a1.phase === 'briefing'
 
   const notify = useCallback((title: string, detail?: string, tone: Notification['tone'] = 'info') => {
     const notification = { id: ++ids.current, title, detail, tone }
@@ -79,25 +94,66 @@ export default function App() {
     setPaused(false); changeMode('base'); setSection('base')
     setSelected(kind === 'radiation' ? 'shelter' : kind)
     setDemo({ id: ++demoIds.current, kind, phase: 'walking' })
-    if (kind === 'water') setResources((r) => ({ ...r, water: 56 }))
-    if (kind === 'solar') setResources((r) => ({ ...r, electricity: 72 }))
     if (kind === 'radiation') notify('Cảnh báo bức xạ!', 'Diễn tập minh họa: cả đội đang về nhà trú ẩn.', 'warning')
     else notify('Linh đã nhận lời nhắn!', 'Cùng nhìn phi hành gia và thiết bị trong thế giới 3D nhé.')
     if (window.innerWidth < 1000) { setCommanderCollapsed(true); setPanelOpen(false) }
-  }, [demo, notify, changeMode])
+  }, [demo, notify, changeMode, setPaused])
+  // Building action buttons: water/battery are the real A1 decision; other buildings keep their presentation demos.
+  const buildingAction = useCallback((kind: DemoKind) => {
+    const choice = A1_BY_BUILDING[kind]
+    if (!choice) { startDemo(kind); return }
+    const a1 = gameRef.current.a1
+    if (a1.phase === 'choose') setA1Pending(choice)
+    else if (a1.phase === 'briefing') notify('Đọc lời nhắn của Commander Luna trước nhé!')
+    else if (a1.phase === 'done') notify('Điện dư hôm nay đã được dùng.', 'Bạn có thể xem lại lựa chọn trong Dòng thời gian nhiệm vụ.')
+  }, [startDemo, notify])
+  const confirmA1 = useCallback(() => {
+    const choice = a1Pending
+    setA1Pending(null)
+    if (!choice || gameRef.current.a1.phase !== 'choose') return
+    dispatch({ type: 'a1/commit', choiceId: choice })
+    startDemo(A1_OPTIONS[choice].building)
+  }, [a1Pending, startDemo])
+  const inspectA1 = useCallback((kind: 'water' | 'battery') => {
+    setSelected(kind); setSection('base'); setPanelOpen(true); setFollowRover(false); world.current?.focus(kind)
+    if (window.innerWidth < 1000) setCommanderCollapsed(true)
+  }, [])
   const onPhase = useCallback((phase: DemoPhase) => {
     if (!demo || demo.phase === phase) return
     setDemo({ ...demo, phase })
-    if (phase === 'working') {
-      if (demo.kind === 'water') setResources((r) => ({ ...r, water: 72 }))
-      if (demo.kind === 'solar') setResources((r) => ({ ...r, electricity: 86 }))
-      if (demo.kind === 'oxygen') setResources((r) => ({ ...r, oxygen: 80 }))
-    }
     if (phase === 'complete') {
       setCompleted((current) => new Set(current).add(demo.kind))
-      notify(DEMO_RESULTS[demo.kind].title, DEMO_RESULTS[demo.kind].detail, 'success')
+      const g = gameRef.current, choice = A1_BY_BUILDING[demo.kind]
+      if (choice && g.a1.phase === 'executing' && g.a1.choiceId === choice) {
+        const next = gameReducer(g, { type: 'a1/complete', choiceId: choice })
+        dispatch({ type: 'a1/complete', choiceId: choice })
+        const record = next.history[next.history.length - 1]
+        const change = (Object.entries(record?.deltas ?? {}) as [ResourceKey, number][]).map(([k, v]) => `${RESOURCE_LABEL[k]} ${v > 0 ? '+' : ''}${Math.round(v * 10) / 10}`).join(' · ')
+        notify(DEMO_RESULTS[demo.kind].title, `${change ? `${change}.` : 'Không có nguồn nào thay đổi.'} Xem lại trong Dòng thời gian.`, 'success')
+      } else notify(DEMO_RESULTS[demo.kind].title, DEMO_RESULTS[demo.kind].detail, 'success')
     }
   }, [demo, notify])
+  // Resume an A1 action that was saved mid-way (e.g. the page was reloaded while the astronaut worked).
+  useEffect(() => {
+    if (!ready || game.a1.phase !== 'executing' || !game.a1.choiceId || (demo && demo.phase !== 'complete')) return
+    startDemo(A1_OPTIONS[game.a1.choiceId].building)
+  }, [ready, game.a1.phase, game.a1.choiceId, demo, startDemo])
+  // Local-only autosave.
+  useEffect(() => { saveGame(game, browserStorage()) }, [game])
+  const bootNotified = useRef(false)
+  useEffect(() => {
+    if (bootNotified.current) return
+    bootNotified.current = true
+    if (boot.status === 'loaded') notify('Đã mở lại chuyến đi đã lưu.', 'Tiến trình được lưu ngay trên máy này.')
+    else if (boot.status === 'incompatible' || boot.status === 'corrupt') notify('Bản lưu cũ không dùng được.', 'Một chuyến đi mới đã bắt đầu.', 'warning')
+  }, [boot.status, notify])
+  const restartGame = useCallback(() => {
+    clearSave(browserStorage())
+    dispatch({ type: 'game/restart' })
+    setDemo(null); setCompleted(new Set()); setA1Pending(null); setModal(null); setFollowRover(false)
+    setSelected('command'); changeMode('base')
+    notify('Một chuyến đi mới bắt đầu!', 'Bạn đang ở chặng A1.')
+  }, [changeMode, notify])
   const updatePreferences = useCallback((next: Preferences) => { if (next.sound && !preferences.sound) playUiTone('success'); setPreferences(next) }, [preferences.sound])
   const toggleSound = useCallback(() => { setPreferences((current) => ({ ...current, sound: !current.sound })); if (!preferences.sound) playUiTone('success') }, [preferences.sound])
   const fullscreen = useCallback(async () => {
@@ -109,11 +165,13 @@ export default function App() {
     const id = index === 2 ? 'rover' : 'water'
     selectBuilding(id); changeMode('base'); notify(index === 2 ? 'MILO đang chờ bạn!' : 'Mỗi giọt nước đều quý.', 'Chọn nút hành động trong bảng thông tin để thử một hoạt ảnh.')
   }
+  // Simulation clock: advances only via clock/tick, never while paused or while a dialog is open.
+  const dialogOpen = modal !== null || a1Pending !== null || game.a1.phase === 'briefing'
   useEffect(() => {
-    if (paused || !ready || modal) return
-    const timer = setInterval(() => setMockSeconds((seconds) => seconds + speed), 1000)
+    if (paused || !ready || dialogOpen) return
+    const timer = setInterval(() => dispatch({ type: 'clock/tick', minutes: SIM_MINUTES_PER_REAL_SECOND * speed }), 1000)
     return () => clearInterval(timer)
-  }, [paused, ready, speed, modal])
+  }, [paused, ready, speed, dialogOpen])
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement
@@ -131,13 +189,14 @@ export default function App() {
       else if (key === '-') world.current?.zoom('out')
       else if (key === '?') setModal('help')
       else if (key === 'escape') { setSelected(null); setPanelOpen(false); setFollowRover(false) }
-      else if (event.code === 'Space') { event.preventDefault(); setPaused((p) => !p) }
+      else if (event.code === 'Space') { event.preventDefault(); setPaused(!gameRef.current.isPaused) }
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [changeMode, changeSection])
-  const mockMinutes = 8 * 60 + 24 + Math.floor(mockSeconds / 60)
-  const time = `${String(Math.floor(mockMinutes / 60) % 24).padStart(2, '0')}:${String(mockMinutes % 60).padStart(2, '0')}`
+  }, [changeMode, changeSection, setPaused])
+  const clock = missionTime(game)
+  const time = clock.label
+  const resources = { electricity: Math.round(game.resources.electricity), water: Math.round(game.resources.water), oxygen: Math.round(game.resources.oxygen) }
   const radiation = demo?.kind === 'radiation' && demo.phase !== 'complete'
   const onSceneReady = useCallback(() => setReady(true), [])
   const onRoverStatus = useCallback((status: RoverStatus) => setRoverStatus(status), [])
@@ -145,16 +204,16 @@ export default function App() {
   const onPanelOpen = useCallback((open: boolean) => { setPanelOpen(open); if (open && window.innerWidth < 1000) setCommanderCollapsed(true) }, [])
   return <MotionConfig reducedMotion={preferences.reducedMotion ? 'always' : 'user'}><main ref={root} className={`lunaris-app ${preferences.reducedMotion ? 'reduced-motion' : ''} ${radiation ? 'radiation-active' : ''} ${panelOpen ? 'panel-open' : ''}`}>
     <World ref={world} mode={mode} cameraRequest={cameraRequest} onDistanceMode={setMode} selected={selected} onSelect={selectBuilding} onMode={changeMode} onCrew={() => setModal('crew')} paused={paused || !!modal} speed={speed} forecastHour={section === 'forecast' ? hour : 0} demo={demo} onPhase={onPhase} preferences={preferences} onReady={onSceneReady} followRover={followRover} onFollowRover={setFollowRover} onRoverStatus={onRoverStatus} onCameraTravel={onCameraTravel} />
-    <TopHUD resources={resources} paused={paused} onPause={() => setPaused((p) => !p)} speed={speed} onSpeed={() => setSpeed((s) => s === 4 ? 1 : s * 2)} onSettings={() => setModal('settings')} onCrew={() => setModal('crew')} onActivity={() => setModal('activity')} sound={preferences.sound} onSound={toggleSound} onFullscreen={() => void fullscreen()} time={time} />
+    <TopHUD resources={resources} paused={paused} onPause={() => setPaused(!paused)} speed={speed} onSpeed={() => setSpeed((s) => s === 4 ? 1 : s * 2)} onSettings={() => setModal('settings')} onCrew={() => setModal('crew')} onActivity={() => setModal('activity')} onTimeline={() => setModal('timeline')} sound={preferences.sound} onSound={toggleSound} onFullscreen={() => void fullscreen()} time={time} sol={clock.sol} />
     <Sidebar section={section} onSection={changeSection} onSettings={() => setModal('settings')} onHelp={() => setModal('help')} />
     <WorldHeading mode={mode} onMode={changeMode} onMissions={() => changeSection('missions')} completed={completed.has('water')} />
-    <ContextPanel section={section} selected={selected} onSelect={selectBuilding} onAction={startDemo} onFocus={focusBuilding} demo={demo} completed={completed} hour={hour} onHour={setHour} open={panelOpen} onOpen={onPanelOpen} onMission={mission} onNotify={(title, detail) => notify(title, detail, 'success')} roverStatus={roverStatus} followRover={followRover} onFollowRover={setFollowRover} />
+    <ContextPanel section={section} selected={selected} onSelect={selectBuilding} onAction={buildingAction} onFocus={focusBuilding} game={game} demo={demo} completed={completed} hour={hour} onHour={setHour} open={panelOpen} onOpen={onPanelOpen} onMission={mission} onNotify={(title, detail) => notify(title, detail, 'success')} roverStatus={roverStatus} followRover={followRover} onFollowRover={setFollowRover} />
     <div ref={footer} className="bottom-hud">
-      <Commander collapsed={commanderCollapsed} onCollapse={(collapsed) => { setCommanderCollapsed(collapsed); if (!collapsed && window.innerWidth < 1000) setPanelOpen(false) }} onAction={startDemo} demo={demo} mode={mode} onMode={changeMode} />
+      <Commander collapsed={commanderCollapsed} onCollapse={(collapsed) => { setCommanderCollapsed(collapsed); if (!collapsed && window.innerWidth < 1000) setPanelOpen(false) }} onInspect={inspectA1} onTimeline={() => setModal('timeline')} game={game} demo={demo} mode={mode} onMode={changeMode} />
       <div className="camera-status-stack">
         {cameraMoving && <div className="camera-moving-status glass" role="status" aria-live="polite"><LoaderCircle size={14} className="spin" /><span>Đang di chuyển camera…</span><small>{cameraMoving === 'orbit' ? 'Mặt Trăng' : cameraMoving === 'region' ? 'Khu vực' : 'Căn cứ'}</small></div>}
         {followRover && <div className="follow-rover-bar glass"><CarFront size={17} /><div><strong>ĐANG THEO DÕI MILO</strong><span>{roverStatus.phase === 'scanning' ? 'Đang quét' : roverStatus.phase === 'returning' ? 'Về căn cứ' : roverStatus.phase === 'docked' ? 'Kiểm tra tại căn cứ' : 'Khám phá'} · {roverStatus.site}</span></div><button aria-label="Dừng theo dõi rover" onClick={() => setFollowRover(false)}><X size={15} /></button></div>}
-        {paused && <button className="pause-banner glass" onClick={() => setPaused(false)}><Pause size={13} /> Khám phá đang tạm dừng <span>Tiếp tục <Play size={11} /></span></button>}
+        {paused && <button className="pause-banner glass" onClick={() => setPaused(false)}><Pause size={13} /> Thời gian nhiệm vụ đang dừng <span>Tiếp tục <Play size={11} /></span></button>}
       </div>
       <CameraNavigation mode={mode} onMode={changeMode} />
     </div>
@@ -162,7 +221,8 @@ export default function App() {
     <div className="toast-stack" aria-live="polite"><AnimatePresence>{notifications.map((item) => <Toast key={item.id} notification={item} onDismiss={dismiss} />)}</AnimatePresence></div>
     {radiation && <div className="radiation-vignette" aria-hidden="true" />}
     {radiation && <motion.div className="radiation-banner glass" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}><ShieldCheck size={18} /><div><strong>CẢNH BÁO BỨC XẠ</strong><span>Diễn tập minh họa · cùng về nhà trú ẩn!</span></div><LoaderCircle className="spin" size={16} /></motion.div>}
-    <AnimatePresence>{modal === 'settings' && <SettingsDialog preferences={preferences} onChange={updatePreferences} onClose={() => setModal(null)} />}{modal === 'crew' && <CrewDialog onClose={() => setModal(null)} onLocate={(name) => { setModal(null); setFollowRover(false); world.current?.focusCrew(name); notify(`Xin chào, ${name}!`, 'Đội của mình đang ở trong căn cứ. Nhấp vào phi hành gia để gặp cả đội.') }} />}{modal === 'help' && <HelpDialog onClose={() => setModal(null)} />}{modal === 'activity' && <ActivityDialog notifications={history} onClose={() => setModal(null)} onRadiation={() => { setModal(null); startDemo('radiation') }} />}</AnimatePresence>
-    <span className="screen-reader-only">Bản thử nghiệm giao diện tương tác. Chỉ số và dự báo là minh họa, không có mô phỏng tài nguyên thực.</span>
+    <AnimatePresence>{modal === null && game.a1.phase === 'briefing' && <TutorialBriefing key="briefing" onAcknowledge={() => dispatch({ type: 'tutorial/acknowledge' })} />}{a1Pending && <A1ConfirmDialog key="a1-confirm" choiceId={a1Pending} onConfirm={confirmA1} onClose={() => setA1Pending(null)} />}{modal === 'timeline' && <TimelineDialog game={game} onClose={() => setModal(null)} />}{modal === 'restart' && <RestartDialog onConfirm={restartGame} onClose={() => setModal('settings')} />}</AnimatePresence>
+    <AnimatePresence>{modal === 'settings' && <SettingsDialog preferences={preferences} onChange={updatePreferences} onClose={() => setModal(null)} onRestart={() => setModal('restart')} />}{modal === 'crew' && <CrewDialog onClose={() => setModal(null)} onLocate={(name) => { setModal(null); setFollowRover(false); world.current?.focusCrew(name); notify(`Xin chào, ${name}!`, 'Đội của mình đang ở trong căn cứ. Nhấp vào phi hành gia để gặp cả đội.') }} />}{modal === 'help' && <HelpDialog onClose={() => setModal(null)} />}{modal === 'activity' && <ActivityDialog notifications={history} onClose={() => setModal(null)} onRadiation={() => { setModal(null); startDemo('radiation') }} />}</AnimatePresence>
+    <span className="screen-reader-only">Story Mode, chặng {game.stage}. Chỉ số điện, nước, oxy dùng số cân bằng giả định của trò chơi, không phải số liệu NASA.</span>
   </main></MotionConfig>
 }
