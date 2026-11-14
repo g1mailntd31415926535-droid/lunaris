@@ -1,6 +1,7 @@
 // Browser smoke check for the Task 02 terrain (needs the dev/preview server and installed Chrome).
 // Usage: node scripts/terrain/smoke_check.mjs [url]
 import { chromium } from 'playwright'
+import { onboard } from '../lib/onboard.mjs'
 const url = process.argv[2] ?? 'http://localhost:5173/?debug=1'
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] })
 const page = await browser.newPage({ viewport: { width: 1366, height: 768 } })
@@ -9,8 +10,13 @@ page.on('pageerror', (e) => errors.push(String(e)))
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()) })
 await page.goto(url)
 await page.waitForFunction(() => document.querySelector('.world')?.getAttribute('data-ready') === 'true' && !!window.__LUNARIS__, null, { timeout: 120_000 })
-const ok = page.getByRole('button', { name: /Mình hiểu rồi/ }); if (await ok.count()) await ok.first().click()
-await page.keyboard.press('Space')                       // resume mission + visual time
+// Story Mode: start in Advanced from the opening, answer the A1 tutorial question, pause the mission clock.
+await onboard(page, 'advanced')
+await page.locator('.story-option').first().click({ timeout: 15000 })
+await page.waitForTimeout(800)
+if (await page.locator('.hud-time button[aria-label^="Tạm dừng"]').count()) await page.locator('.hud-time button[aria-label^="Tạm dừng"]').click()
+await page.keyboard.press('3'); await page.keyboard.press('b'); await page.waitForTimeout(10000)   // A1 astronaut walk finishes; default base view and the base panel after the A1 focus
+// Mission time stays paused: the checks below are about the camera, terrain and clicks, not the simulation.
 const results = []
 const check = (name, pass, detail) => { results.push({ name, pass, detail }); console.log(pass ? 'PASS' : 'FAIL', name, detail ?? '') }
 const diag = () => page.evaluate(() => { const d = window.__LUNARIS__; return { rover: d.rover, terrain: d.terrain, alt: d.altitudeM, clearance: d.clearanceM, calls: d.drawCalls, tris: d.triangles, targets: d.targets.length, actors: d.actors } })
@@ -52,7 +58,7 @@ check('Artemis pin stays hidden when the base is visible', !(await artemis.isVis
     return { id: geometry.uuid, heights: [...baseHeights.entries()].sort() }
   })
   const before = await terrainGeometry()
-  await page.getByRole('button', { name: 'Cài đặt', exact: true }).click()
+  await page.locator('.hud-gear').click(); await page.getByRole('menuitem', { name: /Hiển thị/ }).click()
   const nasa = page.getByRole('button', { name: /^NASA Layer/ })
   const game = page.getByRole('button', { name: /^Game Layer/ })
   await nasa.click()
@@ -61,7 +67,7 @@ check('Artemis pin stays hidden when the base is visible', !(await artemis.isVis
   await game.click()
   check('Game Layer is selected exclusively in the same scene', await game.getAttribute('aria-pressed') === 'true' && await nasa.getAttribute('aria-pressed') === 'false' && await world.getAttribute('data-terrain-layer') === 'game' && await page.evaluate(() => window.__LUNARIS__.sceneId) === sceneId)
   check('changing layers keeps the same NASA terrain geometry and elevations', before.heights.length > 0 && JSON.stringify(before) === JSON.stringify(nasaGeometry) && JSON.stringify(nasaGeometry) === JSON.stringify(await terrainGeometry()))
-  await page.getByRole('button', { name: 'Đóng cửa sổ' }).click()
+  await page.getByRole('button', { name: 'Đóng cửa sổ' }).click(); await page.waitForTimeout(700)   // let the dialog fade out
 }
 
 // Buildings are drawn by the merged colony batch; clicks must still reach each building's pick volume.
@@ -70,7 +76,9 @@ check('Artemis pin stays hidden when the base is visible', !(await artemis.isVis
   const picked = []
   for (const t of targets) {
     if (t.x < 380 || t.x > 1000 || t.y < 200 || t.y > 530) continue          // skip spots under the HUD panels
-    await page.mouse.click(t.x, t.y); await page.waitForTimeout(400)
+    // Aim slightly above the door: the astronaut standing at the command door is clickable too.
+    await page.mouse.click(t.x, t.y - 22); await page.waitForTimeout(400)
+    if (await page.locator('.modal').count()) await page.keyboard.press('Escape')
     const title = await page.$eval('.building-title h3', (n) => n.textContent).catch(() => null)
     picked.push(`${t.id}→${title}`)
   }
@@ -102,12 +110,11 @@ check('Artemis pin stays hidden when the base is visible', !(await artemis.isVis
 }
 
 // Drive: seek the presentation clock to mid-leg and to the turn-back point.
-await page.evaluate(() => window.__LUNARIS_ROVER__.seek(400)); await page.waitForTimeout(4000)
+await page.waitForTimeout(1500)
 d = await diag()
-check('rover is driving toward a real anchor', d.rover.phase === 'outbound' && /Hướng tới [ABCD]/.test(d.rover.site), `${d.rover.phase} · ${d.rover.site} · ${d.rover.distance.toFixed(0)} m from base`)
-check('rover stays on the DEM away from the camera', d.rover.groundError < 0.05, `error ${d.rover.groundError.toFixed(4)} m`)
-check('rover status names the A* route and its limits', /Tuyến A\*/.test(await page.evaluate(() => window.__LUNARIS__.rover.note ?? '')) , await page.evaluate(() => window.__LUNARIS__.rover.note))
-check('rover speed is the 0.7 m/s scenario value', Math.abs(d.rover.speed - 0.7) < 0.01, `${d.rover.speed}`)
+// Story Mode: MILO no longer tours by itself; it waits at the depot until the player sends it (scripts/story_playthrough.mjs drives it).
+check('story mode: MILO waits at the depot until the player sends it', d.rover.phase === 'docked' && d.rover.distance < 30, `${d.rover.phase} · ${d.rover.site} · ${d.rover.distance.toFixed(0)} m from base`)
+check('rover stays on the DEM', d.rover.groundError < 0.05, `error ${d.rover.groundError.toFixed(4)} m`)
 
 // Science zone markers at region scale.
 await page.evaluate(() => window.__LUNARIS_CONTROLS__.altitude(3000)); await page.waitForTimeout(6000)

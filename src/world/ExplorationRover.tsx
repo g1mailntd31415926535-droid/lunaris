@@ -8,7 +8,8 @@ import { useUniverse } from './universe-context'
 import { sampleTerrain } from './terrain-query'
 import { createRoverModel } from './models'
 import { MATERIALS as M } from './model-kit'
-import { ROVER_DEPOT, roverPresentation } from './rover-plan'
+import { ROVER_DEPOT, roverPresentation, surveyLegs } from './rover-plan'
+import type { RoverPhase } from './rover-plan'
 import { routeSlopeLimitDeg } from './dem'
 import type { SurveyLeg } from './rover-plan'
 import { projectArtemisPin } from './Planet'
@@ -26,7 +27,12 @@ function groundLine(count: number, at: (t: number) => [number, number], lift: nu
   return points
 }
 
-export function ExplorationRover({ selected, follow, mode, reducedMotion, showRoute, onSelect, onFollow, onStatus }: { selected: boolean; follow: boolean; mode: CameraMode; reducedMotion: boolean; showRoute: boolean; onSelect: () => void; onFollow: () => void; onStatus: (status: RoverStatus) => void }) {
+/** Story Mode drives MILO from the game state: the chosen zone's real A* leg and the simulated progress along it. */
+export interface RoverMission { zone: string | null; phase: RoverPhase; progress: number }
+
+export function ExplorationRover({ selected, follow, mode, reducedMotion, showRoute, onSelect, onFollow, onStatus, mission }: { selected: boolean; follow: boolean; mode: CameraMode; reducedMotion: boolean; showRoute: boolean; onSelect: () => void; onFollow: () => void; onStatus: (status: RoverStatus) => void; mission?: RoverMission | null }) {
+  const missionRef = useRef(mission); missionRef.current = mission
+  const shown = useRef(0)
   const clock = useVisualTime(), universe = useUniverse()
   const system = useRef<THREE.Group>(null), root = useRef<THREE.Group>(null), scanner = useRef<THREE.Group>(null)
   const marker = useRef<HTMLButtonElement>(null)
@@ -49,7 +55,16 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
     if (!root.current) return
     const u = universe.current
     if (system.current) system.current.visible = u.altitudeM < 20_000
-    const presentation = roverPresentation(Math.max(0, clock.current.time + seekOffset.current))
+    const m = missionRef.current
+    let presentation = roverPresentation(Math.max(0, clock.current.time + seekOffset.current))
+    if (m !== undefined) {
+      // Story Mode: no autonomous touring; MILO moves only on the leg the player chose.
+      const storyLeg = m?.zone ? surveyLegs().find((l) => l.site.id === m.zone) ?? null : null
+      const target = m && storyLeg ? m.progress : 0
+      shown.current += (target - shown.current) * (1 - Math.exp(-4 * Math.min(delta, 0.1)))
+      presentation = { leg: storyLeg, phase: m && storyLeg ? m.phase : 'docked', progress: shown.current, speed: 0, trip: 0, phaseTime: clock.current.time }
+      if (!storyLeg) scratch.nominal.set(ROVER_DEPOT[0], 0, ROVER_DEPOT[1])
+    }
     const { leg, phase, progress, speed, trip, phaseTime } = presentation
     const s = scratch
     if (leg) { leg.curve.getPointAt(progress, s.nominal); leg.curve.getTangentAt(progress, s.tangent) }

@@ -9,7 +9,7 @@ import { useVisualTime } from './clock'
 import { CREW, DEMO_ROUTES, pointOnPath } from './actor-plan'
 import { METRE } from './space-config'
 
-function Astronaut({ index, demo, reducedMotion, onInspect }: { index: number; demo: DemoAction | null; reducedMotion: boolean; onInspect: () => void }) {
+function Astronaut({ index, demo, reducedMotion, onInspect, greet }: { index: number; demo: DemoAction | null; reducedMotion: boolean; onInspect: () => void; greet: boolean }) {
   const crew = CREW[index]
   const root = useRef<THREE.Group>(null)
   const sprite = useRef<THREE.Mesh>(null)
@@ -50,12 +50,14 @@ function Astronaut({ index, demo, reducedMotion, onInspect }: { index: number; d
       root.current.visible = true
     }
     const dx = position[0] - previous.current[0], dz = position[1] - previous.current[1]
-    const facingBack = dx * (camera.position.x / METRE - position[0]) + dz * (camera.position.z / METRE - position[1]) < -0.00002
+    const facingBack = !greet && dx * (camera.position.x / METRE - position[0]) + dz * (camera.position.z / METRE - position[1]) < -0.00002
     const workingHands = index === 0 && isActive && demo.phase === 'working' && ['water', 'solar', 'battery'].includes(demo.kind)
     const frame = (walking || workingHands) && clock.current.delta > 0 ? Math.floor(time * (isActive && demo.kind === 'radiation' ? 11 : workingHands ? 4 : 7) + index) % 4 : 0
     texture.offset.set(frame / 4, facingBack ? 0 : 0.5)
     root.current.position.set(position[0], heightAt(...position) + 0.04, position[1])
-    if (sprite.current) sprite.current.position.y = reducedMotion ? 0 : walking ? Math.abs(Math.sin(time * 8 + index)) * 0.033 : Math.sin(time * 2 + index) * 0.012
+    // Greeting (onboarding): face the camera and hop lightly, one after another. Hook for a real wave animation later.
+    if (sprite.current && greet && !reducedMotion) sprite.current.position.y = Math.max(0, Math.sin(time * 6 - index * 0.7)) * 0.16
+    else if (sprite.current) sprite.current.position.y = reducedMotion ? 0 : walking ? Math.abs(Math.sin(time * 8 + index)) * 0.033 : Math.sin(time * 2 + index) * 0.012
     previous.current = position
   })
   return <group ref={root} name={`astronaut:${crew.name}`} position={[crew.route[0][0], 0.04, crew.route[0][1]]} onClick={(e) => { e.stopPropagation(); if (e.delta < 6) onInspect() }}>
@@ -64,6 +66,6 @@ function Astronaut({ index, demo, reducedMotion, onInspect }: { index: number; d
   </group>
 }
 
-export function Actors({ demo, reducedMotion, onCrew }: { demo: DemoAction | null; reducedMotion: boolean; onCrew: () => void }) {
-  return <group name="living-colony">{CREW.map((crew, index) => <Astronaut key={crew.name} index={index} demo={demo} reducedMotion={reducedMotion} onInspect={onCrew} />)}</group>
+export function Actors({ demo, reducedMotion, onCrew, greet = false }: { demo: DemoAction | null; reducedMotion: boolean; onCrew: () => void; greet?: boolean }) {
+  return <group name="living-colony">{CREW.map((crew, index) => <Astronaut key={crew.name} index={index} demo={demo} reducedMotion={reducedMotion} onInspect={onCrew} greet={greet} />)}</group>
 }

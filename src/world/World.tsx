@@ -15,6 +15,7 @@ import type { CoverageClass } from './dem'
 import { Buildings } from './Buildings'
 import { Actors } from './Actors'
 import { ExplorationRover } from './ExplorationRover'
+import type { RoverMission } from './ExplorationRover'
 import { ArtemisMarker, Earth, MoonGlobe, Starfield, Sun } from './Planet'
 import { PlanetCameraRig } from './PlanetCameraRig'
 import { UniverseContext, initialUniverseState, useUniverse } from './universe-context'
@@ -41,6 +42,12 @@ interface WorldProps {
   followRover: boolean
   onFollowRover: (follow: boolean) => void
   onRoverStatus: (status: RoverStatus) => void
+  /** Story Mode: MILO follows the game state (undefined = the autonomous presentation tour). */
+  roverMission?: RoverMission | null
+  /** Story Mode: the crew is in the shelter (D3). */
+  sheltered?: boolean
+  /** Onboarding: the crew greets the player. */
+  crewGreeting?: boolean
   onCameraTravel: (moving: boolean, destination: CameraMode) => void
 }
 
@@ -139,11 +146,11 @@ function SouthPoleRegion({ props, clock, onCoverage, onFocusPoint }: { props: Wo
     <DemTerrain quality={props.preferences.quality} layer={props.preferences.terrainLayer} onCoverage={onCoverage} />
     <RegionalTerrain quality={props.preferences.quality} layer={props.preferences.terrainLayer} />
     <ScienceZoneMarkers onFocus={onFocusPoint} />
-    <ExplorationRover selected={props.selected === 'rover'} follow={props.followRover} mode={props.mode} reducedMotion={props.preferences.reducedMotion} showRoute={props.preferences.showRoutes} onSelect={() => props.onSelect('rover')} onFollow={() => props.onFollowRover(true)} onStatus={props.onRoverStatus} />
+    <ExplorationRover selected={props.selected === 'rover'} follow={props.followRover} mode={props.mode} reducedMotion={props.preferences.reducedMotion} showRoute={props.preferences.showRoutes} onSelect={() => props.onSelect('rover')} onFollow={() => props.onFollowRover(true)} onStatus={props.onRoverStatus} mission={props.roverMission} />
     <group ref={settlement} name="artemis-base" position={[0, frame.c, 0]} quaternion={frame.quaternion}>
       <ColonyDecorations />
       <Buildings selected={props.selected} onSelect={props.onSelect} mode={props.mode} labels={props.preferences.showLabels} demo={props.demo} reducedMotion={props.preferences.reducedMotion} onHover={propsHover} />
-      <Actors demo={props.demo} reducedMotion={props.preferences.reducedMotion} onCrew={props.onCrew} />
+      <Actors demo={props.demo} reducedMotion={props.preferences.reducedMotion} onCrew={props.onCrew} greet={props.crewGreeting} />
       <ActionEffects demo={props.demo} clock={clock} reducedMotion={props.preferences.reducedMotion} />
     </group>
   </group>

@@ -168,3 +168,34 @@ export function portraitUrl(accent = '#ffbb69') {
   portraitCache.set(accent, url)
   return url
 }
+
+export type RobotMood = 'idle' | 'speaking' | 'happy' | 'warning'
+const robotCache = new Map<string, string>()
+/**
+ * The mascot: Commander Luna's pixel suit (same helmet, navy outline, white suit, orange details) with the face
+ * replaced by a robot screen showing two LED eyes. Drawn on a 32 × 32 grid like the crew sprites.
+ */
+export function robotPortraitUrl(mood: RobotMood = 'idle') {
+  if (robotCache.has(mood)) return robotCache.get(mood)!
+  const { canvas: c, ctx } = canvas(32, 32)
+  const r = (x: number, y: number, w: number, h: number, color: string) => { ctx.fillStyle = color; ctx.fillRect(x, y, w, h) }
+  const dark = '#272b45', white = '#f4f2fa', shade = '#c3c6dd', accent = '#ffbb59', screen = '#1d2440'
+  // helmet (Luna's stepped silhouette)
+  r(9, 2, 14, 2, dark); r(6, 4, 20, 3, dark); r(4, 7, 24, 13, dark); r(6, 20, 20, 2, dark)
+  r(9, 3, 14, 2, white); r(6, 5, 20, 3, white); r(5, 8, 22, 11, white); r(7, 19, 18, 2, shade)
+  // ear pods with orange detail
+  r(3, 10, 4, 8, dark); r(4, 11, 3, 6, shade); r(4, 12, 2, 3, accent)
+  r(25, 10, 4, 8, dark); r(25, 11, 3, 6, shade); r(26, 12, 2, 3, accent)
+  // robot screen instead of a face
+  r(8, 9, 16, 10, dark); r(9, 10, 14, 8, screen); r(10, 10, 3, 1, '#7fb2ff')
+  const eye = mood === 'warning' ? '#ffb347' : '#7df6ff'
+  if (mood === 'happy') { r(11, 13, 1, 1, eye); r(12, 12, 2, 1, eye); r(14, 13, 1, 1, eye); r(17, 13, 1, 1, eye); r(18, 12, 2, 1, eye); r(20, 13, 1, 1, eye) }
+  else if (mood === 'speaking') { r(12, 13, 2, 2, eye); r(18, 13, 2, 2, eye) }
+  else { r(12, 12, 2, 4, eye); r(18, 12, 2, 4, eye) }
+  // suit, chest panel, side light
+  r(7, 22, 18, 9, dark); r(8, 22, 16, 9, white); r(12, 24, 8, 4, '#7c88ad'); r(14, 25, 4, 2, accent)
+  r(8, 29, 3, 1, accent); r(21, 29, 3, 1, accent); r(24, 23, 4, 4, dark); r(25, 24, 2, 2, '#8ff0b0')
+  const url = c.toDataURL('image/png')
+  robotCache.set(mood, url)
+  return url
+}

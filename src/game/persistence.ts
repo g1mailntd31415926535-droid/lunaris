@@ -1,5 +1,5 @@
 import type { GameState } from './types.ts'
-import { SAVE_SCHEMA_VERSION } from './balance.ts'
+import { SAVE_SCHEMA_VERSION } from './scenario.ts'
 import { clampResources } from './reducer.ts'
 
 // Local-only save. Works offline; nothing leaves the browser.
@@ -28,7 +28,7 @@ export function saveGame(state: GameState, storage: KeyValueStorage | null): boo
 
 function isGameState(value: unknown): value is GameState {
   const s = value as GameState
-  return !!s && typeof s === 'object' && s.version === SAVE_SCHEMA_VERSION && typeof s.stage === 'string' && !!s.resources && !!s.clock && typeof s.clock.elapsedMinutes === 'number' && !!s.a1 && Array.isArray(s.history) && Array.isArray(s.log)
+  return !!s && typeof s === 'object' && s.version === SAVE_SCHEMA_VERSION && typeof s.stage === 'string' && !!s.resources && !!s.clock && typeof s.clock.elapsedMinutes === 'number' && !!s.food && !!s.ice && Array.isArray(s.decisions) && Array.isArray(s.history) && Array.isArray(s.log)
 }
 
 export function loadGame(storage: KeyValueStorage | null): LoadResult {

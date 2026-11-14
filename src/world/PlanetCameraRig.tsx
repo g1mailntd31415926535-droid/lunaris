@@ -225,8 +225,8 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
     if (request.id === requestedId.current) return
     const initial = requestedId.current < 0
     requestedId.current = request.id
-    goTo(request.mode, !initial, undefined, DEFAULT_PAN, request.mode === 'orbit')
-  }, [request.id, request.mode])
+    goTo(request.mode, !initial, request.altitudeM, DEFAULT_PAN, request.mode === 'orbit')
+  }, [request.id, request.mode, request.altitudeM])
   useEffect(() => {
     if (state.current.lastMode === 'base' && !followFlag.current && !travel.current) goTo('base', false)
   }, [size.width])

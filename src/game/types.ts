@@ -1,103 +1,110 @@
-// Pure game-state types. No React, no Three.js. Imported by the reducer, the UI
-// and the Node unit tests (Node type stripping: keep to erasable TS syntax only).
+// Pure game-state types. No React, no Three.js (Node tests import them). Erasable TS only.
+import type { Stock } from './scenario.ts'
 
-export type TutorialStage = 'A1' | 'A2' | 'A3' | 'free'
-
-/** Resources stored in the base. Units are abstract gameplay units, NOT NASA measurements. */
-export interface ResourceState {
-  /** Điện dự trữ trong pin (gameplay units). Shown as "Điện" in the HUD. */
-  electricity: number
-  /** Nước sạch dự trữ (gameplay units). */
-  water: number
-  /** Oxy dự trữ (gameplay units). */
-  oxygen: number
-  /** Nước đã dùng, chờ tái chế (gameplay units). Recycling can only turn THIS into clean water. */
-  wastewater: number
-}
-export type ResourceKey = keyof ResourceState
+export type ResourceKey = keyof Stock
+export type ResourceState = Stock
 export type ResourceDelta = Partial<Record<ResourceKey, number>>
+export type PlayMode = 'basic' | 'advanced'
+export type GamePhase = 'opening' | 'playing' | 'returning' | 'ended'
+export type TutorialStage = 'A1' | 'A2' | 'A3' | 'free'
+export type Zone = 'A' | 'B' | 'C' | 'D'
 
-/**
- * Simulation time ≠ render time.
- * - `elapsedMinutes` is mission (simulation) time. It advances only through the
- *   `clock/tick` action and never while `GameState.isPaused` is true.
- * - Render/visual time lives in `src/world/clock.ts` (VisualTime) and drives
- *   animation only. The camera never depends on either clock.
- */
-export interface MissionClock {
-  elapsedMinutes: number
+/** Facts about a real A* route (public/lunar/task02/routes.json), passed in by the UI when the player chooses it. */
+export interface RouteFacts { zone: Zone; name: string; lengthM: number; maxSlopeDeg: number; meanSlopeDeg: number; nearLimitPercent: number; uncertainPercent: number; inPsr: boolean; heightM: number; slopeDeg: number }
+
+export type DecisionKey = 'A1' | 'A3' | 'B1' | 'C1' | 'C2' | 'C31' | 'D1' | 'D2' | 'D3'
+export interface Decision { id: string; key: DecisionKey; atMinute: number; options: string[]; context: Record<string, number | string | boolean> }
+
+export interface DecisionRecord { id: string; key: DecisionKey; choice: string; rejected: string[]; atMinute: number; deltas: ResourceDelta; causeIds: string[]; effectIds: string[] }
+
+export type EventLogKind = 'system' | 'decision' | 'stage' | 'event' | 'consequence' | 'research'
+export interface EventLogEntry { id: string; atMinute: number; kind: EventLogKind; title: string; detail?: string; deltas?: ResourceDelta; causeIds: string[]; tag?: string }
+
+export interface PowerState {
+  capacityFactor: number            // 1, or 0.9 after the A3 damage (permanent; no repair exists)
+  stowedUntil: number | null
+  lightFactor: number
+  productionKw: number
+  loadKw: number
+  greenhouseOn: boolean
+  roverChargingOn: boolean
+  electrolysisOn: boolean
+  d1Priority: 'greenhouse' | 'rover' | null
 }
 
-export type A1ChoiceId = 'recycle-water' | 'charge-battery'
-export type A1Phase = 'briefing' | 'choose' | 'executing' | 'done'
-
-export interface A1State {
-  phase: A1Phase
-  /** Set once, when the player confirms. Never changes afterwards in this run. */
-  choiceId: A1ChoiceId | null
+export interface Observation { atMinute: number; day: number; irrigationOk: boolean; lightPercent: number; growthPercent: number; heightCm: number }
+export interface FoodState {
+  stage: 'growing' | 'harvested' | 'reported'
+  irrigation: 'ok' | 'fault' | 'repairing'
+  repairStartsAt: number | null
+  repairDoneAt: number | null
+  waterStressMin: number
+  lightDeficitMin: number           // minutes with grow lamps unpowered
+  growth: number                    // 0..1
+  observations: Observation[]
+  lightLog: { atMinute: number; on: boolean; reason: string }[]
+  harvestGrams: number | null
+  report: { grams: number; expected: number; growthPercent: number; reliability: 'cao' | 'trung bình' | 'thấp'; reasons: string[] } | null
 }
 
-/** A recorded player decision. `causeIds` = why the decision existed; `effectEventIds` = later events it caused (filled only by real events). */
-export interface DecisionRecord {
-  id: string
-  stage: TutorialStage
-  choiceId: A1ChoiceId
-  rejectedChoiceIds: A1ChoiceId[]
-  atMinute: number
-  /** Actual applied change, measured as after − before (after clamping). */
-  deltas: ResourceDelta
-  causeIds: string[]
-  effectEventIds: string[]
+export interface Sample { atMinute: number; instrument: 'neutron' | 'nir' | 'thermal'; value: number; valid: boolean; flag?: string }
+export type IceStage = 'locked' | 'idle' | 'site' | 'route' | 'charging' | 'outbound' | 'anomaly' | 'surveying' | 'returning' | 'recalled' | 'cargo' | 'done'
+export interface IceState {
+  stage: IceStage
+  zone: Zone | null
+  route: RouteFacts | null
+  distanceM: number                 // along the outbound leg (0 = depot)
+  slow: boolean
+  detourM: number
+  anomalyDone: boolean
+  surveyMin: number
+  surveyTargetMin: number
+  samples: Sample[]
+  roverBattery: number
+  waitingRadiation: boolean
+  report: { validNeutron: number; invalidNeutron: number; meanIndex: number; confidence: 'cao' | 'trung bình' | 'thấp'; reasons: string[] } | null
 }
 
-/**
- * A future mission event that can point back to the decisions that caused it.
- * Task 01 defines the shape only; no event is generated yet, so no past choice
- * is ever blamed for anything.
- */
-export interface MissionEvent {
-  id: string
-  atMinute: number
-  kind: string
-  title: string
-  causeIds: string[]
-}
-
-export type EventLogKind = 'system' | 'decision' | 'stage'
-export interface EventLogEntry {
-  id: string
-  atMinute: number
-  kind: EventLogKind
-  title: string
-  detail?: string
-  choiceId?: A1ChoiceId
-  deltas?: ResourceDelta
-  causeIds: string[]
-}
-export type EventLog = EventLogEntry[]
+export interface SupplyState { stage: 'none' | 'announced' | 'waiting' | 'pickup' | 'delivered'; method: 'rover' | 'crew' | null; jobDoneAt: number | null; roverPhase: 'none' | 'toBase' | 'config' | 'trip' | 'unconfig' }
+export interface RadiationState { active: boolean; endsAt: number | null; roverChoice: 'wait' | 'return' | null }
 
 export interface GameState {
-  /** Save-schema version. Bump when the shape changes. */
   version: number
-  mode: 'story'
+  phase: GamePhase
+  mode: PlayMode | null
   stage: TutorialStage
-  clock: MissionClock
+  clock: { elapsedMinutes: number }
   isPaused: boolean
   resources: ResourceState
-  /** One-off surplus solar energy available for the A1 decision (gameplay units). */
-  surplusPower: number
-  a1: A1State
+  power: PowerState
+  a1Choice: string | null
+  a2Enabled: boolean
+  a3Choice: 'keep' | 'stow' | null
+  a3HazardEndsAt: number | null
+  food: FoodState
+  ice: IceState
+  supply: SupplyState
+  radiation: RadiationState
+  fired: string[]
+  decisions: Decision[]
   history: DecisionRecord[]
-  log: EventLog
-  pendingEvents: MissionEvent[]
+  log: EventLogEntry[]
+  foodWarned: boolean
+  ending: { reason: 'submitted' | 'food'; atMinute: number } | null
   nextId: number
 }
 
 export type GameAction =
-  | { type: 'tutorial/acknowledge' }
+  | { type: 'game/start'; mode: PlayMode }
   | { type: 'clock/setPaused'; paused: boolean }
   | { type: 'clock/tick'; minutes: number }
-  | { type: 'a1/commit'; choiceId: A1ChoiceId }
-  | { type: 'a1/complete'; choiceId: A1ChoiceId }
+  | { type: 'decide'; decisionId: string; choice: string; route?: RouteFacts; detourM?: number }
+  | { type: 'a2/activate' }
+  | { type: 'food/observe' }
+  | { type: 'food/harvest' }
+  | { type: 'food/report' }
+  | { type: 'ice/start' }
+  | { type: 'mission/submit' }
+  | { type: 'mission/finishReturn' }
   | { type: 'game/restart' }
   | { type: 'game/load'; state: GameState }

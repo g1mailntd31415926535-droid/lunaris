@@ -6,7 +6,8 @@ import type { BuildingData, BuildingId, CameraMode, DemoAction } from '../types'
 import { BUILDINGS } from '../data'
 import { BuildingIcon } from '../components/Icons'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { createBuildingModel } from './models'
+import { SOLAR_HEAD_HEIGHT, SOLAR_TOWERS, createBuildingModel, solarTrackerHead } from './models'
+import { useUniverse } from './universe-context'
 import { createSettlementDetailsModel } from './Terrain'
 import { screenTexture } from './textures'
 import { heightAt } from './terrain-field'
@@ -23,6 +24,35 @@ const SCREEN_PLACEMENT: Record<BuildingId, { position: [number, number, number];
   shelter: { position: [0, 2.01, 1.5], size: [0.48, 0.4] },
   greenhouse: { position: [0, 0.58, 2.635], size: [0.4, 0.28] },
   rover: { position: [0, 3.01, 0.354], size: [1.15, 0.39] },
+}
+
+/**
+ * The solar heads turn every frame to face the scene Sun (azimuth about the mast, then tilt up to its elevation).
+ * The Sun direction is the game's artistic Sun (World.tsx SolarLighting), converted into the building's own frame.
+ */
+function SolarTrackers({ reducedMotion }: { reducedMotion: boolean }) {
+  const universe = useUniverse()
+  const heads = useMemo(() => SOLAR_TOWERS.map(() => solarTrackerHead()), [])
+  const root = useRef<THREE.Group>(null)
+  const scratch = useMemo(() => ({ q: new THREE.Quaternion(), d: new THREE.Vector3(), yaw: Number.NaN, pitch: 0 }), [])
+  useEffect(() => () => heads.forEach((h) => h.traverse((n) => { if (n instanceof THREE.Mesh) n.geometry.dispose() })), [heads])
+  useFrame((_, delta) => {
+    const group = root.current
+    if (!group) return
+    group.getWorldQuaternion(scratch.q).invert()
+    const d = scratch.d.copy(universe.current.sunDirection).applyQuaternion(scratch.q).normalize()
+    const yaw = Math.atan2(d.x, d.z), pitch = -THREE.MathUtils.clamp(Math.asin(d.y), 0, 1.2)
+    if (Number.isNaN(scratch.yaw) || reducedMotion) { scratch.yaw = yaw; scratch.pitch = pitch }
+    else {
+      const k = 1 - Math.exp(-Math.min(delta, 0.1) * 2.5)               // slow, motor-like slewing
+      scratch.yaw += Math.atan2(Math.sin(yaw - scratch.yaw), Math.cos(yaw - scratch.yaw)) * k
+      scratch.pitch += (pitch - scratch.pitch) * k
+    }
+    for (const head of heads) head.rotation.set(scratch.pitch, scratch.yaw, 0, 'YXZ')
+  })
+  return <group ref={root} name="solar-trackers">
+    {heads.map((head, i) => <primitive key={i} object={head} position={[SOLAR_TOWERS[i][0], SOLAR_HEAD_HEIGHT, SOLAR_TOWERS[i][1]]} />)}
+  </group>
 }
 
 function WaterActivity({ demo, reducedMotion }: { demo: DemoAction | null; reducedMotion: boolean }) {
@@ -95,13 +125,14 @@ function Building({ data, selected, onSelect, mode, labels, demo, reducedMotion,
     <mesh geometry={pick}><meshBasicMaterial visible={false} /></mesh>
     <mesh position={screenPlacement.position}><planeGeometry args={screenPlacement.size} /><meshStandardMaterial ref={activity} map={screen} emissiveMap={screen} emissive="#ffffff" emissiveIntensity={0.85} roughness={0.5} /></mesh>
     {data.id === 'water' && <WaterActivity demo={demo} reducedMotion={reducedMotion} />}
+    {data.id === 'solar' && <SolarTrackers reducedMotion={reducedMotion} />}
     {data.id === 'greenhouse' && <mesh position={[0, 0.83, 0]}><sphereGeometry args={[2.5, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshPhysicalMaterial color="#a1e2dc" roughness={0.13} metalness={0.25} transparent opacity={0.17} side={THREE.DoubleSide} depthWrite={false} /></mesh>}
     {(selected || hover) && <group>
       <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.075, 0]}><ringGeometry args={[data.radius + 0.2, data.radius + 0.25, 64]} /><meshBasicMaterial color={data.accent} transparent opacity={selected ? 0.78 : 0.4} depthWrite={false} /></mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.065, 0]}><circleGeometry args={[data.radius + 0.2, 64]} /><meshBasicMaterial color={data.accent} transparent opacity={0.045} depthWrite={false} /></mesh>
       {[0, 1, 2, 3].map((i) => <mesh key={i} rotation={[-Math.PI / 2, 0, i * Math.PI / 2]} position={[0, 0.08, 0]}><ringGeometry args={[data.radius + 0.29, data.radius + 0.37, 12, 1, 0.22, 0.19]} /><meshBasicMaterial color={data.accent} transparent opacity={0.8} depthWrite={false} /></mesh>)}
     </group>}
-    {mode === 'base' && (selected || hover || labels) && <Html center position={[0, data.id === 'command' ? 5.35 : data.id === 'solar' ? 2.35 : data.id === 'rover' ? 4.05 : 3.85, 0]} distanceFactor={47 * METRE} zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
+    {mode === 'base' && (selected || hover || labels) && <Html center position={[0, data.id === 'command' ? 5.35 : data.id === 'solar' ? 4.3 : data.id === 'rover' ? 4.05 : 3.85, 0]} distanceFactor={47 * METRE} zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
       <button className={`world-label ${selected ? 'selected' : ''}`} style={{ color: data.accent, pointerEvents: 'auto' }} onClick={(e) => { e.stopPropagation(); onSelect(data.id) }} aria-label={`Xem ${data.name}`}><BuildingIcon id={data.id} size={13} /><span>{data.shortName}</span><i /></button>
       {operating && <span className="world-working">Đang hoạt động<span>···</span></span>}
     </Html>}

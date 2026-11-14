@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { BatteryCharging, ChevronRight, Clock3, Droplets, Expand, Focus, History, Minus, Mouse, Play, Plus, Radio, RotateCcw, Settings2, Sparkles, UsersRound, Volume2, VolumeX, Wind, Pause } from 'lucide-react'
+import { Package, BatteryCharging, ChevronRight, Clock3, Droplets, Expand, Focus, History, Minus, Mouse, Play, Plus, Radio, RotateCcw, Settings2, Sparkles, UsersRound, Volume2, VolumeX, Wind, Pause } from 'lucide-react'
 import type { GameState } from '../game/types'
 import { CAMERA_MODES, NAVIGATION } from '../data'
 import type { BuildingId, CameraMode, DemoAction, Section, WorldHandle } from '../types'
@@ -7,17 +7,18 @@ import { CameraIcon, HelpIcon, MoonMark, SectionIcon } from './Icons'
 import { IconButton, Meter, StatusDot } from './Common'
 import { portraitUrl } from '../world/textures'
 
-export function TopHUD({ resources, paused, onPause, speed, onSpeed, onSettings, onCrew, onActivity, onTimeline, sound, onSound, onFullscreen, time, sol }: { resources: { electricity: number; water: number; oxygen: number }; paused: boolean; onPause: () => void; speed: number; onSpeed: () => void; onSettings: () => void; onCrew: () => void; onActivity: () => void; onTimeline: () => void; sound: boolean; onSound: () => void; onFullscreen: () => void; time: string; sol: number }) {
+export function TopHUD({ resources, paused, onPause, speed, onSpeed, onSettings, onCrew, onActivity, onTimeline, sound, onSound, onFullscreen, time, sol }: { resources: { battery: number; water: number; oxygen: number; foodDays: number }; paused: boolean; onPause: () => void; speed: number; onSpeed: () => void; onSettings: () => void; onCrew: () => void; onActivity: () => void; onTimeline: () => void; sound: boolean; onSound: () => void; onFullscreen: () => void; time: string; sol: number }) {
   const readings = [
-    { label: 'Điện', value: resources.electricity, color: '#ffd75e', icon: BatteryCharging },
-    { label: 'Nước', value: resources.water, color: '#59c9ff', icon: Droplets },
-    { label: 'Oxy', value: resources.oxygen, color: '#5edc88', icon: Wind },
+    { label: 'Điện', value: resources.battery, unit: '%', meter: resources.battery, color: '#ffd75e', icon: BatteryCharging },
+    { label: 'Nước', value: resources.water, unit: '%', meter: resources.water, color: '#59c9ff', icon: Droplets },
+    { label: 'Oxy', value: resources.oxygen, unit: '%', meter: resources.oxygen, color: '#5edc88', icon: Wind },
+    { label: 'Thực phẩm', value: +resources.foodDays.toFixed(1), unit: ' ngày', meter: Math.min(100, resources.foodDays / 15 * 100), color: '#ff9d6e', icon: Package },
   ]
   return <header className="top-hud">
     <div className="brand"><MoonMark className="brand-mark" /><div><span className="wordmark">LUNARIS</span><span className="brand-tagline">LITTLE STEPS. BIG DISCOVERIES.</span></div></div>
     <div className="status-hud glass" aria-label="Chỉ số căn cứ (số cân bằng giả định của trò chơi)">
-      <div className="resource-cluster">{readings.map(({ label, value, color, icon: Icon }) => <div className="resource" key={label} style={{ '--resource-color': color } as CSSProperties}>
-        <span className="resource-icon"><Icon size={21} strokeWidth={1.8} /></span><div className="resource-reading"><span className="resource-label">{label}</span><span className="resource-value">{value}<small>/100</small></span><Meter value={value} color={color} label={`${label} dự trữ`} /></div>
+      <div className="resource-cluster">{readings.map(({ label, value, unit, meter, color, icon: Icon }) => <div className="resource" key={label} style={{ '--resource-color': color } as CSSProperties}>
+        <span className="resource-icon"><Icon size={21} strokeWidth={1.8} /></span><div className="resource-reading"><span className="resource-label">{label}</span><span className="resource-value">{value}<small>{unit}</small></span><Meter value={meter} color={color} label={`${label} dự trữ`} /></div>
       </div>)}</div>
       <div className="time-controls"><div className="time-reading"><span><StatusDot pulse={!paused} /> SOL {String(sol).padStart(3, '0')}</span><strong><Clock3 size={13} />{time}</strong></div><IconButton label={paused ? 'Tiếp tục' : 'Tạm dừng'} className={paused ? 'play-toggle paused' : 'play-toggle'} onClick={onPause}>{paused ? <Play size={17} fill="currentColor" /> : <Pause size={17} fill="currentColor" />}</IconButton><button className="speed-button" aria-label={`Tốc độ ${speed} lần. Đổi tốc độ`} onClick={onSpeed}>{speed}<span>×</span></button></div>
     </div>
@@ -49,14 +50,12 @@ export function CameraToolbar({ mode, handle, onHelp, selected }: { mode: Camera
   </>
 }
 
-export function Commander({ collapsed, onCollapse, onInspect, onTimeline, game, demo, mode, onMode }: { collapsed: boolean; onCollapse: (collapsed: boolean) => void; onInspect: (kind: 'battery' | 'water') => void; onTimeline: () => void; game: GameState; demo: DemoAction | null; mode: CameraMode; onMode: (mode: CameraMode) => void }) {
+export function Commander({ collapsed, onCollapse, game, demo, mode, onMode, hint, onTimeline }: { collapsed: boolean; onCollapse: (collapsed: boolean) => void; game: GameState; demo: DemoAction | null; mode: CameraMode; onMode: (mode: CameraMode) => void; hint: string; onTimeline: () => void }) {
   const busy = demo && demo.phase !== 'complete'
-  const a1 = game.a1.phase
-  const baseText = a1 === 'done' ? 'Bạn đã dùng điện dư cho một việc. Chặng A2 (nước + điện tạo ra oxy) sẽ có ở bản sau. Bạn có thể xem lại lựa chọn của mình.' : 'Điện đang dư, nhưng chỉ đủ cho MỘT việc. Chạm vào trạm nước hoặc trạm pin để xem mỗi việc được gì, mất gì.'
-  const text = busy ? demo.kind === 'radiation' ? 'Về nhà thôi! Đội của mình đang chạy vào nơi trú ẩn.' : demo.phase === 'walking' ? 'Linh đang đến trạm. Cùng nhìn bạn ấy nhé!' : 'Giỏi lắm! Thiết bị đang hoạt động. Mỗi lựa chọn đều có ý nghĩa.' : mode === 'orbit' ? 'Thấy đốm sáng nhỏ không? Đó là ngôi nhà mới của chúng mình!' : mode === 'region' ? 'Ngay gần cực Nam, một cuộc phiêu lưu đang chờ bạn.' : baseText
+  const text = busy && demo.phase === 'walking' ? 'Phi hành gia đang đến thiết bị. Cùng nhìn bạn ấy nhé!' : mode === 'orbit' ? 'Thấy đốm sáng nhỏ không? Đó là ngôi nhà của chúng mình!' : hint
   if (collapsed) return <button className="commander-collapsed glass" aria-label="Mở lời nhắn của Commander Luna" onClick={() => onCollapse(false)}><img src={portraitUrl()} alt="Commander Luna" /><span /><i>!</i></button>
   return <section className={`commander-panel glass ${busy ? 'commander-busy' : ''}`} aria-label="Lời nhắn của Commander Luna">
     <button className="commander-avatar" onClick={() => onCollapse(true)} aria-label="Thu gọn lời nhắn"><img src={portraitUrl()} alt="Commander Luna, phi hành gia pixel" /><span className="avatar-orbit" /><StatusDot /></button>
-    <div className="commander-content"><div className="commander-title"><span>COMMANDER <b>LUNA</b></span><span className="commander-hello">{busy ? 'CÙNG QUAN SÁT' : `CHẶNG ${game.stage}`}</span><button className="commander-hide" onClick={() => onCollapse(true)} aria-label="Ẩn lời nhắn">−</button></div><p>{text}</p><div className="commander-actions">{mode !== 'base' ? <><button className="commander-primary" onClick={() => onMode('base')}><Sparkles size={14} /> Đến căn cứ</button><button onClick={() => onMode(mode === 'orbit' ? 'region' : 'orbit')}><CameraIcon id={mode === 'orbit' ? 'region' : 'orbit'} size={14} />{mode === 'orbit' ? 'Khám phá cực Nam' : 'Ngắm Mặt Trăng'}</button></> : a1 === 'done' ? <button className="commander-primary" onClick={onTimeline}><History size={14} /> Xem lại quyết định</button> : <><button className="commander-primary" disabled={!!busy} onClick={() => onInspect('water')}><Droplets size={14} /> Xem trạm nước</button><button disabled={!!busy} onClick={() => onInspect('battery')}><BatteryCharging size={14} /> Xem trạm pin</button></>}</div></div>
+    <div className="commander-content"><div className="commander-title"><span>COMMANDER <b>LUNA</b></span><span className="commander-hello">{game.stage === 'free' ? 'TỰ ĐIỀU HÀNH' : `CHẶNG ${game.stage}`}</span><button className="commander-hide" onClick={() => onCollapse(true)} aria-label="Ẩn lời nhắn">−</button></div><p>{text}</p><div className="commander-actions">{mode !== 'base' ? <button className="commander-primary" onClick={() => onMode('base')}><Sparkles size={14} /> Đến căn cứ</button> : <button className="commander-primary" onClick={onTimeline}><History size={14} /> Nhật ký nhân quả</button>}</div></div>
   </section>
 }

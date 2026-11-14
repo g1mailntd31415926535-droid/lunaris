@@ -5,7 +5,7 @@ export type DemoKind = 'water' | 'battery' | 'solar' | 'radiation' | 'rover' | '
 export type DemoPhase = 'walking' | 'working' | 'complete'
 export type Quality = 'high' | 'balanced'
 export type TerrainLayer = 'nasa' | 'game'
-export interface CameraRequest { id: number; mode: CameraMode }
+export interface CameraRequest { id: number; mode: CameraMode; /** Optional height above the observed point (m) for scripted views. */ altitudeM?: number }
 export interface RoverStatus {
   phase: 'docked' | 'outbound' | 'scanning' | 'returning'
   site: string
@@ -114,5 +114,6 @@ declare global {
     __LUNARIS_TEST_FOCUS__?: (x: number, z: number) => void
     __LUNARIS_SCENE__?: import('three').Scene
     __LUNARIS_THREE__?: typeof import('three')
+    __LUNARIS_TEST_SELECT__?: (id: string) => void
   }
 }

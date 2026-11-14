@@ -50,26 +50,45 @@ function command() {
   return kit.build()
 }
 
+/** Tower positions of the solar station (building-local metres). The panel heads are separate, Sun-tracking objects. */
+export const SOLAR_TOWERS: readonly (readonly [number, number])[] = [[-1.7, -0.6], [1.3, -0.1]]
+export const SOLAR_HEAD_HEIGHT = 2.25
+
+// Two tracking towers (reference image): a slim mast on a plinth; the two tall panels (solarTrackerHead) turn to the Sun.
 function solar() {
   const kit = new ModelKit()
   addFoundation(kit, 6.8, 5.2)
-  for (let row = 0; row < 2; row++) {
-    for (let col = 0; col < 3; col++) {
-      const x = (col - 1) * 2.15, z = (row - 0.5) * 2.35
-      const tilt = 0.4
-      kit.part('box', [1.98, 0.13, 2.08], [x, 1.05, z], M.yellow, [tilt, 0, 0])
-      kit.part('box', [1.88, 0.055, 1.97], [x, 1.12, z + 0.028], panelSurface(), [tilt, 0, 0])
-      for (const side of [-0.7, 0.7]) {
-        kit.part('box', [0.12, 0.69, 0.15], [x + side, 0.63, z + 0.4], M.trim)
-        kit.part('box', [0.28, 0.09, 0.47], [x + side, 0.33, z + 0.4], M.dark)
-      }
-      kit.part('box', [0.06, 0.055, 0.24], [x + 0.94, 0.79, z + 0.92], M.blueLight)
-    }
+  const yaw = 0.62
+  const c = Math.cos(yaw), s = Math.sin(yaw)
+  const at = (x: number, z: number, dx: number, y: number, dz: number): [number, number, number] => [x + dx * c + dz * s, y, z - dx * s + dz * c]
+  for (const [x, z] of SOLAR_TOWERS) {
+    kit.part('box', [1.25, 0.24, 1.0], at(x, z, 0, 0.43, 0), M.dark, [0, yaw, 0])                 // plinth
+    kit.part('box', [1.05, 0.06, 0.8], at(x, z, 0, 0.57, 0), M.trim, [0, yaw, 0])
+    kit.part('cylinder', [0.34, 0.34, 0.34], at(x, z, 0, 0.72, 0), M.trim)                         // mast collar
+    kit.part('cylinder', [0.17, 3.05, 0.17], at(x, z, 0, 2.15, 0), M.white)                        // mast
+    kit.part('cylinder', [0.27, 0.12, 0.27], at(x, z, 0, 1.25, 0), M.trim)
+    kit.part('cylinder', [0.2, 0.2, 0.2], at(x, z, 0, 3.72, 0), M.trim)
+    kit.part('box', [0.06, 0.055, 0.24], at(x, z, 0.45, 0.65, 0.5), M.blueLight, [0, yaw, 0])
   }
+  kit.tube([[-1.7, 0.36, -0.1], [-1.7, 0.36, 1.2], [1.3, 0.36, 1.2], [2.4, 0.36, 1.6]], 0.045, M.dark, 12)
+  kit.tube([[1.3, 0.36, 0.35], [1.3, 0.36, 1.2]], 0.045, M.dark, 4)
   kit.part('round', [0.85, 0.8, 0.63], [2.75, 0.67, 2.06], M.shell)
   kit.part('round', [0.53, 0.4, 0.045], [2.75, 0.72, 2.4], M.dark)
   kit.part('box', [0.12, 0.13, 0.05], [2.74, 0.74, 2.44], M.greenLight)
   addBeacon(kit, [-3.1, 0.34, 2.25], 0.72)
+  return kit.build()
+}
+
+/** One Sun-tracking head: cross beam and two tall panels either side of the mast. Panel faces point along local +z. */
+export function solarTrackerHead() {
+  const kit = new ModelKit()
+  kit.part('cylinder', [0.24, 0.3, 0.24], [0, 0, 0], M.trim)                                   // slewing hub on the mast
+  kit.part('box', [2.18, 0.1, 0.12], [0, 0, 0.02], M.trim)                                     // cross beam
+  for (const side of [-1, 1]) {
+    kit.part('box', [1.0, 2.72, 0.07], [side * 0.6, 0, 0.1], M.white)                          // light frame
+    kit.part('box', [0.9, 2.6, 0.05], [side * 0.6, 0, 0.135], panelSurface())                  // cells
+    kit.part('box', [0.035, 2.6, 0.06], [side * 0.6, 0, 0.14], M.trim)                         // centre rail
+  }
   return kit.build()
 }
 

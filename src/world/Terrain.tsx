@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { screenTexture } from './textures'
+import { BIG_ROCKS, SMALL_ROCKS } from './rock-plan'
 import { heightAt } from './terrain-field'
-import { ROCK_PLACEMENTS } from './rock-plan'
 import { ModelKit, MATERIALS as M } from './model-kit'
 import { createLampModel } from './models'
 
 // Decorative rocks: ILLUSTRATIVE_RECONSTRUCTION ("chi tiết minh họa tái dựng"), not objects measured by NASA.
 // They sit on the real DEM surface but add no terrain, no collision and no slope data.
+// Sparse scatter, none in the worked area of the base (rock-plan.ts BASE_CLEARING).
 function Rocks() {
   const small = useRef<THREE.InstancedMesh>(null)
   const large = useRef<THREE.InstancedMesh>(null)
@@ -21,24 +22,25 @@ function Rocks() {
   const material = useMemo(() => new THREE.MeshStandardMaterial({ color: '#9792aa', roughness: 0.96, flatShading: true }), [])
   useEffect(() => {
     const matrix = new THREE.Matrix4(), q = new THREE.Quaternion(), euler = new THREE.Euler(), color = new THREE.Color()
-    const place = (mesh: THREE.InstancedMesh, count: number, big: boolean) => {
-      for (let i = 0; i < count; i++) {
-        const rock = ROCK_PLACEMENTS[(big ? 550 : 0) + i], { x, z, size } = rock
-        euler.set(...rock.rotation)
-        q.setFromEuler(euler)
+    const place = (mesh: THREE.InstancedMesh, rocks: typeof SMALL_ROCKS) => {
+      for (let i = 0; i < rocks.length; i++) {
+        const rock = rocks[i], { x, z, size } = rock
+        q.setFromEuler(euler.set(...rock.rotation))
         matrix.compose(new THREE.Vector3(x, heightAt(x, z) + size * 0.4, z), q, new THREE.Vector3(...rock.scale))
         mesh.setMatrixAt(i, matrix)
-        color.set('#b0a5bd').multiplyScalar(rock.shade)
-        mesh.setColorAt(i, color)
+        mesh.setColorAt(i, color.set('#b0a5bd').multiplyScalar(rock.shade))
       }
       mesh.instanceMatrix.needsUpdate = true
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
       mesh.computeBoundingSphere()
     }
-    place(small.current!, 550, false); place(large.current!, 55, true)
+    place(small.current!, SMALL_ROCKS); place(large.current!, BIG_ROCKS)
     return () => { geometry.dispose(); material.dispose() }
   }, [geometry, material])
-  return <group name="illustrative-rocks" userData={{ provenance: 'ILLUSTRATIVE_RECONSTRUCTION', label: 'chi tiết minh họa tái dựng' }}><instancedMesh ref={small} args={[geometry, material, 550]} castShadow receiveShadow /><instancedMesh ref={large} args={[geometry, material, 55]} castShadow receiveShadow /></group>
+  return <group name="illustrative-rocks" userData={{ provenance: 'ILLUSTRATIVE_RECONSTRUCTION', label: 'chi tiết minh họa tái dựng' }}>
+    <instancedMesh ref={small} args={[geometry, material, SMALL_ROCKS.length]} castShadow receiveShadow />
+    <instancedMesh ref={large} args={[geometry, material, BIG_ROCKS.length]} castShadow receiveShadow />
+  </group>
 }
 
 /** Paths, lamps, cargo and the landing pad. Returned as a model so it can be merged with the buildings by material. */
@@ -83,12 +85,6 @@ export function createSettlementDetailsModel() {
     kit.ring(1.58, 0.025, [-11.7, 0.07, 7.8], M.trim)
     kit.part('box', [0.9, 0.014, 0.14], [-11.7, 0.08, 8.0], M.shell)
     kit.part('box', [0.15, 0.014, 0.9], [-12.075, 0.08, 7.68], M.shell)
-    // Bright ice-like crystals are decorative, not a claim about a real deposit.
-    for (let i = 0; i < 8; i++) {
-      const x = -15 + Math.sin(i * 2.1) * 1.0, z = 14 + Math.cos(i * 2.1) * 0.9
-      const h = 0.3 + (i % 3) * 0.26
-      kit.part('cone', [0.3, h, 0.3], [x, heightAt(x, z) + h / 2, z], M.blueLight, [0.2, i, 0.14])
-    }
     return kit.build()
 }
 
