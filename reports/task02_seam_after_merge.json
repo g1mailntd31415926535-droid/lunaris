@@ -1,0 +1,28 @@
+{
+  "rule": "Toàn vùng chồng lấn dùng Site04 vì toterr trung bình thấp hơn (Site01 0.3858 m, Site04 0.3165 m); trong dải 50 m sát mép của chính Site04 thì dùng nguồn còn lại; ở hai góc 50 m nằm trong dải mép của cả hai tile, mẫu nào xa mép tile của nó hơn thì được chọn. Không blend, không làm mượt, không sửa cao độ.",
+  "alternatives_measured": {
+    "corner_keeps_preferred_source_max_step_m": 6.24,
+    "edge_band_100m_max_step_m": 2.25,
+    "single_source_edge_bands": "Ở nơi chỉ có một nguồn, dải mép của nguồn đó vẫn được dùng (không có dữ liệu thay thế, không bịa)."
+  },
+  "why_not_per_pixel": "Chọn theo toterr từng pixel tạo ~4.400 km đường nối vụn (16,7 % cặp pixel kề nhau đổi nguồn), tức thêm nhám giả ~0,3 m; chọn theo khối 160 m cho bậc lớn nhất 6,24 m. Quy tắc cấp vùng cho đường nối ngắn nhất và bậc lớn nhất nhỏ nhất.",
+  "step_definition": "Bậc tại một cặp pixel kề nhau khác nguồn = max(|z04 − z01|) tại hai pixel đó (cả hai nguồn đều có số liệu tại đường nối).",
+  "seam_pairs": 3400,
+  "seam_length_km": 17.0,
+  "max_step_m": 3.144287109375,
+  "mean_step_m": 0.22634144502527573,
+  "median_step_m": 0.14013671875,
+  "p95_step_m": 0.7341705322265619,
+  "p99_step_m": 1.2370703124999998,
+  "pairs_step_gt_1m": 79,
+  "pairs_step_gt_2m": 2,
+  "percent_pairs_step_gt_2sigma_toterr": 1.412,
+  "max_step_location_xy_m": [
+    -8952.5,
+    -12912.5
+  ],
+  "overlap_share_site04_percent": 98.72,
+  "status": "REPORTED",
+  "blocked_by_seam": false,
+  "note": "Đường nối là gián đoạn thật giữa hai sản phẩm NASA, được giữ nguyên và báo cáo; mọi tuyến rover cắt qua đường nối phải ghi nhận bậc tại điểm cắt."
+}

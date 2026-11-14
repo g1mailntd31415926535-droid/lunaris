@@ -45,7 +45,7 @@ export function CameraToolbar({ mode, handle, onHelp, selected }: { mode: Camera
   return <>
     <div className="world-tools"><div className="zoom-controls glass"><IconButton label="Phóng to" onClick={() => handle?.zoom('in')}><Plus size={19} /></IconButton><span /><IconButton label="Thu nhỏ" onClick={() => handle?.zoom('out')}><Minus size={19} /></IconButton></div><IconButton label="Về góc nhìn ban đầu" className="glass reset-camera" onClick={() => handle?.reset()}><RotateCcw size={17} /></IconButton>{selected && mode === 'base' && <IconButton label="Đến công trình đang chọn" className="glass focus-camera" onClick={() => handle?.focus(selected)}><Focus size={18} /></IconButton>}</div>
     <button className="camera-hint" onClick={onHelp}><Mouse size={14} /><span>Kéo để xoay <i /> Cuộn để phóng</span><kbd>?</kbd></button>
-    <div className="bottom-status"><span className="scale-indicator"><i /><i /><i /></span><span>{mode === 'orbit' ? '1.737 km' : mode === 'region' ? '500 m' : '50 m'}</span><b>UI PROTOTYPE</b><StatusDot /></div>
+    <div className="bottom-status"><span className="scale-indicator"><i /><i /><i /></span><span>{mode === 'orbit' ? '1.737 km' : mode === 'region' ? '500 m' : '50 m'}</span><b data-tooltip="Địa hình: NASA LOLA 5 m · đá và chi tiết nhỏ: minh họa tái dựng">ĐỊA HÌNH NASA LOLA 5 m</b><StatusDot /></div>
   </>
 }
 

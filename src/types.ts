@@ -12,6 +12,8 @@ export interface RoverStatus {
   trip: number
   distance: number
   speed: number
+  /** Why MILO stops / what the route status is. Routes are never presented as safe. */
+  note?: string
 }
 
 export interface BuildingData {
@@ -57,6 +59,8 @@ export interface WorldHandle {
   reset: () => void
   focus: (id: BuildingId) => void
   focusCrew: (name: string) => void
+  /** Flies to a region-local point (metres) and lets the camera pan around it. */
+  focusPoint: (x: number, z: number) => void
 }
 
 export interface SceneDiagnostics {
@@ -91,6 +95,8 @@ export interface SceneDiagnostics {
   celestialVisibility: { moon: boolean; earth: boolean; sun: boolean }
   rover: RoverStatus & { position: number[]; nominal: number[]; screen: { x: number; y: number }; follow: boolean; groundError: number }
   cameraTravel: { moving: boolean; destination: CameraMode }
+  terrain: { source: string; tiles: number; triangles: number; pending: number; levels: number[]; finestLevel: number }
+  terrainPending: number
 }
 
 declare global {
@@ -98,5 +104,6 @@ declare global {
     __LUNARIS__?: SceneDiagnostics
     __LUNARIS_CONTROLS__?: { orbit: (yaw: number, polar: number) => void; altitude: (metres: number) => void }
     __LUNARIS_ROVER__?: { seek: (seconds: number) => void }
+    __LUNARIS_TEST_FOCUS__?: (x: number, z: number) => void
   }
 }

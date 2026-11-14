@@ -31,12 +31,26 @@ export function MoonGlobe() {
   const [albedo, bump] = useTexture(['/assets/procedural/moon-albedo.png', '/assets/procedural/moon-bump.png'])
   albedo.colorSpace = THREE.SRGBColorSpace; albedo.anisotropy = 8
   bump.colorSpace = THREE.NoColorSpace
-  useEffect(() => () => geometry.dispose(), [geometry])
+  const universe = useUniverse()
+  const matte = useMemo(() => ({ value: 1 }), [])
+  // The globe is fictional far-view relief (orbit view). Near the surface it must not pass for lunar
+  // terrain next to the real NASA DEM, so it fades to the plain dark backdrop ("ngoài vùng dữ liệu NASA").
+  // Its inner side, seen through the 50 km hole around the data circle, is always that backdrop.
+  const material = useMemo(() => {
+    const m = new THREE.MeshStandardMaterial({ map: albedo, bumpMap: bump, bumpScale: 0.16, color: '#ededed', roughness: 0.96, metalness: 0.015, side: THREE.DoubleSide })
+    m.onBeforeCompile = (shader) => {
+      shader.uniforms.uNearMatte = matte
+      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uNearMatte;')
+        .replace('#include <colorspace_fragment>', '#include <colorspace_fragment>\ngl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.0353, 0.0510, 0.1176), gl_FrontFacing ? uNearMatte : 1.0);')
+    }
+    m.customProgramCacheKey = () => 'lunaris-far-globe-matte-v1'
+    return m
+  }, [albedo, bump, matte])
+  useFrame(() => { matte.value = 1 - THREE.MathUtils.smoothstep(Math.log(Math.max(1, universe.current.altitudeM)), Math.log(30_000), Math.log(220_000)) })
+  useEffect(() => () => { geometry.dispose(); material.dispose() }, [geometry, material])
   // This mesh is rebased to Artemis before upload. Its parent is still the real
   // Moon centre; the child offset exactly cancels that centre in CPU precision.
-  return <mesh name="moon-surface" geometry={geometry} position={[0, MOON_RADIUS_KM, 0]}>
-    <meshStandardMaterial map={albedo} bumpMap={bump} bumpScale={0.16} color="#ededed" roughness={0.96} metalness={0.015} />
-  </mesh>
+  return <mesh name="moon-surface" geometry={geometry} material={material} position={[0, MOON_RADIUS_KM, 0]} />
 }
 
 const atmosphereVertex = `

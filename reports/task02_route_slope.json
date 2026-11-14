@@ -1,0 +1,2802 @@
+{
+  "generated_utc": "2026-11-14T09:29:19+00:00",
+  "slope_limit_deg": 15.0,
+  "slope_limit_provenance": "SCENARIO / gameplay_assumption — không phải thông số của một rover thật nào. Đổi ROVER_SLOPE_LIMIT_DEG trong build_terrain.py.",
+  "note": "Chưa có giới hạn phương tiện thật, lớp chiếu sáng, nhiệt, liên lạc: KHÔNG tuyến nào được gắn SAFE_ROUTE. Trạng thái tốt nhất có thể là UNVERIFIED.",
+  "routes": {
+    "A": {
+      "kind": "Đường thẳng BASE → điểm (chỉ để kiểm tra; KHÔNG phải tuyến đã thiết kế, không phải tuyến an toàn)",
+      "straight_line_length_m": 6927.9,
+      "samples": 2772,
+      "sample_spacing_m": 2.5,
+      "crosses_nodata": false,
+      "slope_limit_deg_SCENARIO": 15.0,
+      "slope_layer": "slp 5 m gốc của nguồn được chọn tại từng pixel (độ dốc địa hình, mọi hướng)",
+      "max_slope_deg": 26.97,
+      "mean_slope_deg": 10.82,
+      "max_along_track_grade_deg_20m_baseline": 25.52,
+      "max_slope_error_deg_slperr": 7.04,
+      "length_over_limit_m": 1682.5,
+      "percent_over_limit": 24.29,
+      "percent_length_over_threshold": {
+        "10": 50.54,
+        "15": 24.28,
+        "20": 6.13,
+        "25": 0.22
+      },
+      "segments_over_limit": [
+        {
+          "from_m": 612.5,
+          "to_m": 615.0,
+          "length_m": 5.0,
+          "max_slope_deg": 15.08,
+          "from_xy_m": [
+            -11527.8,
+            -11689.2
+          ],
+          "to_xy_m": [
+            -11530.0,
+            -11688.0
+          ]
+        },
+        {
+          "from_m": 732.5,
+          "to_m": 735.0,
+          "length_m": 5.0,
+          "max_slope_deg": 16.1,
+          "from_xy_m": [
+            -11631.3,
+            -11628.3
+          ],
+          "to_xy_m": [
+            -11633.4,
+            -11627.1
+          ]
+        },
+        {
+          "from_m": 750.0,
+          "to_m": 757.5,
+          "length_m": 10.0,
+          "max_slope_deg": 17.33,
+          "from_xy_m": [
+            -11646.3,
+            -11619.5
+          ],
+          "to_xy_m": [
+            -11652.8,
+            -11615.6
+          ]
+        },
+        {
+          "from_m": 857.6,
+          "to_m": 875.1,
+          "length_m": 20.0,
+          "max_slope_deg": 19.17,
+          "from_xy_m": [
+            -11739.0,
+            -11564.9
+          ],
+          "to_xy_m": [
+            -11754.1,
+            -11556.0
+          ]
+        },
+        {
+          "from_m": 927.6,
+          "to_m": 927.6,
+          "length_m": 2.5,
+          "max_slope_deg": 16.32,
+          "from_xy_m": [
+            -11799.3,
+            -11529.4
+          ],
+          "to_xy_m": [
+            -11799.3,
+            -11529.4
+          ]
+        },
+        {
+          "from_m": 935.1,
+          "to_m": 965.1,
+          "length_m": 32.5,
+          "max_slope_deg": 22.69,
+          "from_xy_m": [
+            -11805.8,
+            -11525.6
+          ],
+          "to_xy_m": [
+            -11831.6,
+            -11510.4
+          ]
+        },
+        {
+          "from_m": 1035.1,
+          "to_m": 1042.6,
+          "length_m": 10.0,
+          "max_slope_deg": 15.92,
+          "from_xy_m": [
+            -11891.9,
+            -11474.8
+          ],
+          "to_xy_m": [
+            -11898.4,
+            -11471.0
+          ]
+        },
+        {
+          "from_m": 1062.6,
+          "to_m": 1062.6,
+          "length_m": 2.5,
+          "max_slope_deg": 15.06,
+          "from_xy_m": [
+            -11915.6,
+            -11460.9
+          ],
+          "to_xy_m": [
+            -11915.6,
+            -11460.9
+          ]
+        },
+        {
+          "from_m": 1070.1,
+          "to_m": 1107.6,
+          "length_m": 40.0,
+          "max_slope_deg": 22.73,
+          "from_xy_m": [
+            -11922.1,
+            -11457.1
+          ],
+          "to_xy_m": [
+            -11954.4,
+            -11438.1
+          ]
+        },
+        {
+          "from_m": 1120.1,
+          "to_m": 1332.6,
+          "length_m": 215.0,
+          "max_slope_deg": 26.97,
+          "from_xy_m": [
+            -11965.2,
+            -11431.7
+          ],
+          "to_xy_m": [
+            -12148.3,
+            -11323.9
+          ]
+        },
+        {
+          "from_m": 1352.6,
+          "to_m": 1362.6,
+          "length_m": 12.5,
+          "max_slope_deg": 15.54,
+          "from_xy_m": [
+            -12165.6,
+            -11313.7
+          ],
+          "to_xy_m": [
+            -12174.2,
+            -11308.7
+          ]
+        },
+        {
+          "from_m": 1370.1,
+          "to_m": 1375.1,
+          "length_m": 7.5,
+          "max_slope_deg": 15.31,
+          "from_xy_m": [
+            -12180.6,
+            -11304.9
+          ],
+          "to_xy_m": [
+            -12185.0,
+            -11302.3
+          ]
+        },
+        {
+          "from_m": 1380.1,
+          "to_m": 1387.6,
+          "length_m": 10.0,
+          "max_slope_deg": 16.29,
+          "from_xy_m": [
+            -12189.3,
+            -11299.8
+          ],
+          "to_xy_m": [
+            -12195.7,
+            -11296.0
+          ]
+        },
+        {
+          "from_m": 1392.6,
+          "to_m": 1397.6,
+          "length_m": 7.5,
+          "max_slope_deg": 15.49,
+          "from_xy_m": [
+            -12200.0,
+            -11293.4
+          ],
+          "to_xy_m": [
+            -12204.3,
+            -11290.9
+          ]
+        },
+        {
+          "from_m": 1410.1,
+          "to_m": 1417.6,
+          "length_m": 10.0,
+          "max_slope_deg": 15.19,
+          "from_xy_m": [
+            -12215.1,
+            -11284.6
+          ],
+          "to_xy_m": [
+            -12221.6,
+            -11280.8
+          ]
+        },
+        {
+          "from_m": 1427.6,
+          "to_m": 1442.6,
+          "length_m": 17.5,
+          "max_slope_deg": 18.2,
+          "from_xy_m": [
+            -12230.2,
+            -11275.7
+          ],
+          "to_xy_m": [
+            -12243.1,
+            -11268.1
+          ]
+        },
+        {
+          "from_m": 1452.6,
+          "to_m": 2220.1,
+          "length_m": 770.0,
+          "max_slope_deg": 25.48,
+          "from_xy_m": [
+            -12251.7,
+            -11263.0
+          ],
+          "to_xy_m": [
+            -12913.2,
+            -10873.6
+          ]
+        },
+        {
+          "from_m": 2227.6,
+          "to_m": 2227.6,
+          "length_m": 2.5,
+          "max_slope_deg": 15.79,
+          "from_xy_m": [
+            -12919.6,
+            -10869.8
+          ],
+          "to_xy_m": [
+            -12919.6,
+            -10869.8
+          ]
+        },
+        {
+          "from_m": 2235.1,
+          "to_m": 2267.6,
+          "length_m": 35.0,
+          "max_slope_deg": 19.62,
+          "from_xy_m": [
+            -12926.1,
+            -10866.0
+          ],
+          "to_xy_m": [
+            -12954.1,
+            -10849.5
+          ]
+        },
+        {
+          "from_m": 2297.6,
+          "to_m": 2447.6,
+          "length_m": 152.5,
+          "max_slope_deg": 21.74,
+          "from_xy_m": [
+            -12979.9,
+            -10834.3
+          ],
+          "to_xy_m": [
+            -13109.2,
+            -10758.1
+          ]
+        },
+        {
+          "from_m": 2455.2,
+          "to_m": 2587.7,
+          "length_m": 135.0,
+          "max_slope_deg": 22.42,
+          "from_xy_m": [
+            -13115.7,
+            -10754.3
+          ],
+          "to_xy_m": [
+            -13229.9,
+            -10687.1
+          ]
+        },
+        {
+          "from_m": 2617.7,
+          "to_m": 2655.2,
+          "length_m": 40.0,
+          "max_slope_deg": 18.27,
+          "from_xy_m": [
+            -13255.7,
+            -10671.9
+          ],
+          "to_xy_m": [
+            -13288.0,
+            -10652.9
+          ]
+        },
+        {
+          "from_m": 2700.2,
+          "to_m": 2702.7,
+          "length_m": 5.0,
+          "max_slope_deg": 18.26,
+          "from_xy_m": [
+            -13326.8,
+            -10630.0
+          ],
+          "to_xy_m": [
+            -13329.0,
+            -10628.8
+          ]
+        },
+        {
+          "from_m": 2730.2,
+          "to_m": 2742.7,
+          "length_m": 15.0,
+          "max_slope_deg": 17.51,
+          "from_xy_m": [
+            -13352.7,
+            -10614.8
+          ],
+          "to_xy_m": [
+            -13363.4,
+            -10608.5
+          ]
+        },
+        {
+          "from_m": 2815.2,
+          "to_m": 2817.7,
+          "length_m": 5.0,
+          "max_slope_deg": 15.73,
+          "from_xy_m": [
+            -13425.9,
+            -10571.7
+          ],
+          "to_xy_m": [
+            -13428.1,
+            -10570.4
+          ]
+        },
+        {
+          "from_m": 2917.7,
+          "to_m": 2925.2,
+          "length_m": 10.0,
+          "max_slope_deg": 15.29,
+          "from_xy_m": [
+            -13514.3,
+            -10519.7
+          ],
+          "to_xy_m": [
+            -13520.7,
+            -10515.9
+          ]
+        },
+        {
+          "from_m": 4910.3,
+          "to_m": 4912.8,
+          "length_m": 5.0,
+          "max_slope_deg": 15.33,
+          "from_xy_m": [
+            -15231.4,
+            -9508.7
+          ],
+          "to_xy_m": [
+            -15233.5,
+            -9507.4
+          ]
+        },
+        {
+          "from_m": 4987.8,
+          "to_m": 4987.8,
+          "length_m": 2.5,
+          "max_slope_deg": 15.22,
+          "from_xy_m": [
+            -15298.1,
+            -9469.4
+          ],
+          "to_xy_m": [
+            -15298.1,
+            -9469.4
+          ]
+        },
+        {
+          "from_m": 5082.8,
+          "to_m": 5092.8,
+          "length_m": 12.5,
+          "max_slope_deg": 16.52,
+          "from_xy_m": [
+            -15380.0,
+            -9421.1
+          ],
+          "to_xy_m": [
+            -15388.6,
+            -9416.1
+          ]
+        },
+        {
+          "from_m": 5215.3,
+          "to_m": 5250.3,
+          "length_m": 37.5,
+          "max_slope_deg": 21.69,
+          "from_xy_m": [
+            -15494.2,
+            -9353.9
+          ],
+          "to_xy_m": [
+            -15524.4,
+            -9336.2
+          ]
+        },
+        {
+          "from_m": 5440.3,
+          "to_m": 5440.3,
+          "length_m": 2.5,
+          "max_slope_deg": 15.01,
+          "from_xy_m": [
+            -15688.1,
+            -9239.8
+          ],
+          "to_xy_m": [
+            -15688.1,
+            -9239.8
+          ]
+        },
+        {
+          "from_m": 5612.8,
+          "to_m": 5620.3,
+          "length_m": 10.0,
+          "max_slope_deg": 16.49,
+          "from_xy_m": [
+            -15836.8,
+            -9152.2
+          ],
+          "to_xy_m": [
+            -15843.2,
+            -9148.4
+          ]
+        },
+        {
+          "from_m": 5707.8,
+          "to_m": 5715.3,
+          "length_m": 10.0,
+          "max_slope_deg": 16.68,
+          "from_xy_m": [
+            -15918.6,
+            -9104.0
+          ],
+          "to_xy_m": [
+            -15925.1,
+            -9100.2
+          ]
+        },
+        {
+          "from_m": 6272.9,
+          "to_m": 6275.4,
+          "length_m": 5.0,
+          "max_slope_deg": 15.02,
+          "from_xy_m": [
+            -16405.5,
+            -8817.3
+          ],
+          "to_xy_m": [
+            -16407.7,
+            -8816.1
+          ]
+        },
+        {
+          "from_m": 6325.4,
+          "to_m": 6327.9,
+          "length_m": 5.0,
+          "max_slope_deg": 16.42,
+          "from_xy_m": [
+            -16450.8,
+            -8790.7
+          ],
+          "to_xy_m": [
+            -16452.9,
+            -8789.4
+          ]
+        },
+        {
+          "from_m": 6337.9,
+          "to_m": 6340.4,
+          "length_m": 5.0,
+          "max_slope_deg": 17.59,
+          "from_xy_m": [
+            -16461.5,
+            -8784.4
+          ],
+          "to_xy_m": [
+            -16463.7,
+            -8783.1
+          ]
+        },
+        {
+          "from_m": 6750.4,
+          "to_m": 6757.9,
+          "length_m": 10.0,
+          "max_slope_deg": 20.46,
+          "from_xy_m": [
+            -16817.0,
+            -8575.1
+          ],
+          "to_xy_m": [
+            -16823.5,
+            -8571.3
+          ]
+        }
+      ],
+      "segments_over_limit_count": 37,
+      "seam_crossings": [],
+      "height_start_m": 1944.83,
+      "height_end_m": 1295.28,
+      "height_min_m": 1112.84,
+      "height_max_m": 1951.19,
+      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "travel_time_h_at_0p7_mps_SCENARIO": 2.75
+    },
+    "B": {
+      "kind": "Đường thẳng BASE → điểm (chỉ để kiểm tra; KHÔNG phải tuyến đã thiết kế, không phải tuyến an toàn)",
+      "straight_line_length_m": 6768.8,
+      "samples": 2708,
+      "sample_spacing_m": 2.5,
+      "crosses_nodata": false,
+      "slope_limit_deg_SCENARIO": 15.0,
+      "slope_layer": "slp 5 m gốc của nguồn được chọn tại từng pixel (độ dốc địa hình, mọi hướng)",
+      "max_slope_deg": 25.93,
+      "mean_slope_deg": 10.2,
+      "max_along_track_grade_deg_20m_baseline": 25.09,
+      "max_slope_error_deg_slperr": 10.91,
+      "length_over_limit_m": 1105.0,
+      "percent_over_limit": 16.32,
+      "percent_length_over_threshold": {
+        "10": 50.7,
+        "15": 16.32,
+        "20": 1.44,
+        "25": 0.3
+      },
+      "segments_over_limit": [
+        {
+          "from_m": 337.6,
+          "to_m": 340.1,
+          "length_m": 5.0,
+          "max_slope_deg": 16.57,
+          "from_xy_m": [
+            -10662.9,
+            -12017.2
+          ],
+          "to_xy_m": [
+            -10660.4,
+            -12017.3
+          ]
+        },
+        {
+          "from_m": 407.6,
+          "to_m": 410.1,
+          "length_m": 5.0,
+          "max_slope_deg": 16.02,
+          "from_xy_m": [
+            -10593.0,
+            -12020.8
+          ],
+          "to_xy_m": [
+            -10590.5,
+            -12020.9
+          ]
+        },
+        {
+          "from_m": 427.6,
+          "to_m": 430.1,
+          "length_m": 5.0,
+          "max_slope_deg": 15.57,
+          "from_xy_m": [
+            -10573.0,
+            -12021.8
+          ],
+          "to_xy_m": [
+            -10570.5,
+            -12021.9
+          ]
+        },
+        {
+          "from_m": 687.6,
+          "to_m": 690.1,
+          "length_m": 5.0,
+          "max_slope_deg": 16.37,
+          "from_xy_m": [
+            -10313.3,
+            -12035.0
+          ],
+          "to_xy_m": [
+            -10310.8,
+            -12035.2
+          ]
+        },
+        {
+          "from_m": 847.7,
+          "to_m": 860.2,
+          "length_m": 15.0,
+          "max_slope_deg": 17.7,
+          "from_xy_m": [
+            -10153.4,
+            -12043.2
+          ],
+          "to_xy_m": [
+            -10141.0,
+            -12043.8
+          ]
+        },
+        {
+          "from_m": 902.7,
+          "to_m": 905.2,
+          "length_m": 5.0,
+          "max_slope_deg": 15.22,
+          "from_xy_m": [
+            -10098.5,
+            -12046.0
+          ],
+          "to_xy_m": [
+            -10096.0,
+            -12046.1
+          ]
+        },
+        {
+          "from_m": 1012.7,
+          "to_m": 1020.2,
+          "length_m": 10.0,
+          "max_slope_deg": 16.78,
+          "from_xy_m": [
+            -9988.6,
+            -12051.6
+          ],
+          "to_xy_m": [
+            -9981.1,
+            -12052.0
+          ]
+        },
+        {
+          "from_m": 1042.7,
+          "to_m": 1055.2,
+          "length_m": 15.0,
+          "max_slope_deg": 18.1,
+          "from_xy_m": [
+            -9958.7,
+            -12053.1
+          ],
+          "to_xy_m": [
+            -9946.2,
+            -12053.8
+          ]
+        },
+        {
+          "from_m": 1062.7,
+          "to_m": 1070.2,
+          "length_m": 10.0,
+          "max_slope_deg": 16.59,
+          "from_xy_m": [
+            -9938.7,
+            -12054.2
+          ],
+          "to_xy_m": [
+            -9931.2,
+            -12054.5
+          ]
+        },
+        {
+          "from_m": 1097.7,
+          "to_m": 1115.2,
+          "length_m": 20.0,
+          "max_slope_deg": 17.38,
+          "from_xy_m": [
+            -9903.7,
+            -12055.9
+          ],
+          "to_xy_m": [
+            -9886.2,
+            -12056.8
+          ]
+        },
+        {
+          "from_m": 1237.7,
+          "to_m": 1255.2,
+          "length_m": 20.0,
+          "max_slope_deg": 25.93,
+          "from_xy_m": [
+            -9763.9,
+            -12063.1
+          ],
+          "to_xy_m": [
+            -9746.4,
+            -12064.0
+          ]
+        },
+        {
+          "from_m": 1587.8,
+          "to_m": 1610.3,
+          "length_m": 25.0,
+          "max_slope_deg": 17.16,
+          "from_xy_m": [
+            -9414.3,
+            -12080.9
+          ],
+          "to_xy_m": [
+            -9391.8,
+            -12082.1
+          ]
+        },
+        {
+          "from_m": 1677.8,
+          "to_m": 1700.3,
+          "length_m": 25.0,
+          "max_slope_deg": 16.0,
+          "from_xy_m": [
+            -9324.4,
+            -12085.5
+          ],
+          "to_xy_m": [
+            -9301.9,
+            -12086.7
+          ]
+        },
+        {
+          "from_m": 1767.8,
+          "to_m": 1775.3,
+          "length_m": 10.0,
+          "max_slope_deg": 18.23,
+          "from_xy_m": [
+            -9234.5,
+            -12090.1
+          ],
+          "to_xy_m": [
+            -9227.0,
+            -12090.5
+          ]
+        },
+        {
+          "from_m": 1877.9,
+          "to_m": 1885.4,
+          "length_m": 10.0,
+          "max_slope_deg": 16.03,
+          "from_xy_m": [
+            -9124.6,
+            -12095.7
+          ],
+          "to_xy_m": [
+            -9117.1,
+            -12096.1
+          ]
+        },
+        {
+          "from_m": 1962.9,
+          "to_m": 1965.4,
+          "length_m": 5.0,
+          "max_slope_deg": 16.34,
+          "from_xy_m": [
+            -9039.7,
+            -12100.0
+          ],
+          "to_xy_m": [
+            -9037.2,
+            -12100.2
+          ]
+        },
+        {
+          "from_m": 2012.9,
+          "to_m": 2045.4,
+          "length_m": 35.0,
+          "max_slope_deg": 17.12,
+          "from_xy_m": [
+            -8989.7,
+            -12102.6
+          ],
+          "to_xy_m": [
+            -8957.3,
+            -12104.3
+          ]
+        },
+        {
+          "from_m": 2052.9,
+          "to_m": 2085.4,
+          "length_m": 35.0,
+          "max_slope_deg": 23.29,
+          "from_xy_m": [
+            -8949.8,
+            -12104.6
+          ],
+          "to_xy_m": [
+            -8917.3,
+            -12106.3
+          ]
+        },
+        {
+          "from_m": 2187.9,
+          "to_m": 2215.4,
+          "length_m": 30.0,
+          "max_slope_deg": 19.48,
+          "from_xy_m": [
+            -8814.9,
+            -12111.5
+          ],
+          "to_xy_m": [
+            -8787.5,
+            -12112.9
+          ]
+        },
+        {
+          "from_m": 2370.5,
+          "to_m": 2373.0,
+          "length_m": 5.0,
+          "max_slope_deg": 16.06,
+          "from_xy_m": [
+            -8632.6,
+            -12120.8
+          ],
+          "to_xy_m": [
+            -8630.1,
+            -12120.9
+          ]
+        },
+        {
+          "from_m": 2390.5,
+          "to_m": 2398.0,
+          "length_m": 10.0,
+          "max_slope_deg": 17.48,
+          "from_xy_m": [
+            -8612.6,
+            -12121.8
+          ],
+          "to_xy_m": [
+            -8605.2,
+            -12122.2
+          ]
+        },
+        {
+          "from_m": 2645.5,
+          "to_m": 2663.0,
+          "length_m": 20.0,
+          "max_slope_deg": 19.54,
+          "from_xy_m": [
+            -8357.9,
+            -12134.8
+          ],
+          "to_xy_m": [
+            -8340.5,
+            -12135.7
+          ]
+        },
+        {
+          "from_m": 4460.9,
+          "to_m": 4468.4,
+          "length_m": 10.0,
+          "max_slope_deg": 15.1,
+          "from_xy_m": [
+            -6544.9,
+            -12227.4
+          ],
+          "to_xy_m": [
+            -6537.5,
+            -12227.7
+          ]
+        },
+        {
+          "from_m": 4475.9,
+          "to_m": 4535.9,
+          "length_m": 62.5,
+          "max_slope_deg": 17.14,
+          "from_xy_m": [
+            -6530.0,
+            -12228.1
+          ],
+          "to_xy_m": [
+            -6470.0,
+            -12231.2
+          ]
+        },
+        {
+          "from_m": 4543.4,
+          "to_m": 4550.9,
+          "length_m": 10.0,
+          "max_slope_deg": 16.32,
+          "from_xy_m": [
+            -6462.5,
+            -12231.6
+          ],
+          "to_xy_m": [
+            -6455.0,
+            -12232.0
+          ]
+        },
+        {
+          "from_m": 4563.4,
+          "to_m": 4635.9,
+          "length_m": 75.0,
+          "max_slope_deg": 22.3,
+          "from_xy_m": [
+            -6442.6,
+            -12232.6
+          ],
+          "to_xy_m": [
+            -6370.1,
+            -12236.3
+          ]
+        },
+        {
+          "from_m": 4703.4,
+          "to_m": 4708.4,
+          "length_m": 7.5,
+          "max_slope_deg": 15.4,
+          "from_xy_m": [
+            -6302.7,
+            -12239.7
+          ],
+          "to_xy_m": [
+            -6297.7,
+            -12240.0
+          ]
+        },
+        {
+          "from_m": 4718.4,
+          "to_m": 4770.9,
+          "length_m": 55.0,
+          "max_slope_deg": 19.1,
+          "from_xy_m": [
+            -6287.7,
+            -12240.5
+          ],
+          "to_xy_m": [
+            -6235.3,
+            -12243.2
+          ]
+        },
+        {
+          "from_m": 4783.4,
+          "to_m": 4790.9,
+          "length_m": 10.0,
+          "max_slope_deg": 15.71,
+          "from_xy_m": [
+            -6222.8,
+            -12243.8
+          ],
+          "to_xy_m": [
+            -6215.3,
+            -12244.2
+          ]
+        },
+        {
+          "from_m": 4813.4,
+          "to_m": 4815.9,
+          "length_m": 5.0,
+          "max_slope_deg": 15.15,
+          "from_xy_m": [
+            -6192.8,
+            -12245.3
+          ],
+          "to_xy_m": [
+            -6190.3,
+            -12245.5
+          ]
+        },
+        {
+          "from_m": 4898.4,
+          "to_m": 4905.9,
+          "length_m": 10.0,
+          "max_slope_deg": 15.93,
+          "from_xy_m": [
+            -6107.9,
+            -12249.7
+          ],
+          "to_xy_m": [
+            -6100.4,
+            -12250.1
+          ]
+        },
+        {
+          "from_m": 4928.4,
+          "to_m": 4945.9,
+          "length_m": 20.0,
+          "max_slope_deg": 16.59,
+          "from_xy_m": [
+            -6078.0,
+            -12251.2
+          ],
+          "to_xy_m": [
+            -6060.5,
+            -12252.1
+          ]
+        },
+        {
+          "from_m": 5098.5,
+          "to_m": 5101.0,
+          "length_m": 5.0,
+          "max_slope_deg": 15.38,
+          "from_xy_m": [
+            -5908.1,
+            -12259.9
+          ],
+          "to_xy_m": [
+            -5905.7,
+            -12260.0
+          ]
+        },
+        {
+          "from_m": 5128.5,
+          "to_m": 5131.0,
+          "length_m": 5.0,
+          "max_slope_deg": 15.47,
+          "from_xy_m": [
+            -5878.2,
+            -12261.4
+          ],
+          "to_xy_m": [
+            -5875.7,
+            -12261.5
+          ]
+        },
+        {
+          "from_m": 5148.5,
+          "to_m": 5171.0,
+          "length_m": 25.0,
+          "max_slope_deg": 18.17,
+          "from_xy_m": [
+            -5858.2,
+            -12262.4
+          ],
+          "to_xy_m": [
+            -5835.7,
+            -12263.6
+          ]
+        },
+        {
+          "from_m": 5243.5,
+          "to_m": 5251.0,
+          "length_m": 10.0,
+          "max_slope_deg": 16.28,
+          "from_xy_m": [
+            -5763.3,
+            -12267.3
+          ],
+          "to_xy_m": [
+            -5755.8,
+            -12267.6
+          ]
+        },
+        {
+          "from_m": 5258.5,
+          "to_m": 5281.0,
+          "length_m": 25.0,
+          "max_slope_deg": 25.13,
+          "from_xy_m": [
+            -5748.3,
+            -12268.0
+          ],
+          "to_xy_m": [
+            -5725.9,
+            -12269.2
+          ]
+        },
+        {
+          "from_m": 5293.5,
+          "to_m": 5321.0,
+          "length_m": 30.0,
+          "max_slope_deg": 22.33,
+          "from_xy_m": [
+            -5713.4,
+            -12269.8
+          ],
+          "to_xy_m": [
+            -5685.9,
+            -12271.2
+          ]
+        },
+        {
+          "from_m": 5338.5,
+          "to_m": 5366.0,
+          "length_m": 30.0,
+          "max_slope_deg": 18.15,
+          "from_xy_m": [
+            -5668.4,
+            -12272.1
+          ],
+          "to_xy_m": [
+            -5640.9,
+            -12273.5
+          ]
+        },
+        {
+          "from_m": 5388.5,
+          "to_m": 5401.0,
+          "length_m": 15.0,
+          "max_slope_deg": 15.76,
+          "from_xy_m": [
+            -5618.5,
+            -12274.6
+          ],
+          "to_xy_m": [
+            -5606.0,
+            -12275.3
+          ]
+        },
+        {
+          "from_m": 5408.5,
+          "to_m": 5411.0,
+          "length_m": 5.0,
+          "max_slope_deg": 15.16,
+          "from_xy_m": [
+            -5598.5,
+            -12275.7
+          ],
+          "to_xy_m": [
+            -5596.0,
+            -12275.8
+          ]
+        },
+        {
+          "from_m": 5428.5,
+          "to_m": 5446.0,
+          "length_m": 20.0,
+          "max_slope_deg": 16.2,
+          "from_xy_m": [
+            -5578.5,
+            -12276.7
+          ],
+          "to_xy_m": [
+            -5561.0,
+            -12277.6
+          ]
+        },
+        {
+          "from_m": 5458.5,
+          "to_m": 5496.1,
+          "length_m": 40.0,
+          "max_slope_deg": 20.2,
+          "from_xy_m": [
+            -5548.5,
+            -12278.2
+          ],
+          "to_xy_m": [
+            -5511.1,
+            -12280.1
+          ]
+        },
+        {
+          "from_m": 5503.6,
+          "to_m": 5686.1,
+          "length_m": 185.0,
+          "max_slope_deg": 25.48,
+          "from_xy_m": [
+            -5503.6,
+            -12280.5
+          ],
+          "to_xy_m": [
+            -5321.3,
+            -12289.8
+          ]
+        },
+        {
+          "from_m": 5718.6,
+          "to_m": 5731.1,
+          "length_m": 15.0,
+          "max_slope_deg": 19.01,
+          "from_xy_m": [
+            -5288.8,
+            -12291.5
+          ],
+          "to_xy_m": [
+            -5276.4,
+            -12292.1
+          ]
+        },
+        {
+          "from_m": 5768.6,
+          "to_m": 5811.1,
+          "length_m": 45.0,
+          "max_slope_deg": 16.15,
+          "from_xy_m": [
+            -5238.9,
+            -12294.0
+          ],
+          "to_xy_m": [
+            -5196.4,
+            -12296.2
+          ]
+        },
+        {
+          "from_m": 5838.6,
+          "to_m": 5856.1,
+          "length_m": 20.0,
+          "max_slope_deg": 16.44,
+          "from_xy_m": [
+            -5169.0,
+            -12297.6
+          ],
+          "to_xy_m": [
+            -5151.5,
+            -12298.5
+          ]
+        },
+        {
+          "from_m": 5873.6,
+          "to_m": 5876.1,
+          "length_m": 5.0,
+          "max_slope_deg": 15.33,
+          "from_xy_m": [
+            -5134.0,
+            -12299.4
+          ],
+          "to_xy_m": [
+            -5131.5,
+            -12299.5
+          ]
+        },
+        {
+          "from_m": 6013.7,
+          "to_m": 6021.2,
+          "length_m": 10.0,
+          "max_slope_deg": 19.87,
+          "from_xy_m": [
+            -4994.2,
+            -12306.5
+          ],
+          "to_xy_m": [
+            -4986.7,
+            -12306.9
+          ]
+        },
+        {
+          "from_m": 6653.8,
+          "to_m": 6656.3,
+          "length_m": 5.0,
+          "max_slope_deg": 16.97,
+          "from_xy_m": [
+            -4354.9,
+            -12339.1
+          ],
+          "to_xy_m": [
+            -4352.4,
+            -12339.3
+          ]
+        },
+        {
+          "from_m": 6683.8,
+          "to_m": 6701.3,
+          "length_m": 20.0,
+          "max_slope_deg": 19.48,
+          "from_xy_m": [
+            -4324.9,
+            -12340.7
+          ],
+          "to_xy_m": [
+            -4307.4,
+            -12341.6
+          ]
+        }
+      ],
+      "segments_over_limit_count": 51,
+      "seam_crossings": [
+        {
+          "at_m": 2050.4,
+          "step_m": 0.145
+        }
+      ],
+      "height_start_m": 1944.83,
+      "height_end_m": 1157.1,
+      "height_min_m": 1147.22,
+      "height_max_m": 1944.83,
+      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "travel_time_h_at_0p7_mps_SCENARIO": 2.69
+    },
+    "C": {
+      "kind": "Đường thẳng BASE → điểm (chỉ để kiểm tra; KHÔNG phải tuyến đã thiết kế, không phải tuyến an toàn)",
+      "straight_line_length_m": 1776.0,
+      "samples": 711,
+      "sample_spacing_m": 2.5,
+      "crosses_nodata": false,
+      "slope_limit_deg_SCENARIO": 15.0,
+      "slope_layer": "slp 5 m gốc của nguồn được chọn tại từng pixel (độ dốc địa hình, mọi hướng)",
+      "max_slope_deg": 15.44,
+      "mean_slope_deg": 4.98,
+      "max_along_track_grade_deg_20m_baseline": 13.39,
+      "max_slope_error_deg_slperr": 3.37,
+      "length_over_limit_m": 5.0,
+      "percent_over_limit": 0.28,
+      "percent_length_over_threshold": {
+        "10": 3.52,
+        "15": 0.28,
+        "20": 0.0,
+        "25": 0.0
+      },
+      "segments_over_limit": [
+        {
+          "from_m": 1478.3,
+          "to_m": 1480.8,
+          "length_m": 5.0,
+          "max_slope_deg": 15.44,
+          "from_xy_m": [
+            -12221.1,
+            -12833.2
+          ],
+          "to_xy_m": [
+            -12223.2,
+            -12834.6
+          ]
+        }
+      ],
+      "segments_over_limit_count": 1,
+      "seam_crossings": [],
+      "height_start_m": 1944.83,
+      "height_end_m": 1869.34,
+      "height_min_m": 1869.34,
+      "height_max_m": 1957.4,
+      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "travel_time_h_at_0p7_mps_SCENARIO": 0.7
+    },
+    "D": {
+      "kind": "Đường thẳng BASE → điểm (chỉ để kiểm tra; KHÔNG phải tuyến đã thiết kế, không phải tuyến an toàn)",
+      "straight_line_length_m": 10034.3,
+      "samples": 4014,
+      "sample_spacing_m": 2.5,
+      "crosses_nodata": false,
+      "slope_limit_deg_SCENARIO": 15.0,
+      "slope_layer": "slp 5 m gốc của nguồn được chọn tại từng pixel (độ dốc địa hình, mọi hướng)",
+      "max_slope_deg": 38.81,
+      "mean_slope_deg": 13.39,
+      "max_along_track_grade_deg_20m_baseline": 23.11,
+      "max_slope_error_deg_slperr": 5.4,
+      "length_over_limit_m": 4330.0,
+      "percent_over_limit": 43.15,
+      "percent_length_over_threshold": {
+        "10": 78.9,
+        "15": 43.15,
+        "20": 6.18,
+        "25": 0.5
+      },
+      "segments_over_limit": [
+        {
+          "from_m": 1220.2,
+          "to_m": 1267.7,
+          "length_m": 50.0,
+          "max_slope_deg": 19.46,
+          "from_xy_m": [
+            -9979.2,
+            -11331.4
+          ],
+          "to_xy_m": [
+            -9939.5,
+            -11305.4
+          ]
+        },
+        {
+          "from_m": 1980.4,
+          "to_m": 1995.4,
+          "length_m": 17.5,
+          "max_slope_deg": 17.35,
+          "from_xy_m": [
+            -9343.4,
+            -10914.9
+          ],
+          "to_xy_m": [
+            -9330.8,
+            -10906.7
+          ]
+        },
+        {
+          "from_m": 2015.4,
+          "to_m": 2025.4,
+          "length_m": 12.5,
+          "max_slope_deg": 15.7,
+          "from_xy_m": [
+            -9314.1,
+            -10895.7
+          ],
+          "to_xy_m": [
+            -9305.7,
+            -10890.3
+          ]
+        },
+        {
+          "from_m": 2040.4,
+          "to_m": 2042.9,
+          "length_m": 5.0,
+          "max_slope_deg": 15.64,
+          "from_xy_m": [
+            -9293.2,
+            -10882.0
+          ],
+          "to_xy_m": [
+            -9291.1,
+            -10880.7
+          ]
+        },
+        {
+          "from_m": 2087.9,
+          "to_m": 2087.9,
+          "length_m": 2.5,
+          "max_slope_deg": 15.26,
+          "from_xy_m": [
+            -9253.4,
+            -10856.0
+          ],
+          "to_xy_m": [
+            -9253.4,
+            -10856.0
+          ]
+        },
+        {
+          "from_m": 2117.9,
+          "to_m": 2137.9,
+          "length_m": 22.5,
+          "max_slope_deg": 17.43,
+          "from_xy_m": [
+            -9228.3,
+            -10839.6
+          ],
+          "to_xy_m": [
+            -9211.6,
+            -10828.6
+          ]
+        },
+        {
+          "from_m": 2210.4,
+          "to_m": 2235.4,
+          "length_m": 27.5,
+          "max_slope_deg": 17.37,
+          "from_xy_m": [
+            -9150.9,
+            -10788.9
+          ],
+          "to_xy_m": [
+            -9130.0,
+            -10775.2
+          ]
+        },
+        {
+          "from_m": 2292.9,
+          "to_m": 2330.4,
+          "length_m": 40.0,
+          "max_slope_deg": 18.11,
+          "from_xy_m": [
+            -9081.9,
+            -10743.7
+          ],
+          "to_xy_m": [
+            -9050.5,
+            -10723.1
+          ]
+        },
+        {
+          "from_m": 2365.4,
+          "to_m": 2365.4,
+          "length_m": 2.5,
+          "max_slope_deg": 15.33,
+          "from_xy_m": [
+            -9021.2,
+            -10703.9
+          ],
+          "to_xy_m": [
+            -9021.2,
+            -10703.9
+          ]
+        },
+        {
+          "from_m": 2427.9,
+          "to_m": 2435.4,
+          "length_m": 10.0,
+          "max_slope_deg": 15.66,
+          "from_xy_m": [
+            -8969.0,
+            -10669.7
+          ],
+          "to_xy_m": [
+            -8962.7,
+            -10665.6
+          ]
+        },
+        {
+          "from_m": 2452.9,
+          "to_m": 2472.9,
+          "length_m": 22.5,
+          "max_slope_deg": 18.98,
+          "from_xy_m": [
+            -8948.0,
+            -10656.0
+          ],
+          "to_xy_m": [
+            -8931.3,
+            -10645.0
+          ]
+        },
+        {
+          "from_m": 2538.0,
+          "to_m": 2538.0,
+          "length_m": 2.5,
+          "max_slope_deg": 15.89,
+          "from_xy_m": [
+            -8876.9,
+            -10609.4
+          ],
+          "to_xy_m": [
+            -8876.9,
+            -10609.4
+          ]
+        },
+        {
+          "from_m": 2560.5,
+          "to_m": 2590.5,
+          "length_m": 32.5,
+          "max_slope_deg": 17.4,
+          "from_xy_m": [
+            -8858.1,
+            -10597.1
+          ],
+          "to_xy_m": [
+            -8833.0,
+            -10580.6
+          ]
+        },
+        {
+          "from_m": 2600.5,
+          "to_m": 2610.5,
+          "length_m": 12.5,
+          "max_slope_deg": 17.43,
+          "from_xy_m": [
+            -8824.6,
+            -10575.2
+          ],
+          "to_xy_m": [
+            -8816.3,
+            -10569.7
+          ]
+        },
+        {
+          "from_m": 2625.5,
+          "to_m": 2700.5,
+          "length_m": 77.5,
+          "max_slope_deg": 31.43,
+          "from_xy_m": [
+            -8803.7,
+            -10561.5
+          ],
+          "to_xy_m": [
+            -8741.0,
+            -10520.3
+          ]
+        },
+        {
+          "from_m": 2840.5,
+          "to_m": 2883.0,
+          "length_m": 45.0,
+          "max_slope_deg": 38.81,
+          "from_xy_m": [
+            -8623.8,
+            -10443.6
+          ],
+          "to_xy_m": [
+            -8588.3,
+            -10420.3
+          ]
+        },
+        {
+          "from_m": 2888.0,
+          "to_m": 2890.5,
+          "length_m": 5.0,
+          "max_slope_deg": 25.45,
+          "from_xy_m": [
+            -8584.1,
+            -10417.6
+          ],
+          "to_xy_m": [
+            -8582.0,
+            -10416.2
+          ]
+        },
+        {
+          "from_m": 2900.5,
+          "to_m": 2900.5,
+          "length_m": 2.5,
+          "max_slope_deg": 15.19,
+          "from_xy_m": [
+            -8573.6,
+            -10410.7
+          ],
+          "to_xy_m": [
+            -8573.6,
+            -10410.7
+          ]
+        },
+        {
+          "from_m": 2905.5,
+          "to_m": 2963.0,
+          "length_m": 60.0,
+          "max_slope_deg": 16.55,
+          "from_xy_m": [
+            -8569.4,
+            -10408.0
+          ],
+          "to_xy_m": [
+            -8521.3,
+            -10376.5
+          ]
+        },
+        {
+          "from_m": 2968.0,
+          "to_m": 3028.0,
+          "length_m": 62.5,
+          "max_slope_deg": 18.98,
+          "from_xy_m": [
+            -8517.1,
+            -10373.8
+          ],
+          "to_xy_m": [
+            -8466.9,
+            -10340.9
+          ]
+        },
+        {
+          "from_m": 3038.0,
+          "to_m": 3088.1,
+          "length_m": 52.5,
+          "max_slope_deg": 20.6,
+          "from_xy_m": [
+            -8458.6,
+            -10335.4
+          ],
+          "to_xy_m": [
+            -8416.7,
+            -10308.0
+          ]
+        },
+        {
+          "from_m": 3095.6,
+          "to_m": 3238.1,
+          "length_m": 145.0,
+          "max_slope_deg": 26.51,
+          "from_xy_m": [
+            -8410.5,
+            -10303.9
+          ],
+          "to_xy_m": [
+            -8291.2,
+            -10225.8
+          ]
+        },
+        {
+          "from_m": 3265.6,
+          "to_m": 3345.6,
+          "length_m": 82.5,
+          "max_slope_deg": 19.29,
+          "from_xy_m": [
+            -8268.2,
+            -10210.7
+          ],
+          "to_xy_m": [
+            -8201.3,
+            -10166.9
+          ]
+        },
+        {
+          "from_m": 3360.6,
+          "to_m": 3363.1,
+          "length_m": 5.0,
+          "max_slope_deg": 15.59,
+          "from_xy_m": [
+            -8188.8,
+            -10158.7
+          ],
+          "to_xy_m": [
+            -8186.7,
+            -10157.3
+          ]
+        },
+        {
+          "from_m": 3368.1,
+          "to_m": 3393.1,
+          "length_m": 27.5,
+          "max_slope_deg": 17.29,
+          "from_xy_m": [
+            -8182.5,
+            -10154.5
+          ],
+          "to_xy_m": [
+            -8161.6,
+            -10140.8
+          ]
+        },
+        {
+          "from_m": 3408.1,
+          "to_m": 3435.6,
+          "length_m": 30.0,
+          "max_slope_deg": 16.61,
+          "from_xy_m": [
+            -8149.0,
+            -10132.6
+          ],
+          "to_xy_m": [
+            -8126.0,
+            -10117.6
+          ]
+        },
+        {
+          "from_m": 3440.6,
+          "to_m": 3465.6,
+          "length_m": 27.5,
+          "max_slope_deg": 17.02,
+          "from_xy_m": [
+            -8121.8,
+            -10114.8
+          ],
+          "to_xy_m": [
+            -8100.9,
+            -10101.1
+          ]
+        },
+        {
+          "from_m": 3473.1,
+          "to_m": 3615.6,
+          "length_m": 145.0,
+          "max_slope_deg": 22.62,
+          "from_xy_m": [
+            -8094.6,
+            -10097.0
+          ],
+          "to_xy_m": [
+            -7975.4,
+            -10018.9
+          ]
+        },
+        {
+          "from_m": 3623.2,
+          "to_m": 3775.7,
+          "length_m": 155.0,
+          "max_slope_deg": 20.31,
+          "from_xy_m": [
+            -7969.1,
+            -10014.8
+          ],
+          "to_xy_m": [
+            -7841.5,
+            -9931.2
+          ]
+        },
+        {
+          "from_m": 3805.7,
+          "to_m": 3955.7,
+          "length_m": 152.5,
+          "max_slope_deg": 22.38,
+          "from_xy_m": [
+            -7816.4,
+            -9914.8
+          ],
+          "to_xy_m": [
+            -7690.9,
+            -9832.6
+          ]
+        },
+        {
+          "from_m": 3960.7,
+          "to_m": 4068.2,
+          "length_m": 110.0,
+          "max_slope_deg": 25.91,
+          "from_xy_m": [
+            -7686.7,
+            -9829.8
+          ],
+          "to_xy_m": [
+            -7596.8,
+            -9770.9
+          ]
+        },
+        {
+          "from_m": 4078.2,
+          "to_m": 4160.7,
+          "length_m": 85.0,
+          "max_slope_deg": 23.94,
+          "from_xy_m": [
+            -7588.4,
+            -9765.5
+          ],
+          "to_xy_m": [
+            -7519.4,
+            -9720.2
+          ]
+        },
+        {
+          "from_m": 4190.8,
+          "to_m": 4223.3,
+          "length_m": 35.0,
+          "max_slope_deg": 19.34,
+          "from_xy_m": [
+            -7494.3,
+            -9703.8
+          ],
+          "to_xy_m": [
+            -7467.1,
+            -9686.0
+          ]
+        },
+        {
+          "from_m": 4245.8,
+          "to_m": 4415.8,
+          "length_m": 172.5,
+          "max_slope_deg": 20.39,
+          "from_xy_m": [
+            -7448.3,
+            -9673.7
+          ],
+          "to_xy_m": [
+            -7306.1,
+            -9580.5
+          ]
+        },
+        {
+          "from_m": 4435.8,
+          "to_m": 4648.3,
+          "length_m": 215.0,
+          "max_slope_deg": 24.24,
+          "from_xy_m": [
+            -7289.3,
+            -9569.5
+          ],
+          "to_xy_m": [
+            -7111.5,
+            -9453.1
+          ]
+        },
+        {
+          "from_m": 4655.8,
+          "to_m": 4940.9,
+          "length_m": 287.6,
+          "max_slope_deg": 23.77,
+          "from_xy_m": [
+            -7105.3,
+            -9449.0
+          ],
+          "to_xy_m": [
+            -6866.8,
+            -9292.8
+          ]
+        },
+        {
+          "from_m": 4948.4,
+          "to_m": 5090.9,
+          "length_m": 145.0,
+          "max_slope_deg": 22.48,
+          "from_xy_m": [
+            -6860.5,
+            -9288.7
+          ],
+          "to_xy_m": [
+            -6741.3,
+            -9210.6
+          ]
+        },
+        {
+          "from_m": 5118.4,
+          "to_m": 5125.9,
+          "length_m": 10.0,
+          "max_slope_deg": 17.23,
+          "from_xy_m": [
+            -6718.3,
+            -9195.5
+          ],
+          "to_xy_m": [
+            -6712.0,
+            -9191.4
+          ]
+        },
+        {
+          "from_m": 5135.9,
+          "to_m": 5190.9,
+          "length_m": 57.5,
+          "max_slope_deg": 18.11,
+          "from_xy_m": [
+            -6703.6,
+            -9185.9
+          ],
+          "to_xy_m": [
+            -6657.6,
+            -9155.8
+          ]
+        },
+        {
+          "from_m": 5195.9,
+          "to_m": 5200.9,
+          "length_m": 7.5,
+          "max_slope_deg": 16.07,
+          "from_xy_m": [
+            -6653.4,
+            -9153.0
+          ],
+          "to_xy_m": [
+            -6649.3,
+            -9150.3
+          ]
+        },
+        {
+          "from_m": 5210.9,
+          "to_m": 5418.5,
+          "length_m": 210.0,
+          "max_slope_deg": 26.68,
+          "from_xy_m": [
+            -6640.9,
+            -9144.8
+          ],
+          "to_xy_m": [
+            -6467.3,
+            -9031.1
+          ]
+        },
+        {
+          "from_m": 5458.5,
+          "to_m": 5466.0,
+          "length_m": 10.0,
+          "max_slope_deg": 15.87,
+          "from_xy_m": [
+            -6433.8,
+            -9009.2
+          ],
+          "to_xy_m": [
+            -6427.5,
+            -9005.1
+          ]
+        },
+        {
+          "from_m": 5471.0,
+          "to_m": 5473.5,
+          "length_m": 5.0,
+          "max_slope_deg": 15.57,
+          "from_xy_m": [
+            -6423.4,
+            -9002.3
+          ],
+          "to_xy_m": [
+            -6421.3,
+            -9001.0
+          ]
+        },
+        {
+          "from_m": 5481.0,
+          "to_m": 5503.5,
+          "length_m": 25.0,
+          "max_slope_deg": 17.55,
+          "from_xy_m": [
+            -6415.0,
+            -8996.9
+          ],
+          "to_xy_m": [
+            -6396.2,
+            -8984.5
+          ]
+        },
+        {
+          "from_m": 5521.0,
+          "to_m": 5528.5,
+          "length_m": 10.0,
+          "max_slope_deg": 15.37,
+          "from_xy_m": [
+            -6381.5,
+            -8974.9
+          ],
+          "to_xy_m": [
+            -6375.2,
+            -8970.8
+          ]
+        },
+        {
+          "from_m": 5751.0,
+          "to_m": 5773.5,
+          "length_m": 25.0,
+          "max_slope_deg": 18.48,
+          "from_xy_m": [
+            -6189.1,
+            -8848.9
+          ],
+          "to_xy_m": [
+            -6170.3,
+            -8836.6
+          ]
+        },
+        {
+          "from_m": 6103.6,
+          "to_m": 6176.1,
+          "length_m": 75.0,
+          "max_slope_deg": 18.93,
+          "from_xy_m": [
+            -5894.2,
+            -8655.7
+          ],
+          "to_xy_m": [
+            -5833.5,
+            -8616.0
+          ]
+        },
+        {
+          "from_m": 6223.6,
+          "to_m": 6233.6,
+          "length_m": 12.5,
+          "max_slope_deg": 15.74,
+          "from_xy_m": [
+            -5793.8,
+            -8590.0
+          ],
+          "to_xy_m": [
+            -5785.4,
+            -8584.5
+          ]
+        },
+        {
+          "from_m": 6253.6,
+          "to_m": 6256.1,
+          "length_m": 5.0,
+          "max_slope_deg": 15.09,
+          "from_xy_m": [
+            -5768.7,
+            -8573.5
+          ],
+          "to_xy_m": [
+            -5766.6,
+            -8572.1
+          ]
+        },
+        {
+          "from_m": 6261.1,
+          "to_m": 6441.2,
+          "length_m": 182.5,
+          "max_slope_deg": 25.26,
+          "from_xy_m": [
+            -5762.4,
+            -8569.4
+          ],
+          "to_xy_m": [
+            -5611.8,
+            -8470.8
+          ]
+        },
+        {
+          "from_m": 6451.2,
+          "to_m": 6451.2,
+          "length_m": 2.5,
+          "max_slope_deg": 15.2,
+          "from_xy_m": [
+            -5603.4,
+            -8465.3
+          ],
+          "to_xy_m": [
+            -5603.4,
+            -8465.3
+          ]
+        },
+        {
+          "from_m": 6461.2,
+          "to_m": 6486.2,
+          "length_m": 27.5,
+          "max_slope_deg": 16.43,
+          "from_xy_m": [
+            -5595.0,
+            -8459.8
+          ],
+          "to_xy_m": [
+            -5574.1,
+            -8446.1
+          ]
+        },
+        {
+          "from_m": 6516.2,
+          "to_m": 6541.2,
+          "length_m": 27.5,
+          "max_slope_deg": 17.61,
+          "from_xy_m": [
+            -5549.0,
+            -8429.7
+          ],
+          "to_xy_m": [
+            -5528.1,
+            -8416.0
+          ]
+        },
+        {
+          "from_m": 6856.2,
+          "to_m": 6861.2,
+          "length_m": 7.5,
+          "max_slope_deg": 15.19,
+          "from_xy_m": [
+            -5264.6,
+            -8243.3
+          ],
+          "to_xy_m": [
+            -5260.4,
+            -8240.6
+          ]
+        },
+        {
+          "from_m": 6963.8,
+          "to_m": 6968.8,
+          "length_m": 7.5,
+          "max_slope_deg": 15.25,
+          "from_xy_m": [
+            -5174.6,
+            -8184.4
+          ],
+          "to_xy_m": [
+            -5170.4,
+            -8181.7
+          ]
+        },
+        {
+          "from_m": 6973.8,
+          "to_m": 6973.8,
+          "length_m": 2.5,
+          "max_slope_deg": 15.91,
+          "from_xy_m": [
+            -5166.2,
+            -8178.9
+          ],
+          "to_xy_m": [
+            -5166.2,
+            -8178.9
+          ]
+        },
+        {
+          "from_m": 7126.3,
+          "to_m": 7126.3,
+          "length_m": 2.5,
+          "max_slope_deg": 15.72,
+          "from_xy_m": [
+            -5038.6,
+            -8095.4
+          ],
+          "to_xy_m": [
+            -5038.6,
+            -8095.4
+          ]
+        },
+        {
+          "from_m": 7156.3,
+          "to_m": 7158.8,
+          "length_m": 5.0,
+          "max_slope_deg": 16.72,
+          "from_xy_m": [
+            -5013.5,
+            -8078.9
+          ],
+          "to_xy_m": [
+            -5011.5,
+            -8077.6
+          ]
+        },
+        {
+          "from_m": 7163.8,
+          "to_m": 7166.3,
+          "length_m": 5.0,
+          "max_slope_deg": 15.33,
+          "from_xy_m": [
+            -5007.3,
+            -8074.8
+          ],
+          "to_xy_m": [
+            -5005.2,
+            -8073.4
+          ]
+        },
+        {
+          "from_m": 7173.8,
+          "to_m": 7176.3,
+          "length_m": 5.0,
+          "max_slope_deg": 15.08,
+          "from_xy_m": [
+            -4998.9,
+            -8069.3
+          ],
+          "to_xy_m": [
+            -4996.8,
+            -8068.0
+          ]
+        },
+        {
+          "from_m": 7183.8,
+          "to_m": 7196.3,
+          "length_m": 15.0,
+          "max_slope_deg": 15.33,
+          "from_xy_m": [
+            -4990.5,
+            -8063.9
+          ],
+          "to_xy_m": [
+            -4980.1,
+            -8057.0
+          ]
+        },
+        {
+          "from_m": 7201.3,
+          "to_m": 7201.3,
+          "length_m": 2.5,
+          "max_slope_deg": 16.64,
+          "from_xy_m": [
+            -4975.9,
+            -8054.3
+          ],
+          "to_xy_m": [
+            -4975.9,
+            -8054.3
+          ]
+        },
+        {
+          "from_m": 7548.9,
+          "to_m": 7563.9,
+          "length_m": 17.5,
+          "max_slope_deg": 16.76,
+          "from_xy_m": [
+            -4685.2,
+            -7863.8
+          ],
+          "to_xy_m": [
+            -4672.6,
+            -7855.6
+          ]
+        },
+        {
+          "from_m": 7568.9,
+          "to_m": 7571.4,
+          "length_m": 5.0,
+          "max_slope_deg": 15.03,
+          "from_xy_m": [
+            -4668.4,
+            -7852.9
+          ],
+          "to_xy_m": [
+            -4666.3,
+            -7851.5
+          ]
+        },
+        {
+          "from_m": 7676.4,
+          "to_m": 7678.9,
+          "length_m": 5.0,
+          "max_slope_deg": 17.42,
+          "from_xy_m": [
+            -4578.5,
+            -7794.0
+          ],
+          "to_xy_m": [
+            -4576.4,
+            -7792.6
+          ]
+        },
+        {
+          "from_m": 7693.9,
+          "to_m": 7716.4,
+          "length_m": 25.0,
+          "max_slope_deg": 18.68,
+          "from_xy_m": [
+            -4563.8,
+            -7784.4
+          ],
+          "to_xy_m": [
+            -4545.0,
+            -7772.0
+          ]
+        },
+        {
+          "from_m": 7721.4,
+          "to_m": 7721.4,
+          "length_m": 2.5,
+          "max_slope_deg": 15.11,
+          "from_xy_m": [
+            -4540.8,
+            -7769.3
+          ],
+          "to_xy_m": [
+            -4540.8,
+            -7769.3
+          ]
+        },
+        {
+          "from_m": 7748.9,
+          "to_m": 7768.9,
+          "length_m": 22.5,
+          "max_slope_deg": 16.89,
+          "from_xy_m": [
+            -4517.8,
+            -7754.2
+          ],
+          "to_xy_m": [
+            -4501.1,
+            -7743.3
+          ]
+        },
+        {
+          "from_m": 7838.9,
+          "to_m": 7841.4,
+          "length_m": 5.0,
+          "max_slope_deg": 15.93,
+          "from_xy_m": [
+            -4442.5,
+            -7704.9
+          ],
+          "to_xy_m": [
+            -4440.4,
+            -7703.5
+          ]
+        },
+        {
+          "from_m": 7913.9,
+          "to_m": 7918.9,
+          "length_m": 7.5,
+          "max_slope_deg": 15.27,
+          "from_xy_m": [
+            -4379.8,
+            -7663.8
+          ],
+          "to_xy_m": [
+            -4375.6,
+            -7661.1
+          ]
+        },
+        {
+          "from_m": 7926.4,
+          "to_m": 7928.9,
+          "length_m": 5.0,
+          "max_slope_deg": 15.27,
+          "from_xy_m": [
+            -4369.3,
+            -7656.9
+          ],
+          "to_xy_m": [
+            -4367.2,
+            -7655.6
+          ]
+        },
+        {
+          "from_m": 7933.9,
+          "to_m": 7938.9,
+          "length_m": 7.5,
+          "max_slope_deg": 15.35,
+          "from_xy_m": [
+            -4363.0,
+            -7652.8
+          ],
+          "to_xy_m": [
+            -4358.8,
+            -7650.1
+          ]
+        },
+        {
+          "from_m": 7991.4,
+          "to_m": 8018.9,
+          "length_m": 30.0,
+          "max_slope_deg": 15.26,
+          "from_xy_m": [
+            -4314.9,
+            -7621.3
+          ],
+          "to_xy_m": [
+            -4291.9,
+            -7606.3
+          ]
+        },
+        {
+          "from_m": 8111.5,
+          "to_m": 8111.5,
+          "length_m": 2.5,
+          "max_slope_deg": 15.22,
+          "from_xy_m": [
+            -4214.5,
+            -7555.6
+          ],
+          "to_xy_m": [
+            -4214.5,
+            -7555.6
+          ]
+        },
+        {
+          "from_m": 8131.5,
+          "to_m": 8176.5,
+          "length_m": 47.5,
+          "max_slope_deg": 16.04,
+          "from_xy_m": [
+            -4197.8,
+            -7544.6
+          ],
+          "to_xy_m": [
+            -4160.1,
+            -7519.9
+          ]
+        },
+        {
+          "from_m": 8189.0,
+          "to_m": 8199.0,
+          "length_m": 12.5,
+          "max_slope_deg": 20.36,
+          "from_xy_m": [
+            -4149.7,
+            -7513.1
+          ],
+          "to_xy_m": [
+            -4141.3,
+            -7507.6
+          ]
+        },
+        {
+          "from_m": 8219.0,
+          "to_m": 8271.5,
+          "length_m": 55.0,
+          "max_slope_deg": 24.74,
+          "from_xy_m": [
+            -4124.6,
+            -7496.7
+          ],
+          "to_xy_m": [
+            -4080.6,
+            -7467.9
+          ]
+        },
+        {
+          "from_m": 8286.5,
+          "to_m": 8314.0,
+          "length_m": 30.0,
+          "max_slope_deg": 17.71,
+          "from_xy_m": [
+            -4068.1,
+            -7459.7
+          ],
+          "to_xy_m": [
+            -4045.1,
+            -7444.6
+          ]
+        },
+        {
+          "from_m": 8339.0,
+          "to_m": 8339.0,
+          "length_m": 2.5,
+          "max_slope_deg": 15.32,
+          "from_xy_m": [
+            -4024.2,
+            -7430.9
+          ],
+          "to_xy_m": [
+            -4024.2,
+            -7430.9
+          ]
+        },
+        {
+          "from_m": 8399.0,
+          "to_m": 8411.5,
+          "length_m": 15.0,
+          "max_slope_deg": 22.54,
+          "from_xy_m": [
+            -3974.0,
+            -7398.0
+          ],
+          "to_xy_m": [
+            -3963.5,
+            -7391.2
+          ]
+        },
+        {
+          "from_m": 8429.0,
+          "to_m": 8511.5,
+          "length_m": 85.0,
+          "max_slope_deg": 19.44,
+          "from_xy_m": [
+            -3948.9,
+            -7381.6
+          ],
+          "to_xy_m": [
+            -3879.8,
+            -7336.4
+          ]
+        },
+        {
+          "from_m": 8519.0,
+          "to_m": 8521.5,
+          "length_m": 5.0,
+          "max_slope_deg": 15.05,
+          "from_xy_m": [
+            -3873.6,
+            -7332.2
+          ],
+          "to_xy_m": [
+            -3871.5,
+            -7330.9
+          ]
+        },
+        {
+          "from_m": 8531.5,
+          "to_m": 8546.5,
+          "length_m": 17.5,
+          "max_slope_deg": 23.61,
+          "from_xy_m": [
+            -3863.1,
+            -7325.4
+          ],
+          "to_xy_m": [
+            -3850.6,
+            -7317.2
+          ]
+        },
+        {
+          "from_m": 8579.0,
+          "to_m": 8589.0,
+          "length_m": 12.5,
+          "max_slope_deg": 16.78,
+          "from_xy_m": [
+            -3823.4,
+            -7299.4
+          ],
+          "to_xy_m": [
+            -3815.0,
+            -7293.9
+          ]
+        },
+        {
+          "from_m": 8596.5,
+          "to_m": 8614.0,
+          "length_m": 20.0,
+          "max_slope_deg": 17.86,
+          "from_xy_m": [
+            -3808.7,
+            -7289.8
+          ],
+          "to_xy_m": [
+            -3794.1,
+            -7280.2
+          ]
+        },
+        {
+          "from_m": 8624.0,
+          "to_m": 8719.1,
+          "length_m": 97.5,
+          "max_slope_deg": 20.06,
+          "from_xy_m": [
+            -3785.7,
+            -7274.7
+          ],
+          "to_xy_m": [
+            -3706.2,
+            -7222.6
+          ]
+        },
+        {
+          "from_m": 8724.1,
+          "to_m": 8796.6,
+          "length_m": 75.0,
+          "max_slope_deg": 19.74,
+          "from_xy_m": [
+            -3702.1,
+            -7219.9
+          ],
+          "to_xy_m": [
+            -3641.4,
+            -7180.2
+          ]
+        },
+        {
+          "from_m": 8824.1,
+          "to_m": 9006.6,
+          "length_m": 185.0,
+          "max_slope_deg": 28.61,
+          "from_xy_m": [
+            -3618.4,
+            -7165.1
+          ],
+          "to_xy_m": [
+            -3465.7,
+            -7065.1
+          ]
+        },
+        {
+          "from_m": 9016.6,
+          "to_m": 9106.6,
+          "length_m": 92.5,
+          "max_slope_deg": 22.05,
+          "from_xy_m": [
+            -3457.3,
+            -7059.6
+          ],
+          "to_xy_m": [
+            -3382.0,
+            -7010.3
+          ]
+        },
+        {
+          "from_m": 9129.1,
+          "to_m": 9241.7,
+          "length_m": 115.0,
+          "max_slope_deg": 19.41,
+          "from_xy_m": [
+            -3363.2,
+            -6998.0
+          ],
+          "to_xy_m": [
+            -3269.1,
+            -6936.3
+          ]
+        },
+        {
+          "from_m": 9254.2,
+          "to_m": 9264.2,
+          "length_m": 12.5,
+          "max_slope_deg": 17.93,
+          "from_xy_m": [
+            -3258.6,
+            -6929.5
+          ],
+          "to_xy_m": [
+            -3250.2,
+            -6924.0
+          ]
+        },
+        {
+          "from_m": 9284.2,
+          "to_m": 9289.2,
+          "length_m": 7.5,
+          "max_slope_deg": 16.16,
+          "from_xy_m": [
+            -3233.5,
+            -6913.0
+          ],
+          "to_xy_m": [
+            -3229.3,
+            -6910.3
+          ]
+        },
+        {
+          "from_m": 9296.7,
+          "to_m": 9334.2,
+          "length_m": 40.0,
+          "max_slope_deg": 21.18,
+          "from_xy_m": [
+            -3223.1,
+            -6906.2
+          ],
+          "to_xy_m": [
+            -3191.7,
+            -6885.6
+          ]
+        },
+        {
+          "from_m": 9346.7,
+          "to_m": 9406.7,
+          "length_m": 62.5,
+          "max_slope_deg": 19.72,
+          "from_xy_m": [
+            -3181.2,
+            -6878.8
+          ],
+          "to_xy_m": [
+            -3131.0,
+            -6845.9
+          ]
+        },
+        {
+          "from_m": 9446.7,
+          "to_m": 9459.2,
+          "length_m": 15.0,
+          "max_slope_deg": 18.45,
+          "from_xy_m": [
+            -3097.5,
+            -6824.0
+          ],
+          "to_xy_m": [
+            -3087.1,
+            -6817.1
+          ]
+        },
+        {
+          "from_m": 9486.7,
+          "to_m": 9489.2,
+          "length_m": 5.0,
+          "max_slope_deg": 16.34,
+          "from_xy_m": [
+            -3064.1,
+            -6802.0
+          ],
+          "to_xy_m": [
+            -3062.0,
+            -6800.7
+          ]
+        },
+        {
+          "from_m": 9541.7,
+          "to_m": 9554.2,
+          "length_m": 15.0,
+          "max_slope_deg": 17.94,
+          "from_xy_m": [
+            -3018.1,
+            -6771.9
+          ],
+          "to_xy_m": [
+            -3007.6,
+            -6765.0
+          ]
+        },
+        {
+          "from_m": 9874.3,
+          "to_m": 9896.8,
+          "length_m": 25.0,
+          "max_slope_deg": 15.89,
+          "from_xy_m": [
+            -2739.9,
+            -6589.7
+          ],
+          "to_xy_m": [
+            -2721.0,
+            -6577.4
+          ]
+        },
+        {
+          "from_m": 9964.3,
+          "to_m": 9969.3,
+          "length_m": 7.5,
+          "max_slope_deg": 20.75,
+          "from_xy_m": [
+            -2664.6,
+            -6540.4
+          ],
+          "to_xy_m": [
+            -2660.4,
+            -6537.6
+          ]
+        },
+        {
+          "from_m": 9974.3,
+          "to_m": 9974.3,
+          "length_m": 2.5,
+          "max_slope_deg": 15.93,
+          "from_xy_m": [
+            -2656.2,
+            -6534.9
+          ],
+          "to_xy_m": [
+            -2656.2,
+            -6534.9
+          ]
+        },
+        {
+          "from_m": 10031.8,
+          "to_m": 10034.3,
+          "length_m": 5.0,
+          "max_slope_deg": 15.6,
+          "from_xy_m": [
+            -2608.1,
+            -6503.4
+          ],
+          "to_xy_m": [
+            -2606.0,
+            -6502.0
+          ]
+        }
+      ],
+      "segments_over_limit_count": 101,
+      "seam_crossings": [
+        {
+          "at_m": 2450.4,
+          "step_m": 0.716
+        }
+      ],
+      "height_start_m": 1944.83,
+      "height_end_m": 1701.43,
+      "height_min_m": 1149.98,
+      "height_max_m": 1945.43,
+      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "travel_time_h_at_0p7_mps_SCENARIO": 3.98
+    }
+  }
+}

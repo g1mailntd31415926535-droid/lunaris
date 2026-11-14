@@ -5,7 +5,7 @@ import type { BuildingId, CameraMode, CameraRequest, WorldHandle } from '../type
 import { BUILDING_BY_ID } from '../data'
 import { actualTerrainHeight, sampleTerrain } from './terrain-query'
 import { moonHeightMeters } from './planet-fields'
-import { CAMERA_ALTITUDES_M, MAX_ALTITUDE_M, METRE, MIN_ALTITUDE_M, MOON_CENTER, MOON_RADIUS_KM, SURFACE_CLEARANCE_M } from './space-config'
+import { CAMERA_ALTITUDES_M, CAP_RADIUS_M, MAX_ALTITUDE_M, METRE, MIN_ALTITUDE_M, MOON_CENTER, MOON_RADIUS_KM, SURFACE_CLEARANCE_M } from './space-config'
 import { smoothstep } from './math'
 import { useUniverse } from './universe-context'
 import { createCameraFlight, sampleCameraFlight } from './camera-travel'
@@ -14,7 +14,7 @@ import type { CameraChannels, CameraFlight } from './camera-travel'
 export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest; followRover: boolean; onStopFollow: () => void; reducedMotion: boolean; onMode: (mode: CameraMode) => void; onTravel: (moving: boolean, destination: CameraMode) => void }>(function PlanetCameraRig({ request, followRover, onStopFollow, reducedMotion, onMode, onTravel }, ref) {
   const { camera, gl, size } = useThree()
   const universe = useUniverse()
-  const state = useRef({ logAlt: Math.log(27), wantedLogAlt: Math.log(27), yaw: 0.61, wantedYaw: 0.61, polar: 0.63, wantedPolar: 0.63, nearYaw: 0.61, wantedNearYaw: 0.61, nearPolar: 0.925, wantedNearPolar: 0.925, panX: 2.2, panZ: -0.5, wantedPanX: 2.2, wantedPanZ: -0.5, panAnchorX: 0, panAnchorZ: 0, followZoom: 0, followWeight: 0, lastMode: 'base' as CameraMode })
+  const state = useRef({ logAlt: Math.log(27), wantedLogAlt: Math.log(27), yaw: 0.61, wantedYaw: 0.61, polar: 0.63, wantedPolar: 0.63, nearYaw: 0.61, wantedNearYaw: 0.61, nearPolar: 0.925, wantedNearPolar: 0.925, panX: 2.2, panZ: -0.5, wantedPanX: 2.2, wantedPanZ: -0.5, panAnchorX: 0, panAnchorZ: 0, followZoom: 0, followWeight: 0, groundY: 0, lastMode: 'base' as CameraMode })
   const followFlag = useRef(followRover); followFlag.current = followRover
   const stopFollow = useRef(onStopFollow); stopFollow.current = onStopFollow
   const previousFollow = useRef(false)
@@ -66,6 +66,7 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
     zoom(direction) { cancelTravel(); const step = direction === 'in' ? -0.55 : 0.55; if (followFlag.current) state.current.followZoom += step; else state.current.wantedLogAlt = THREE.MathUtils.clamp(state.current.wantedLogAlt + step, Math.log(MIN_ALTITUDE_M), Math.log(MAX_ALTITUDE_M)) },
     reset() { const s = state.current; s.wantedYaw = 0.61; s.wantedPolar = 0.63; s.wantedNearYaw = 0.61; s.wantedNearPolar = 0.925; if (followFlag.current) s.followZoom = 0; else { s.wantedPanX = 2.2; s.wantedPanZ = -0.5; goTo(s.lastMode) } },
     focus(id: BuildingId) { previousFollow.current = false; const { position } = BUILDING_BY_ID[id]; goTo('base', true, 21, [position[0], position[2]]) },
+    focusPoint(x: number, z: number) { previousFollow.current = false; goTo('region', true, 420, [x, z]); state.current.panAnchorX = x; state.current.panAnchorZ = z },
     focusCrew(name: string) { previousFollow.current = false; const actor = window.__LUNARIS__?.actors.find((a) => a.name === `astronaut:${name}`); if (actor) goTo('base', true, 18, [actor.position[0], actor.position[2]]) },
   }), [])
   useEffect(() => {
@@ -148,7 +149,9 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
     }
     const focus = 1 - smoothstep(Math.log(4_000), Math.log(1_500_000), s.logAlt)
     const near = 1 - smoothstep(Math.log(80), Math.log(12_000), s.logAlt)
-    const surface = sampleTerrain(s.panX, s.panZ)
+    // Over NoData the look-at point keeps its last real height; nothing is invented there.
+    const surface = sampleTerrain(s.panX, s.panZ, s.groundY)
+    if (surface.valid) s.groundY = surface.point[1]
     p.target.fromArray(surface.point).multiplyScalar(METRE)
     if (s.followWeight > 0.0001) p.target.lerp(p.nearOffset.copy(universe.current.roverPosition).multiplyScalar(METRE), s.followWeight > 0.995 ? 1 : s.followWeight)
     p.nearDirection.copy(p.target).sub(p.moon).normalize()
@@ -166,15 +169,18 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
     p.delta.copy(p.eye).sub(p.moon)
     const radius = p.delta.length(); p.delta.normalize()
     const solidRadius = MOON_RADIUS_KM + moonHeightMeters(p.delta.x, p.delta.y, p.delta.z) * METRE
-    if (radius < solidRadius + SURFACE_CLEARANCE_M * METRE) p.eye.copy(p.moon).addScaledVector(p.delta, solidRadius + SURFACE_CLEARANCE_M * METRE)
-    if (Math.hypot(p.eye.x, p.eye.z) < 49.7) p.eye.y = Math.max(p.eye.y, (actualTerrainHeight(p.eye.x / METRE, p.eye.z / METRE) + SURFACE_CLEARANCE_M) * METRE)
+    // Inside the 50 km hole the only solid surface is the NASA DEM; the fictional sphere applies outside it.
+    const insideHole = Math.hypot(p.eye.x, p.eye.z) < CAP_RADIUS_M * METRE * 0.994
+    const ground = insideHole ? actualTerrainHeight(p.eye.x / METRE, p.eye.z / METRE) : Number.NEGATIVE_INFINITY
+    if (!insideHole && radius < solidRadius + SURFACE_CLEARANCE_M * METRE) p.eye.copy(p.moon).addScaledVector(p.delta, solidRadius + SURFACE_CLEARANCE_M * METRE)
+    if (Number.isFinite(ground)) p.eye.y = Math.max(p.eye.y, (ground + SURFACE_CLEARANCE_M) * METRE)
     p.target.lerp(p.moon, 1 - focus)
     camera.position.copy(p.eye); camera.up.set(0, 1, 0).lerp(p.nearDirection, near).normalize(); camera.lookAt(p.target)
     const perspective = camera as THREE.PerspectiveCamera
     const nextNear = THREE.MathUtils.clamp(h * METRE * 0.001, 0.000015, 1)
     if (Math.abs(perspective.near - nextNear) > nextNear * 0.015) { perspective.near = nextNear; perspective.updateProjectionMatrix() }
     const u = universe.current
-    u.altitudeM = h; u.clearanceM = Math.hypot(p.eye.x, p.eye.z) < 49.7 ? p.eye.y / METRE - actualTerrainHeight(p.eye.x / METRE, p.eye.z / METRE) : (p.eye.distanceTo(p.moon) - solidRadius) / METRE; u.cameraTarget.copy(p.target)
+    u.altitudeM = h; u.clearanceM = insideHole ? (Number.isFinite(ground) ? p.eye.y / METRE - ground : h) : (p.eye.distanceTo(p.moon) - solidRadius) / METRE; u.cameraTarget.copy(p.target)
     u.styleDetail = 1 - smoothstep(Math.log(110), Math.log(2200), s.logAlt)
     const mode: CameraMode = h < 130 ? 'base' : h < 250_000 ? 'region' : 'orbit'
     if (mode !== s.lastMode) { s.lastMode = mode; u.mode = mode; onMode(mode) }

@@ -1,0 +1,7 @@
+# Offline terrain tooling for Task 02 (never shipped to the browser).
+# rasterio is pinned: on this Windows machine the 1.5.x wheels are blocked by
+# the Application Control policy, 1.4.3 (GDAL 3.9.3) loads fine.
+rasterio==1.4.3
+numpy
+pyproj
+matplotlib

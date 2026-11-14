@@ -1,15 +1,13 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { useTexture } from '@react-three/drei'
-import { groundTexture, screenTexture } from './textures'
+import { screenTexture } from './textures'
 import { heightAt } from './terrain-field'
 import { ROCK_PLACEMENTS } from './rock-plan'
 import { ModelKit, MATERIALS as M } from './model-kit'
 import { createLampModel } from './models'
-import { buildSouthPoleCap } from './planet-geometry'
-import { useUniverse } from './universe-context'
 
+// Decorative rocks: ILLUSTRATIVE_RECONSTRUCTION ("chi tiết minh họa tái dựng"), not objects measured by NASA.
+// They sit on the real DEM surface but add no terrain, no collision and no slope data.
 function Rocks() {
   const small = useRef<THREE.InstancedMesh>(null)
   const large = useRef<THREE.InstancedMesh>(null)
@@ -40,7 +38,7 @@ function Rocks() {
     place(small.current!, 550, false); place(large.current!, 55, true)
     return () => { geometry.dispose(); material.dispose() }
   }, [geometry, material])
-  return <group><instancedMesh ref={small} args={[geometry, material, 550]} castShadow receiveShadow /><instancedMesh ref={large} args={[geometry, material, 55]} castShadow receiveShadow /></group>
+  return <group name="illustrative-rocks" userData={{ provenance: 'ILLUSTRATIVE_RECONSTRUCTION', label: 'chi tiết minh họa tái dựng' }}><instancedMesh ref={small} args={[geometry, material, 550]} castShadow receiveShadow /><instancedMesh ref={large} args={[geometry, material, 55]} castShadow receiveShadow /></group>
 }
 
 function SettlementDetails() {
@@ -95,29 +93,6 @@ function SettlementDetails() {
   }, [])
   useEffect(() => () => { model.traverse((node) => { if (node instanceof THREE.Mesh) node.geometry.dispose() }) }, [model])
   return <primitive object={model} />
-}
-
-export function Terrain() {
-  const geometry = useMemo(buildSouthPoleCap, [])
-  const [albedo] = useTexture(['/assets/procedural/moon-albedo.png'])
-  albedo.colorSpace = THREE.SRGBColorSpace
-  const ground = useMemo(groundTexture, [])
-  const universe = useUniverse()
-  const styleUniform = useMemo(() => ({ value: 1 }), [])
-  const material = useMemo(() => {
-    const m = new THREE.MeshStandardMaterial({ map: albedo, roughness: 0.98, color: '#ededed', metalness: 0.01 })
-    m.onBeforeCompile = (shader) => {
-      shader.uniforms.uStyleWeight = styleUniform
-      shader.uniforms.uGroundTexture = { value: ground }
-      shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 groundUv; attribute float patchRadius; varying vec2 vGroundUv; varying float vPatchRadius;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvGroundUv = groundUv; vPatchRadius = patchRadius;')
-      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uStyleWeight; uniform sampler2D uGroundTexture; varying vec2 vGroundUv; varying float vPatchRadius;').replace('#include <color_fragment>', '#include <color_fragment>\nfloat colonyMask = 1.0 - smoothstep(58.0, 130.0, vPatchRadius); vec3 colonyColour = texture2D(uGroundTexture, vGroundUv).rgb * vec3(0.49, 0.48, 0.73); diffuseColor.rgb = mix(diffuseColor.rgb, colonyColour, uStyleWeight * colonyMask);')
-    }
-    m.customProgramCacheKey = () => 'lunaris-continuous-terrain-style-v1'
-    return m
-  }, [albedo, ground, styleUniform])
-  useFrame(() => { styleUniform.value = universe.current.styleDetail })
-  useEffect(() => () => { geometry.dispose(); material.dispose() }, [geometry, material])
-  return <mesh name="lunar-terrain" geometry={geometry} material={material} receiveShadow castShadow />
 }
 
 export function ColonyDecorations() {

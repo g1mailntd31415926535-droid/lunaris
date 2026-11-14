@@ -1,0 +1,1236 @@
+{
+  "note": "Bốn điểm giữ nguyên tọa độ nguồn. PSR, nhiệt độ thấp, hydro hay phản xạ cao KHÔNG tương đương xác nhận có băng. LCROSS (Cabeus) nằm ngoài bản đồ: REFERENCE_ONLY, không có marker.",
+  "rover_slope_limit_deg_SCENARIO": 15.0,
+  "zones": [
+    {
+      "id": "A",
+      "name": "PSR #1470",
+      "anchor_xy_m": [
+        -16970.0,
+        -8485.0
+      ],
+      "anchor_moved": false,
+      "anchor_latlon": {
+        "lat_deg": -89.374316,
+        "lon_east_deg": 243.434949,
+        "accuracy": "computed from file CRS"
+      },
+      "source_latlon": {
+        "lat_deg": -89.37432,
+        "lon_east_deg": 243.43495
+      },
+      "local_xz_m": [
+        -5970.0,
+        -3515.0
+      ],
+      "valid_dem": true,
+      "source_tile": "Site01",
+      "height_m": 1295.88,
+      "slope_deg": 10.0,
+      "toterr_m": 0.748,
+      "position_provenance": "MEASURED",
+      "in_mapped_psr_pixel": true,
+      "ice_status": "CANDIDATE_UNVERIFIED",
+      "verification_needed": "chờ rover xác minh",
+      "UI_label": "PSR đã lập bản đồ — băng chưa xác nhận",
+      "scientific_evidence": [
+        {
+          "dataset": "NASA PGDA — LOLA 5 m site DEMs (Site01, Site04)",
+          "url": "https://pgda.gsfc.nasa.gov/products/78",
+          "resolution": "5 m/pixel",
+          "unit": "m",
+          "provenance": "MEASURED",
+          "coverage": "điểm nằm trên DEM hợp lệ"
+        },
+        {
+          "dataset": "NASA PGDA — PSR map (LPSR_80S_20MPP_ADJ)",
+          "url": "https://pgda.gsfc.nasa.gov/products/90",
+          "resolution": "20 m/pixel",
+          "unit": "mask",
+          "provenance": "MEASURED",
+          "coverage": "pixel PSR 20 m chứa điểm",
+          "status": "VERIFIED_FROM_RASTER",
+          "raster_value": 1.0
+        }
+      ],
+      "data_layers_missing": [
+        "Diviner",
+        "M3",
+        "LAMP"
+      ],
+      "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
+      "straight_line_from_base_m": 6927.9,
+      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "route_check": {
+        "slope_limit_deg_SCENARIO": 15.0,
+        "max_slope_deg": 26.97,
+        "percent_over_limit": 24.29,
+        "segments_over_limit_count": 37,
+        "crosses_nodata": false,
+        "travel_time_h_at_0p7_mps_SCENARIO": 2.75,
+        "first_block_at_m": 612.5,
+        "segments_over_limit": [
+          [
+            612.5,
+            615.0,
+            15.08
+          ],
+          [
+            732.5,
+            735.0,
+            16.1
+          ],
+          [
+            750.0,
+            757.5,
+            17.33
+          ],
+          [
+            857.6,
+            875.1,
+            19.17
+          ],
+          [
+            927.6,
+            927.6,
+            16.32
+          ],
+          [
+            935.1,
+            965.1,
+            22.69
+          ],
+          [
+            1035.1,
+            1042.6,
+            15.92
+          ],
+          [
+            1062.6,
+            1062.6,
+            15.06
+          ],
+          [
+            1070.1,
+            1107.6,
+            22.73
+          ],
+          [
+            1120.1,
+            1332.6,
+            26.97
+          ],
+          [
+            1352.6,
+            1362.6,
+            15.54
+          ],
+          [
+            1370.1,
+            1375.1,
+            15.31
+          ],
+          [
+            1380.1,
+            1387.6,
+            16.29
+          ],
+          [
+            1392.6,
+            1397.6,
+            15.49
+          ],
+          [
+            1410.1,
+            1417.6,
+            15.19
+          ],
+          [
+            1427.6,
+            1442.6,
+            18.2
+          ],
+          [
+            1452.6,
+            2220.1,
+            25.48
+          ],
+          [
+            2227.6,
+            2227.6,
+            15.79
+          ],
+          [
+            2235.1,
+            2267.6,
+            19.62
+          ],
+          [
+            2297.6,
+            2447.6,
+            21.74
+          ],
+          [
+            2455.2,
+            2587.7,
+            22.42
+          ],
+          [
+            2617.7,
+            2655.2,
+            18.27
+          ],
+          [
+            2700.2,
+            2702.7,
+            18.26
+          ],
+          [
+            2730.2,
+            2742.7,
+            17.51
+          ],
+          [
+            2815.2,
+            2817.7,
+            15.73
+          ],
+          [
+            2917.7,
+            2925.2,
+            15.29
+          ],
+          [
+            4910.3,
+            4912.8,
+            15.33
+          ],
+          [
+            4987.8,
+            4987.8,
+            15.22
+          ],
+          [
+            5082.8,
+            5092.8,
+            16.52
+          ],
+          [
+            5215.3,
+            5250.3,
+            21.69
+          ],
+          [
+            5440.3,
+            5440.3,
+            15.01
+          ],
+          [
+            5612.8,
+            5620.3,
+            16.49
+          ],
+          [
+            5707.8,
+            5715.3,
+            16.68
+          ],
+          [
+            6272.9,
+            6275.4,
+            15.02
+          ],
+          [
+            6325.4,
+            6327.9,
+            16.42
+          ],
+          [
+            6337.9,
+            6340.4,
+            17.59
+          ],
+          [
+            6750.4,
+            6757.9,
+            20.46
+          ]
+        ]
+      }
+    },
+    {
+      "id": "B",
+      "name": "PSR #921",
+      "anchor_xy_m": [
+        -4240.0,
+        -12345.0
+      ],
+      "anchor_moved": false,
+      "anchor_latlon": {
+        "lat_deg": -89.569547,
+        "lon_east_deg": 198.95549,
+        "accuracy": "computed from file CRS"
+      },
+      "source_latlon": {
+        "lat_deg": -89.56955,
+        "lon_east_deg": 198.95549
+      },
+      "local_xz_m": [
+        6760.0,
+        345.0
+      ],
+      "valid_dem": true,
+      "source_tile": "Site04",
+      "height_m": 1157.51,
+      "slope_deg": 7.18,
+      "toterr_m": 0.148,
+      "position_provenance": "MEASURED",
+      "in_mapped_psr_pixel": true,
+      "ice_status": "CANDIDATE_UNVERIFIED",
+      "verification_needed": "chờ rover xác minh",
+      "UI_label": "PSR đã lập bản đồ — băng chưa xác nhận",
+      "scientific_evidence": [
+        {
+          "dataset": "NASA PGDA — LOLA 5 m site DEMs (Site01, Site04)",
+          "url": "https://pgda.gsfc.nasa.gov/products/78",
+          "resolution": "5 m/pixel",
+          "unit": "m",
+          "provenance": "MEASURED",
+          "coverage": "điểm nằm trên DEM hợp lệ"
+        },
+        {
+          "dataset": "NASA PGDA — PSR map (LPSR_80S_20MPP_ADJ)",
+          "url": "https://pgda.gsfc.nasa.gov/products/90",
+          "resolution": "20 m/pixel",
+          "unit": "mask",
+          "provenance": "MEASURED",
+          "coverage": "pixel PSR 20 m chứa điểm",
+          "status": "VERIFIED_FROM_RASTER",
+          "raster_value": 1.0
+        }
+      ],
+      "data_layers_missing": [
+        "Diviner",
+        "M3",
+        "LAMP"
+      ],
+      "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
+      "straight_line_from_base_m": 6768.8,
+      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "route_check": {
+        "slope_limit_deg_SCENARIO": 15.0,
+        "max_slope_deg": 25.93,
+        "percent_over_limit": 16.32,
+        "segments_over_limit_count": 51,
+        "crosses_nodata": false,
+        "travel_time_h_at_0p7_mps_SCENARIO": 2.69,
+        "first_block_at_m": 337.6,
+        "segments_over_limit": [
+          [
+            337.6,
+            340.1,
+            16.57
+          ],
+          [
+            407.6,
+            410.1,
+            16.02
+          ],
+          [
+            427.6,
+            430.1,
+            15.57
+          ],
+          [
+            687.6,
+            690.1,
+            16.37
+          ],
+          [
+            847.7,
+            860.2,
+            17.7
+          ],
+          [
+            902.7,
+            905.2,
+            15.22
+          ],
+          [
+            1012.7,
+            1020.2,
+            16.78
+          ],
+          [
+            1042.7,
+            1055.2,
+            18.1
+          ],
+          [
+            1062.7,
+            1070.2,
+            16.59
+          ],
+          [
+            1097.7,
+            1115.2,
+            17.38
+          ],
+          [
+            1237.7,
+            1255.2,
+            25.93
+          ],
+          [
+            1587.8,
+            1610.3,
+            17.16
+          ],
+          [
+            1677.8,
+            1700.3,
+            16.0
+          ],
+          [
+            1767.8,
+            1775.3,
+            18.23
+          ],
+          [
+            1877.9,
+            1885.4,
+            16.03
+          ],
+          [
+            1962.9,
+            1965.4,
+            16.34
+          ],
+          [
+            2012.9,
+            2045.4,
+            17.12
+          ],
+          [
+            2052.9,
+            2085.4,
+            23.29
+          ],
+          [
+            2187.9,
+            2215.4,
+            19.48
+          ],
+          [
+            2370.5,
+            2373.0,
+            16.06
+          ],
+          [
+            2390.5,
+            2398.0,
+            17.48
+          ],
+          [
+            2645.5,
+            2663.0,
+            19.54
+          ],
+          [
+            4460.9,
+            4468.4,
+            15.1
+          ],
+          [
+            4475.9,
+            4535.9,
+            17.14
+          ],
+          [
+            4543.4,
+            4550.9,
+            16.32
+          ],
+          [
+            4563.4,
+            4635.9,
+            22.3
+          ],
+          [
+            4703.4,
+            4708.4,
+            15.4
+          ],
+          [
+            4718.4,
+            4770.9,
+            19.1
+          ],
+          [
+            4783.4,
+            4790.9,
+            15.71
+          ],
+          [
+            4813.4,
+            4815.9,
+            15.15
+          ],
+          [
+            4898.4,
+            4905.9,
+            15.93
+          ],
+          [
+            4928.4,
+            4945.9,
+            16.59
+          ],
+          [
+            5098.5,
+            5101.0,
+            15.38
+          ],
+          [
+            5128.5,
+            5131.0,
+            15.47
+          ],
+          [
+            5148.5,
+            5171.0,
+            18.17
+          ],
+          [
+            5243.5,
+            5251.0,
+            16.28
+          ],
+          [
+            5258.5,
+            5281.0,
+            25.13
+          ],
+          [
+            5293.5,
+            5321.0,
+            22.33
+          ],
+          [
+            5338.5,
+            5366.0,
+            18.15
+          ],
+          [
+            5388.5,
+            5401.0,
+            15.76
+          ],
+          [
+            5408.5,
+            5411.0,
+            15.16
+          ],
+          [
+            5428.5,
+            5446.0,
+            16.2
+          ],
+          [
+            5458.5,
+            5496.1,
+            20.2
+          ],
+          [
+            5503.6,
+            5686.1,
+            25.48
+          ],
+          [
+            5718.6,
+            5731.1,
+            19.01
+          ],
+          [
+            5768.6,
+            5811.1,
+            16.15
+          ],
+          [
+            5838.6,
+            5856.1,
+            16.44
+          ],
+          [
+            5873.6,
+            5876.1,
+            15.33
+          ],
+          [
+            6013.7,
+            6021.2,
+            19.87
+          ],
+          [
+            6653.8,
+            6656.3,
+            16.97
+          ],
+          [
+            6683.8,
+            6701.3,
+            19.48
+          ]
+        ]
+      }
+    },
+    {
+      "id": "C",
+      "name": "Connecting Ridge C1",
+      "anchor_xy_m": [
+        -12467.0,
+        -13001.0
+      ],
+      "anchor_moved": false,
+      "anchor_latlon": {
+        "lat_deg": -89.405989,
+        "lon_east_deg": 223.798827,
+        "accuracy": "computed from file CRS; source coordinate approximate (≈)"
+      },
+      "source_latlon": {
+        "lat_deg": -89.406,
+        "lon_east_deg": 223.8
+      },
+      "local_xz_m": [
+        -1467.0,
+        1001.0
+      ],
+      "valid_dem": true,
+      "source_tile": "Site01",
+      "height_m": 1869.18,
+      "slope_deg": 6.84,
+      "toterr_m": 0.398,
+      "position_provenance": "PUBLISHED_REFERENCE",
+      "in_mapped_psr_pixel": false,
+      "ice_status": "CANDIDATE_UNVERIFIED",
+      "verification_needed": "chờ rover xác minh",
+      "UI_label": "Vùng nghiên cứu đã công bố — chưa xác nhận điểm băng",
+      "scientific_evidence": [
+        {
+          "dataset": "NASA PGDA — LOLA 5 m site DEMs (Site01, Site04)",
+          "url": "https://pgda.gsfc.nasa.gov/products/78",
+          "resolution": "5 m/pixel",
+          "unit": "m",
+          "provenance": "MEASURED",
+          "coverage": "điểm nằm trên DEM hợp lệ"
+        },
+        {
+          "dataset": "Sathyan et al. (2024) — study areas C1 and S",
+          "url": "https://www.sciencedirect.com/science/article/pii/S0019103524000460",
+          "resolution": "study-area anchor",
+          "unit": "lat/lon",
+          "provenance": "PUBLISHED_REFERENCE",
+          "coverage": "điểm tham chiếu vùng nghiên cứu, không phải pixel băng hay tâm PSR"
+        }
+      ],
+      "data_layers_missing": [
+        "Diviner",
+        "M3",
+        "LAMP"
+      ],
+      "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
+      "straight_line_from_base_m": 1776.0,
+      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "route_check": {
+        "slope_limit_deg_SCENARIO": 15.0,
+        "max_slope_deg": 15.44,
+        "percent_over_limit": 0.28,
+        "segments_over_limit_count": 1,
+        "crosses_nodata": false,
+        "travel_time_h_at_0p7_mps_SCENARIO": 0.7,
+        "first_block_at_m": 1478.3,
+        "segments_over_limit": [
+          [
+            1478.3,
+            1480.8,
+            15.44
+          ]
+        ]
+      }
+    },
+    {
+      "id": "D",
+      "name": "Shackleton Rim S",
+      "anchor_xy_m": [
+        -2606.0,
+        -6502.0
+      ],
+      "anchor_moved": false,
+      "anchor_latlon": {
+        "lat_deg": -89.768997,
+        "lon_east_deg": 201.840901,
+        "accuracy": "computed from file CRS; source coordinate approximate (≈)"
+      },
+      "source_latlon": {
+        "lat_deg": -89.769,
+        "lon_east_deg": 201.838
+      },
+      "local_xz_m": [
+        8394.0,
+        -5498.0
+      ],
+      "valid_dem": true,
+      "source_tile": "Site04",
+      "height_m": 1701.84,
+      "slope_deg": 15.6,
+      "toterr_m": 0.233,
+      "position_provenance": "PUBLISHED_REFERENCE",
+      "in_mapped_psr_pixel": false,
+      "ice_status": "CANDIDATE_UNVERIFIED",
+      "verification_needed": "chờ rover xác minh",
+      "UI_label": "Vùng nghiên cứu đã công bố — chưa xác nhận điểm băng",
+      "scientific_evidence": [
+        {
+          "dataset": "NASA PGDA — LOLA 5 m site DEMs (Site01, Site04)",
+          "url": "https://pgda.gsfc.nasa.gov/products/78",
+          "resolution": "5 m/pixel",
+          "unit": "m",
+          "provenance": "MEASURED",
+          "coverage": "điểm nằm trên DEM hợp lệ"
+        },
+        {
+          "dataset": "Sathyan et al. (2024) — study areas C1 and S",
+          "url": "https://www.sciencedirect.com/science/article/pii/S0019103524000460",
+          "resolution": "study-area anchor",
+          "unit": "lat/lon",
+          "provenance": "PUBLISHED_REFERENCE",
+          "coverage": "điểm tham chiếu vùng nghiên cứu, không phải pixel băng hay tâm PSR"
+        }
+      ],
+      "data_layers_missing": [
+        "Diviner",
+        "M3",
+        "LAMP"
+      ],
+      "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
+      "straight_line_from_base_m": 10034.3,
+      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "route_check": {
+        "slope_limit_deg_SCENARIO": 15.0,
+        "max_slope_deg": 38.81,
+        "percent_over_limit": 43.15,
+        "segments_over_limit_count": 101,
+        "crosses_nodata": false,
+        "travel_time_h_at_0p7_mps_SCENARIO": 3.98,
+        "first_block_at_m": 1220.2,
+        "segments_over_limit": [
+          [
+            1220.2,
+            1267.7,
+            19.46
+          ],
+          [
+            1980.4,
+            1995.4,
+            17.35
+          ],
+          [
+            2015.4,
+            2025.4,
+            15.7
+          ],
+          [
+            2040.4,
+            2042.9,
+            15.64
+          ],
+          [
+            2087.9,
+            2087.9,
+            15.26
+          ],
+          [
+            2117.9,
+            2137.9,
+            17.43
+          ],
+          [
+            2210.4,
+            2235.4,
+            17.37
+          ],
+          [
+            2292.9,
+            2330.4,
+            18.11
+          ],
+          [
+            2365.4,
+            2365.4,
+            15.33
+          ],
+          [
+            2427.9,
+            2435.4,
+            15.66
+          ],
+          [
+            2452.9,
+            2472.9,
+            18.98
+          ],
+          [
+            2538.0,
+            2538.0,
+            15.89
+          ],
+          [
+            2560.5,
+            2590.5,
+            17.4
+          ],
+          [
+            2600.5,
+            2610.5,
+            17.43
+          ],
+          [
+            2625.5,
+            2700.5,
+            31.43
+          ],
+          [
+            2840.5,
+            2883.0,
+            38.81
+          ],
+          [
+            2888.0,
+            2890.5,
+            25.45
+          ],
+          [
+            2900.5,
+            2900.5,
+            15.19
+          ],
+          [
+            2905.5,
+            2963.0,
+            16.55
+          ],
+          [
+            2968.0,
+            3028.0,
+            18.98
+          ],
+          [
+            3038.0,
+            3088.1,
+            20.6
+          ],
+          [
+            3095.6,
+            3238.1,
+            26.51
+          ],
+          [
+            3265.6,
+            3345.6,
+            19.29
+          ],
+          [
+            3360.6,
+            3363.1,
+            15.59
+          ],
+          [
+            3368.1,
+            3393.1,
+            17.29
+          ],
+          [
+            3408.1,
+            3435.6,
+            16.61
+          ],
+          [
+            3440.6,
+            3465.6,
+            17.02
+          ],
+          [
+            3473.1,
+            3615.6,
+            22.62
+          ],
+          [
+            3623.2,
+            3775.7,
+            20.31
+          ],
+          [
+            3805.7,
+            3955.7,
+            22.38
+          ],
+          [
+            3960.7,
+            4068.2,
+            25.91
+          ],
+          [
+            4078.2,
+            4160.7,
+            23.94
+          ],
+          [
+            4190.8,
+            4223.3,
+            19.34
+          ],
+          [
+            4245.8,
+            4415.8,
+            20.39
+          ],
+          [
+            4435.8,
+            4648.3,
+            24.24
+          ],
+          [
+            4655.8,
+            4940.9,
+            23.77
+          ],
+          [
+            4948.4,
+            5090.9,
+            22.48
+          ],
+          [
+            5118.4,
+            5125.9,
+            17.23
+          ],
+          [
+            5135.9,
+            5190.9,
+            18.11
+          ],
+          [
+            5195.9,
+            5200.9,
+            16.07
+          ],
+          [
+            5210.9,
+            5418.5,
+            26.68
+          ],
+          [
+            5458.5,
+            5466.0,
+            15.87
+          ],
+          [
+            5471.0,
+            5473.5,
+            15.57
+          ],
+          [
+            5481.0,
+            5503.5,
+            17.55
+          ],
+          [
+            5521.0,
+            5528.5,
+            15.37
+          ],
+          [
+            5751.0,
+            5773.5,
+            18.48
+          ],
+          [
+            6103.6,
+            6176.1,
+            18.93
+          ],
+          [
+            6223.6,
+            6233.6,
+            15.74
+          ],
+          [
+            6253.6,
+            6256.1,
+            15.09
+          ],
+          [
+            6261.1,
+            6441.2,
+            25.26
+          ],
+          [
+            6451.2,
+            6451.2,
+            15.2
+          ],
+          [
+            6461.2,
+            6486.2,
+            16.43
+          ],
+          [
+            6516.2,
+            6541.2,
+            17.61
+          ],
+          [
+            6856.2,
+            6861.2,
+            15.19
+          ],
+          [
+            6963.8,
+            6968.8,
+            15.25
+          ],
+          [
+            6973.8,
+            6973.8,
+            15.91
+          ],
+          [
+            7126.3,
+            7126.3,
+            15.72
+          ],
+          [
+            7156.3,
+            7158.8,
+            16.72
+          ],
+          [
+            7163.8,
+            7166.3,
+            15.33
+          ],
+          [
+            7173.8,
+            7176.3,
+            15.08
+          ],
+          [
+            7183.8,
+            7196.3,
+            15.33
+          ],
+          [
+            7201.3,
+            7201.3,
+            16.64
+          ],
+          [
+            7548.9,
+            7563.9,
+            16.76
+          ],
+          [
+            7568.9,
+            7571.4,
+            15.03
+          ],
+          [
+            7676.4,
+            7678.9,
+            17.42
+          ],
+          [
+            7693.9,
+            7716.4,
+            18.68
+          ],
+          [
+            7721.4,
+            7721.4,
+            15.11
+          ],
+          [
+            7748.9,
+            7768.9,
+            16.89
+          ],
+          [
+            7838.9,
+            7841.4,
+            15.93
+          ],
+          [
+            7913.9,
+            7918.9,
+            15.27
+          ],
+          [
+            7926.4,
+            7928.9,
+            15.27
+          ],
+          [
+            7933.9,
+            7938.9,
+            15.35
+          ],
+          [
+            7991.4,
+            8018.9,
+            15.26
+          ],
+          [
+            8111.5,
+            8111.5,
+            15.22
+          ],
+          [
+            8131.5,
+            8176.5,
+            16.04
+          ],
+          [
+            8189.0,
+            8199.0,
+            20.36
+          ],
+          [
+            8219.0,
+            8271.5,
+            24.74
+          ],
+          [
+            8286.5,
+            8314.0,
+            17.71
+          ],
+          [
+            8339.0,
+            8339.0,
+            15.32
+          ],
+          [
+            8399.0,
+            8411.5,
+            22.54
+          ],
+          [
+            8429.0,
+            8511.5,
+            19.44
+          ],
+          [
+            8519.0,
+            8521.5,
+            15.05
+          ],
+          [
+            8531.5,
+            8546.5,
+            23.61
+          ],
+          [
+            8579.0,
+            8589.0,
+            16.78
+          ],
+          [
+            8596.5,
+            8614.0,
+            17.86
+          ],
+          [
+            8624.0,
+            8719.1,
+            20.06
+          ],
+          [
+            8724.1,
+            8796.6,
+            19.74
+          ],
+          [
+            8824.1,
+            9006.6,
+            28.61
+          ],
+          [
+            9016.6,
+            9106.6,
+            22.05
+          ],
+          [
+            9129.1,
+            9241.7,
+            19.41
+          ],
+          [
+            9254.2,
+            9264.2,
+            17.93
+          ],
+          [
+            9284.2,
+            9289.2,
+            16.16
+          ],
+          [
+            9296.7,
+            9334.2,
+            21.18
+          ],
+          [
+            9346.7,
+            9406.7,
+            19.72
+          ],
+          [
+            9446.7,
+            9459.2,
+            18.45
+          ],
+          [
+            9486.7,
+            9489.2,
+            16.34
+          ],
+          [
+            9541.7,
+            9554.2,
+            17.94
+          ],
+          [
+            9874.3,
+            9896.8,
+            15.89
+          ],
+          [
+            9964.3,
+            9969.3,
+            20.75
+          ],
+          [
+            9974.3,
+            9974.3,
+            15.93
+          ],
+          [
+            10031.8,
+            10034.3,
+            15.6
+          ]
+        ]
+      }
+    }
+  ]
+}

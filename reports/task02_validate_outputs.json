@@ -1,0 +1,115 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "circle centre/radius unchanged",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no vertical exaggeration",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no raw GeoTIFF / shapefile / LDEM in public/",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "build script never opens LDEM/87S",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "procedural craters/peaks removed from terrain-field.ts",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "procedural cap and regional relief removed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "rover-plan.ts no longer pulls sites toward the base",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "source mask: Site01 pixels have Site01 data, Site04 pixels have Site04 data",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "source mask: NoData pixels have no data in either tile",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "source mask: nothing marked valid outside the circle",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "every in-circle pixel with data is used (no data dropped)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "reported NoData share matches the mask",
+      "pass": true,
+      "detail": "24.7219 %"
+    },
+    {
+      "check": "all chunk files present with manifest sizes and headers",
+      "pass": true,
+      "detail": "390 files"
+    },
+    {
+      "check": "every meshed vertex equals a RAW Site01/Site04 sample (≤ half a quantisation step)",
+      "pass": true,
+      "detail": "20,424,365 vertices, worst |Δ| 0.0350 m"
+    },
+    {
+      "check": "no mesh cell bridges NoData at any LOD",
+      "pass": true,
+      "detail": "20,246,468 cells checked"
+    },
+    {
+      "check": "seam max step recomputed from the mask matches the report",
+      "pass": true,
+      "detail": "3.1443 m over 17.00 km"
+    },
+    {
+      "check": "LOD error reported for every level against 5 m pixels",
+      "pass": true,
+      "detail": "L0 mean 0.005 max 0.01 · L1 mean 0.066 max 16.09 · L2 mean 0.177 max 21.25 · L3 mean 0.382 max 22.00 · L4 mean 0.787 max 25.71 · L5 mean 1.600 max 32.35 · L6 mean 3.414 max 68.32"
+    },
+    {
+      "check": "anchor A unmoved, on valid DEM, height equals raw sample",
+      "pass": true,
+      "detail": "Site01 h=1295.88 m route=EXCEEDS_SLOPE_LIMIT"
+    },
+    {
+      "check": "anchor B unmoved, on valid DEM, height equals raw sample",
+      "pass": true,
+      "detail": "Site04 h=1157.51 m route=EXCEEDS_SLOPE_LIMIT"
+    },
+    {
+      "check": "anchor C unmoved, on valid DEM, height equals raw sample",
+      "pass": true,
+      "detail": "Site01 h=1869.18 m route=EXCEEDS_SLOPE_LIMIT"
+    },
+    {
+      "check": "anchor D unmoved, on valid DEM, height equals raw sample",
+      "pass": true,
+      "detail": "Site04 h=1701.84 m route=EXCEEDS_SLOPE_LIMIT"
+    },
+    {
+      "check": "BASE on valid DEM at its locked coordinates",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}
