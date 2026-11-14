@@ -223,7 +223,7 @@ function ZoneMarker({ zone, onFocus }: { zone: ScienceZone; onFocus: (x: number,
     <div ref={label} className="zone-marker-anchor">
       <button className="zone-marker" onClick={() => onFocus(zone.local_xz_m[0], zone.local_xz_m[1])} aria-label={`Điểm ${zone.id}: ${zone.name}. ${zone.UI_label}. ${zone.verification_needed}`}>
         <b>{zone.id}</b>
-        <span>{zone.name}<small>{zone.UI_label}</small><small>{zone.verification_needed} · cách căn cứ {(zone.straight_line_from_base_m / 1000).toFixed(1)} km{blocked ? ' · tuyến thẳng có đoạn quá dốc' : ' · tuyến chưa kiểm chứng'}</small></span>
+        <span>{zone.name}<small>{zone.UI_label}</small><small>{zone.verification_needed} · cách căn cứ {(zone.straight_line_from_base_m / 1000).toFixed(1)} km{blocked ? ' · đường thẳng có đoạn vượt 15° (ngưỡng danh định VIPER)' : ' · tuyến chưa kiểm chứng'}</small></span>
       </button>
     </div>
   </Html>

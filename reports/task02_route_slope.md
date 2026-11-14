@@ -1,14 +1,14 @@
 # Task 02 — kiểm tra độ dốc dọc đường thẳng BASE → A/B/C/D
 
-Giới hạn dốc **15°** là giả định gameplay (`SCENARIO`), không phải thông số của một rover thật. Dữ liệu: lớp `slp` 5 m gốc của NASA, lấy mẫu mỗi 2,5 m.
+Ngưỡng dốc **15°** là độ dốc vận hành danh định tối đa của NASA VIPER (`MEASURED` cho VIPER, nguồn [S10] trong `docs/EVIDENCE.md`, hàng G17); LUNARIS dùng làm ngưỡng quy hoạch bảo thủ (`SCENARIO`). Đoạn vượt ngưỡng là `NOT_NOMINAL`, cần xem xét; đây không phải giới hạn vật lý của mọi rover. Dữ liệu: lớp `slp` 5 m gốc của NASA, lấy mẫu mỗi 2,5 m.
 Đây là đường thẳng để kiểm tra, **không phải tuyến an toàn**. Không tuyến nào được gắn `SAFE_ROUTE`.
 
 | Điểm | Dài (km) | Dốc max (°) | Dốc TB (°) | % dài > 10° | % dài > 15° | % dài > 20° | % dài > 25° | Số đoạn vượt 15° | Cắt NoData | Cắt đường nối | Trạng thái |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| A | 6.93 | 26.97 | 10.82 | 50.54 | 24.28 | 6.13 | 0.22 | 37 | không | 0 | `EXCEEDS_SLOPE_LIMIT` |
-| B | 6.77 | 25.93 | 10.2 | 50.7 | 16.32 | 1.44 | 0.3 | 51 | không | 1 | `EXCEEDS_SLOPE_LIMIT` |
-| C | 1.78 | 15.44 | 4.98 | 3.52 | 0.28 | 0.0 | 0.0 | 1 | không | 0 | `EXCEEDS_SLOPE_LIMIT` |
-| D | 10.03 | 38.81 | 13.39 | 78.9 | 43.15 | 6.18 | 0.5 | 101 | không | 1 | `EXCEEDS_SLOPE_LIMIT` |
+| A | 6.93 | 26.97 | 10.82 | 50.54 | 24.28 | 6.13 | 0.22 | 37 | không | 0 | `NOT_NOMINAL` |
+| B | 6.77 | 25.93 | 10.2 | 50.7 | 16.32 | 1.44 | 0.3 | 51 | không | 1 | `NOT_NOMINAL` |
+| C | 1.78 | 15.44 | 4.98 | 3.52 | 0.28 | 0.0 | 0.0 | 1 | không | 0 | `NOT_NOMINAL` |
+| D | 10.03 | 38.81 | 13.39 | 78.9 | 43.15 | 6.18 | 0.5 | 101 | không | 1 | `NOT_NOMINAL` |
 
 ## BASE → A: các đoạn vượt 15° dài nhất
 

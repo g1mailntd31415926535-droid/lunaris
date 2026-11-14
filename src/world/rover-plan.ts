@@ -8,11 +8,16 @@ import type { ScienceZone } from './dem.ts'
 //
 // No route is certified. The straight BASE → site line is checked offline against the native 5 m
 // NASA slope layer (scripts/terrain/build_terrain.py → reports/task02_route_slope.*). MILO only
-// drives the part of that line before its first stretch steeper than the SCENARIO limit, never
+// drives the part of that line before its first stretch steeper than the 15° nominal threshold
+// (NASA VIPER nominal operating slope, docs/EVIDENCE.md G17; a planning threshold for LUNARIS), never
 // crosses NoData, and the leg is always presented as UNVERIFIED — an observation demo, not a safe route.
 
 export const ROVER_DEPOT: [number, number] = [8.6, 11.2]
-/** gameplay_assumption / SCENARIO — not the speed of any real rover. */
+/**
+ * Presentation speed inherited from the UI prototype. docs/EVIDENCE.md G18 keeps the LUNARIS rover speed
+ * UNSET (NASA VIPER's typical speed is ≈0.72 km/h ≈ 0.2 m/s), so this value only drives the animation
+ * and is never used to publish travel times.
+ */
 export const ROVER_CRUISE_SPEED = 0.7
 const STOP_BEFORE_STEEP_M = 15
 const JOIN_LINE_AT_M = 30

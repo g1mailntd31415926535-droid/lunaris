@@ -49,12 +49,12 @@ PSR, nhiệt độ thấp, hydro hay phản xạ cao **không** tương đương
 | Vĩ độ/kinh độ của A–D, BASE | Từ CRS của GeoTIFF (pyproj), đối chiếu công thức đóng | `task02_geospatial_validation.json` |
 | Mặt phẳng đặt căn cứ (dốc 4,04°) | Bình phương tối thiểu trên DEM 5 m trong bán kính 14 m quanh BASE | `src/world/dem.ts` |
 
-## Giả định gameplay (SCENARIO) — không phải số liệu NASA
+## Giả định và ngưỡng thiết kế của LUNARIS
 
 | Giả định | Giá trị | Nơi khai báo |
 |---|---|---|
-| Giới hạn dốc của rover | 15° | `ROVER_SLOPE_LIMIT_DEG` trong `scripts/terrain/build_terrain.py` |
-| Tốc độ rover | 0,7 m/s | `ROVER_CRUISE_SPEED` trong `src/world/rover-plan.ts` |
+| Ngưỡng dốc quy hoạch tuyến | 15° — `MEASURED` cho NASA VIPER (độ dốc vận hành danh định tối đa, `docs/EVIDENCE.md` G17 [S10]) + `SCENARIO` khi áp cho rover LUNARIS; vượt ngưỡng = `NOT_NOMINAL` | `ROUTE_NOMINAL_SLOPE_LIMIT_DEG` trong `scripts/terrain/build_terrain.py` |
+| Tốc độ hoạt ảnh rover | 0,7 m/s — chỉ để chạy hoạt ảnh; tốc độ rover LUNARIS vẫn `UNSET` (`docs/EVIDENCE.md` G18), không dùng để tính thời gian di chuyển | `ROVER_CRUISE_SPEED` trong `src/world/rover-plan.ts` |
 | MILO quay lại trước đoạn dốc đầu tiên 15 m | 15 m | `STOP_BEFORE_STEEP_M` trong `src/world/rover-plan.ts` |
 | Vị trí căn cứ | (−11000, −12000) | Đặc tả Task 02; chưa thẩm định chiếu sáng, liên lạc, đường đi |
 | Đá quanh căn cứ, công trình, phi hành gia | Minh họa tái dựng | `src/world/Terrain.tsx`, `rock-plan.ts` |

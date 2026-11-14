@@ -1,0 +1,35 @@
+{
+  "file": "LPSR_80S_20MPP_ADJ.TIF",
+  "note": "Giá trị raster PSR 20 m tại pixel chứa điểm (1 = vùng tối vĩnh viễn theo sản phẩm PGDA). PSR không phải bằng chứng có băng.",
+  "samples": {
+    "A": {
+      "psr_value_at_pixel": 1.0,
+      "psr_fraction_within_250m_box": 1.0
+    },
+    "B": {
+      "psr_value_at_pixel": 1.0,
+      "psr_fraction_within_250m_box": 1.0
+    },
+    "C": {
+      "psr_value_at_pixel": 0.0,
+      "psr_fraction_within_250m_box": 0.0
+    },
+    "D": {
+      "psr_value_at_pixel": 0.0,
+      "psr_fraction_within_250m_box": 0.0
+    },
+    "BASE": {
+      "psr_value_at_pixel": 0.0,
+      "psr_fraction_within_250m_box": 0.0
+    },
+    "circle": {
+      "psr_pixels_20m": 115988,
+      "psr_area_km2": 46.4,
+      "psr_percent_of_circle": 9.45,
+      "values": [
+        0.0,
+        1.0
+      ]
+    }
+  }
+}

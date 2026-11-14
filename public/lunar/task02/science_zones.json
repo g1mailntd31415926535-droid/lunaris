@@ -1,6 +1,7 @@
 {
   "note": "Bốn điểm giữ nguyên tọa độ nguồn. PSR, nhiệt độ thấp, hydro hay phản xạ cao KHÔNG tương đương xác nhận có băng. LCROSS (Cabeus) nằm ngoài bản đồ: REFERENCE_ONLY, không có marker.",
-  "rover_slope_limit_deg_SCENARIO": 15.0,
+  "route_nominal_slope_limit_deg": 15.0,
+  "slope_limit_provenance": "MEASURED + SCENARIO (docs/EVIDENCE.md G17): 15° là độ dốc vận hành danh định tối đa của NASA VIPER [S10]; LUNARIS dùng làm ngưỡng quy hoạch bảo thủ. Vượt ngưỡng = NOT_NOMINAL, cần xem xét; không phải giới hạn vật lý của mọi rover.",
   "zones": [
     {
       "id": "A",
@@ -60,14 +61,13 @@
       ],
       "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
       "straight_line_from_base_m": 6927.9,
-      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "route_status": "NOT_NOMINAL",
       "route_check": {
-        "slope_limit_deg_SCENARIO": 15.0,
+        "route_nominal_slope_limit_deg": 15.0,
         "max_slope_deg": 26.97,
         "percent_over_limit": 24.29,
         "segments_over_limit_count": 37,
         "crosses_nodata": false,
-        "travel_time_h_at_0p7_mps_SCENARIO": 2.75,
         "first_block_at_m": 612.5,
         "segments_over_limit": [
           [
@@ -316,14 +316,13 @@
       ],
       "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
       "straight_line_from_base_m": 6768.8,
-      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "route_status": "NOT_NOMINAL",
       "route_check": {
-        "slope_limit_deg_SCENARIO": 15.0,
+        "route_nominal_slope_limit_deg": 15.0,
         "max_slope_deg": 25.93,
         "percent_over_limit": 16.32,
         "segments_over_limit_count": 51,
         "crosses_nodata": false,
-        "travel_time_h_at_0p7_mps_SCENARIO": 2.69,
         "first_block_at_m": 337.6,
         "segments_over_limit": [
           [
@@ -640,14 +639,13 @@
       ],
       "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
       "straight_line_from_base_m": 1776.0,
-      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "route_status": "NOT_NOMINAL",
       "route_check": {
-        "slope_limit_deg_SCENARIO": 15.0,
+        "route_nominal_slope_limit_deg": 15.0,
         "max_slope_deg": 15.44,
         "percent_over_limit": 0.28,
         "segments_over_limit_count": 1,
         "crosses_nodata": false,
-        "travel_time_h_at_0p7_mps_SCENARIO": 0.7,
         "first_block_at_m": 1478.3,
         "segments_over_limit": [
           [
@@ -714,14 +712,13 @@
       ],
       "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
       "straight_line_from_base_m": 10034.3,
-      "route_status": "EXCEEDS_SLOPE_LIMIT",
+      "route_status": "NOT_NOMINAL",
       "route_check": {
-        "slope_limit_deg_SCENARIO": 15.0,
+        "route_nominal_slope_limit_deg": 15.0,
         "max_slope_deg": 38.81,
         "percent_over_limit": 43.15,
         "segments_over_limit_count": 101,
         "crosses_nodata": false,
-        "travel_time_h_at_0p7_mps_SCENARIO": 3.98,
         "first_block_at_m": 1220.2,
         "segments_over_limit": [
           [

@@ -44,9 +44,13 @@ TILE_CELLS = 32            # render tile = 32 x 32 cells at its level
 CHUNK_CELLS = 256          # one file = 256 x 256 cells (8 x 8 render tiles)
 EDGE_BAND_PX = 10          # 50 m band along a tile's own edge that is avoided where another source exists
 STORE_MARGIN_M = 640.0     # samples kept this far outside the circle so the circle can be clipped exactly at render time
-# gameplay_assumption / SCENARIO - not a specification of any real rover. Used only to flag segments.
-ROVER_SLOPE_LIMIT_DEG = 15.0
+# docs/EVIDENCE.md G17: NASA VIPER's nominal maximum operating slope is 15 deg (MEASURED for VIPER, source [S10]).
+# LUNARIS adopts it as a conservative route-planning threshold (SCENARIO): a pixel steeper than this is
+# NOT_NOMINAL and needs review. It is not a physical limit of every rover, and MILO is not VIPER.
+ROUTE_NOMINAL_SLOPE_LIMIT_DEG = 15.0
 ROVER_SLOPE_REPORT_THRESHOLDS = (10.0, 15.0, 20.0, 25.0)
+SLOPE_PROVENANCE = ('MEASURED + SCENARIO (docs/EVIDENCE.md G17): 15° là độ dốc vận hành danh định tối đa của NASA VIPER [S10]; '
+                    'LUNARIS dùng làm ngưỡng quy hoạch bảo thủ. Vượt ngưỡng = NOT_NOMINAL, cần xem xét; không phải giới hạn vật lý của mọi rover.')
 
 
 def read(path: Path) -> np.ndarray:
@@ -340,7 +344,7 @@ def main() -> int:
         k20 = 4                                             # ±10 m baseline for the along-track grade
         grade = np.full(n, np.nan)
         grade[k20:-k20] = np.degrees(np.arctan(np.abs(h_line[2 * k20:] - h_line[:-2 * k20]) / (2 * k20 * 2.5)))
-        over = s_line > ROVER_SLOPE_LIMIT_DEG
+        over = s_line > ROUTE_NOMINAL_SLOPE_LIMIT_DEG
         segs = []
         if over.any():
             edges = np.flatnonzero(np.diff(np.concatenate([[0], over.astype(np.int8), [0]])))
@@ -351,11 +355,11 @@ def main() -> int:
         switch = np.flatnonzero((src_line[1:] != src_line[:-1]) & (src_line[1:] > 0) & (src_line[:-1] > 0))
         seam_cross = [{'at_m': round(float(dist[i]), 1), 'step_m': round(float(max(d[rr[i], cc[i]], d[rr[i + 1], cc[i + 1]])), 3)} for i in switch]
         over_len = float(over.sum() * 2.5)
-        status = 'BLOCKED_BY_NODATA' if crosses_nodata else ('EXCEEDS_SLOPE_LIMIT' if segs else 'UNVERIFIED')
+        status = 'BLOCKED_BY_NODATA' if crosses_nodata else ('NOT_NOMINAL' if segs else 'UNVERIFIED')
         routes[a['id']] = {
             'kind': 'Đường thẳng BASE → điểm (chỉ để kiểm tra; KHÔNG phải tuyến đã thiết kế, không phải tuyến an toàn)',
             'straight_line_length_m': round(length, 1), 'samples': n, 'sample_spacing_m': 2.5, 'crosses_nodata': crosses_nodata,
-            'slope_limit_deg_SCENARIO': ROVER_SLOPE_LIMIT_DEG,
+            'route_nominal_slope_limit_deg': ROUTE_NOMINAL_SLOPE_LIMIT_DEG,
             'slope_layer': 'slp 5 m gốc của nguồn được chọn tại từng pixel (độ dốc địa hình, mọi hướng)',
             'max_slope_deg': round(float(np.nanmax(s_line)), 2), 'mean_slope_deg': round(float(np.nanmean(s_line)), 2),
             'max_along_track_grade_deg_20m_baseline': round(float(np.nanmax(grade)), 2),
@@ -367,31 +371,30 @@ def main() -> int:
             'height_start_m': round(float(h_line[0]), 2), 'height_end_m': round(float(h_line[-1]), 2),
             'height_min_m': round(float(np.nanmin(h_line)), 2), 'height_max_m': round(float(np.nanmax(h_line)), 2),
             'route_status': status,
-            'travel_time_h_at_0p7_mps_SCENARIO': round(length / 0.7 / 3600, 2),
         }
         ax.fill_between(dist / 1000, 0, s_line, color='#b8a0ff', lw=0, label='Độ dốc địa hình (slp 5 m)')
-        ax.fill_between(dist / 1000, 0, np.where(over, s_line, np.nan), color='#ff665c', lw=0, label=f'Vượt giới hạn {ROVER_SLOPE_LIMIT_DEG:g}° (SCENARIO)')
-        ax.axhline(ROVER_SLOPE_LIMIT_DEG, color='#ff665c', lw=0.8, ls='--')
+        ax.fill_between(dist / 1000, 0, np.where(over, s_line, np.nan), color='#ff665c', lw=0, label=f'Vượt ngưỡng danh định {ROUTE_NOMINAL_SLOPE_LIMIT_DEG:g}° (NASA VIPER, G17)')
+        ax.axhline(ROUTE_NOMINAL_SLOPE_LIMIT_DEG, color='#ff665c', lw=0.8, ls='--')
         for sc in seam_cross:
             ax.axvline(sc['at_m'] / 1000, color='k', lw=0.8, ls=':')
         ax2 = ax.twinx()
         ax2.plot(dist / 1000, h_line, color='#2a2f4a', lw=1)
         ax2.set_ylabel('Cao độ (m)')
         ax.set_ylabel('Độ dốc (°)')
-        ax.set_title(f"BASE → {a['id']} ({a['name']}): {length / 1000:.2f} km · dốc max {routes[a['id']]['max_slope_deg']}° · {routes[a['id']]['percent_over_limit']} % chiều dài vượt {ROVER_SLOPE_LIMIT_DEG:g}° · {status}", fontsize=10)
+        ax.set_title(f"BASE → {a['id']} ({a['name']}): {length / 1000:.2f} km · dốc max {routes[a['id']]['max_slope_deg']}° · {routes[a['id']]['percent_over_limit']} % chiều dài vượt {ROUTE_NOMINAL_SLOPE_LIMIT_DEG:g}° · {status}", fontsize=10)
         ax.legend(loc='upper left', fontsize=8)
     axes[-1].set_xlabel('Khoảng cách dọc đường thẳng từ BASE (km). Đường chấm dọc = cắt đường nối Site01/Site04.')
     fig.tight_layout()
     fig.savefig(rep / 'task02_route_slope.png')
     plt.close(fig)
     route_report = {'generated_utc': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
-                    'slope_limit_deg': ROVER_SLOPE_LIMIT_DEG,
-                    'slope_limit_provenance': 'SCENARIO / gameplay_assumption — không phải thông số của một rover thật nào. Đổi ROVER_SLOPE_LIMIT_DEG trong build_terrain.py.',
+                    'slope_limit_deg': ROUTE_NOMINAL_SLOPE_LIMIT_DEG,
+                    'slope_limit_provenance': SLOPE_PROVENANCE,
                     'note': 'Chưa có giới hạn phương tiện thật, lớp chiếu sáng, nhiệt, liên lạc: KHÔNG tuyến nào được gắn SAFE_ROUTE. Trạng thái tốt nhất có thể là UNVERIFIED.',
                     'routes': routes}
     (rep / 'task02_route_slope.json').write_text(json.dumps(route_report, ensure_ascii=False, indent=2), encoding='utf-8')
     rmd = ['# Task 02 — kiểm tra độ dốc dọc đường thẳng BASE → A/B/C/D', '',
-           f'Giới hạn dốc **{ROVER_SLOPE_LIMIT_DEG:g}°** là giả định gameplay (`SCENARIO`), không phải thông số của một rover thật. Dữ liệu: lớp `slp` 5 m gốc của NASA, lấy mẫu mỗi 2,5 m.',
+           f'Ngưỡng dốc **{ROUTE_NOMINAL_SLOPE_LIMIT_DEG:g}°** là độ dốc vận hành danh định tối đa của NASA VIPER (`MEASURED` cho VIPER, nguồn [S10] trong `docs/EVIDENCE.md`, hàng G17); LUNARIS dùng làm ngưỡng quy hoạch bảo thủ (`SCENARIO`). Đoạn vượt ngưỡng là `NOT_NOMINAL`, cần xem xét; đây không phải giới hạn vật lý của mọi rover. Dữ liệu: lớp `slp` 5 m gốc của NASA, lấy mẫu mỗi 2,5 m.',
            'Đây là đường thẳng để kiểm tra, **không phải tuyến an toàn**. Không tuyến nào được gắn `SAFE_ROUTE`.', '',
            '| Điểm | Dài (km) | Dốc max (°) | Dốc TB (°) | % dài > 10° | % dài > 15° | % dài > 20° | % dài > 25° | Số đoạn vượt 15° | Cắt NoData | Cắt đường nối | Trạng thái |',
            '|---|---|---|---|---|---|---|---|---|---|---|---|']
@@ -399,7 +402,7 @@ def main() -> int:
         p = r['percent_length_over_threshold']
         rmd.append(f"| {k_} | {r['straight_line_length_m'] / 1000:.2f} | {r['max_slope_deg']} | {r['mean_slope_deg']} | {p['10']} | {p['15']} | {p['20']} | {p['25']} | {r['segments_over_limit_count']} | {'CÓ' if r['crosses_nodata'] else 'không'} | {len(r['seam_crossings'])} | `{r['route_status']}` |")
     for k_, r in routes.items():
-        rmd += ['', f"## BASE → {k_}: các đoạn vượt {ROVER_SLOPE_LIMIT_DEG:g}° dài nhất", '']
+        rmd += ['', f"## BASE → {k_}: các đoạn vượt {ROUTE_NOMINAL_SLOPE_LIMIT_DEG:g}° dài nhất", '']
         top = sorted(r['segments_over_limit'], key=lambda s_: -s_['length_m'])[:12]
         if not top:
             rmd.append('Không có đoạn nào vượt giới hạn.')
@@ -455,12 +458,12 @@ def main() -> int:
             'data_layers_missing': ['Diviner', 'M3', 'LAMP'], 'data_layers_note': 'CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU',
             'straight_line_from_base_m': routes[a['id']]['straight_line_length_m'],
             'route_status': routes[a['id']]['route_status'],
-            'route_check': dict({key: routes[a['id']][key] for key in ('slope_limit_deg_SCENARIO', 'max_slope_deg', 'percent_over_limit', 'segments_over_limit_count', 'crosses_nodata', 'travel_time_h_at_0p7_mps_SCENARIO')},
+            'route_check': dict({key: routes[a['id']][key] for key in ('route_nominal_slope_limit_deg', 'max_slope_deg', 'percent_over_limit', 'segments_over_limit_count', 'crosses_nodata')},
                                 first_block_at_m=(routes[a['id']]['segments_over_limit'][0]['from_m'] if routes[a['id']]['segments_over_limit'] else None),
                                 segments_over_limit=[[s_['from_m'], s_['to_m'], s_['max_slope_deg']] for s_ in routes[a['id']]['segments_over_limit']]),
         })
     zones_doc = {'note': 'Bốn điểm giữ nguyên tọa độ nguồn. PSR, nhiệt độ thấp, hydro hay phản xạ cao KHÔNG tương đương xác nhận có băng. LCROSS (Cabeus) nằm ngoài bản đồ: REFERENCE_ONLY, không có marker.',
-                 'rover_slope_limit_deg_SCENARIO': ROVER_SLOPE_LIMIT_DEG, 'zones': zones}
+                 'route_nominal_slope_limit_deg': ROUTE_NOMINAL_SLOPE_LIMIT_DEG, 'slope_limit_provenance': SLOPE_PROVENANCE, 'zones': zones}
     (pub / 'science_zones.json').write_text(json.dumps(zones_doc, ensure_ascii=False, indent=2), encoding='utf-8')
 
     # ── 7. metadata.json ────────────────────────────────────────────────────
@@ -522,7 +525,7 @@ def main() -> int:
 
     print(f'base height {base_h:.4f} m; total public bytes {total_bytes / 1e6:.2f} MB')
     for k_, r in routes.items():
-        print(f"route BASE→{k_}: {r['straight_line_length_m']:.0f} m, max slope {r['max_slope_deg']}°, {r['percent_over_limit']} % > {ROVER_SLOPE_LIMIT_DEG:g}°, {r['segments_over_limit_count']} segs, {r['route_status']}")
+        print(f"route BASE→{k_}: {r['straight_line_length_m']:.0f} m, max slope {r['max_slope_deg']}°, {r['percent_over_limit']} % > {ROUTE_NOMINAL_SLOPE_LIMIT_DEG:g}°, {r['segments_over_limit_count']} segs, {r['route_status']}")
     return 0
 
 

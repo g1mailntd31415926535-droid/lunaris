@@ -1,0 +1,1425 @@
+{
+  "task": "LUNARIS Task 02 — bước 1: kiểm tra tọa độ GeoTIFF",
+  "generated_utc": "2026-11-14T09:32:48+00:00",
+  "tool": {
+    "python": "3.12.10",
+    "rasterio": "1.4.3",
+    "gdal": "3.9.3",
+    "numpy": "2.5.4"
+  },
+  "raw_dir": "C:\\Tung Duong\\NASA\\raw_task02",
+  "locked_geometry": {
+    "circle_center_xy_m": [
+      -8500.0,
+      -10500.0
+    ],
+    "circle_radius_m": 12500.0,
+    "frame": {
+      "x_min": -21000.0,
+      "x_max": 4000.0,
+      "y_min": -23000.0,
+      "y_max": 2000.0
+    },
+    "circle_area_geometric_km2": 490.8738521234052
+  },
+  "notes": [
+    "Khoảng cách đường chim bay tính trên mặt phẳng chiếu; ở vĩ độ này hệ số tỷ lệ của phép chiếu lệch khỏi 1 dưới 0,01 %. Đây KHÔNG phải quãng đường rover và không có tuyến nào được coi là an toàn."
+  ],
+  "problems": [],
+  "inputs": {
+    "rasters": {
+      "Site01_surf": {
+        "file": "Site01_final_adj_5mpp_surf.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site01_final_adj_5mpp_surf.tif",
+        "size_bytes": 40980810,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -19000.0,
+          5.0,
+          0.0,
+          -4000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -19000.0,
+          0.0,
+          -5.0,
+          -4000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -19000.0,
+          "x_max": -3000.0,
+          "y_min": -20000.0,
+          "y_max": -4000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-1.90000000000e+04/-3.00000000000e+03/-2.00000000000e+04/-4.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-19000,-3000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-20000,-4000}",
+          "y#long_name": "y",
+          "z#actual_range": "{-523.1834106445312,1959.496215820312}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{-523.1834106445312,1959.496215820312}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": -523.1834106445312,
+        "value_max": 1959.4962158203125,
+        "value_mean": 1139.0587825653126,
+        "sha256": "3ba7b97cb00a2bcf21189c3aeb535f65afc21207154ab9f0d43c5bdc1f7e747e",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Cao độ bề mặt, mét, so với mặt cầu tham chiếu bán kính 1737,4 km (theo mô tả PGDA; header không ghi đơn vị)."
+      },
+      "Site01_slp": {
+        "file": "Site01_final_adj_5mpp_slp.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site01_final_adj_5mpp_slp.tif",
+        "size_bytes": 40980776,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -19000.0,
+          5.0,
+          0.0,
+          -4000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -19000.0,
+          0.0,
+          -5.0,
+          -4000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -19000.0,
+          "x_max": -3000.0,
+          "y_min": -20000.0,
+          "y_max": -4000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-1.90000000000e+04/-3.00000000000e+03/-2.00000000000e+04/-4.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-19000,-3000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-20000,-4000}",
+          "y#long_name": "y",
+          "z#actual_range": "{0,64.58820343017578}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{0,64.58820343017578}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": 0.0,
+        "value_max": 64.58820343017578,
+        "value_mean": 12.597746371874557,
+        "sha256": "3a90035a4946b4a04b7332c52f0b2b1cff71648bd8c105e14d8a7e15c6bcfe8e",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Độ dốc, độ (theo mô tả PGDA; header không ghi đơn vị)."
+      },
+      "Site01_toterr": {
+        "file": "Site01_final_adj_5mpp_toterr.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site01_final_adj_5mpp_toterr.tif",
+        "size_bytes": 40980810,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -19000.0,
+          5.0,
+          0.0,
+          -4000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -19000.0,
+          0.0,
+          -5.0,
+          -4000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -19000.0,
+          "x_max": -3000.0,
+          "y_min": -20000.0,
+          "y_max": -4000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-1.90000000000e+04/-3.00000000000e+03/-2.00000000000e+04/-4.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-19000,-3000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-20000,-4000}",
+          "y#long_name": "y",
+          "z#actual_range": "{0.0615781843662262,5.582818508148193}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{0.0615781843662262,5.582818508148193}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": 0.061578184366226196,
+        "value_max": 5.582818508148193,
+        "value_mean": 0.4045424510687775,
+        "sha256": "cf2cf52f52d2aa51e60d058010d10b0ebfb1d3e920f5a2b9a46eb6c51054ab1c",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Ước lượng sai số cao độ tổng, mét (theo mô tả PGDA; header không ghi đơn vị)."
+      },
+      "Site01_slperr": {
+        "file": "Site01_final_adj_5mpp_slperr.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site01_final_adj_5mpp_slperr.tif",
+        "size_bytes": 40980810,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -19000.0,
+          5.0,
+          0.0,
+          -4000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -19000.0,
+          0.0,
+          -5.0,
+          -4000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -19000.0,
+          "x_max": -3000.0,
+          "y_min": -20000.0,
+          "y_max": -4000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-1.90000000000e+04/-3.00000000000e+03/-2.00000000000e+04/-4.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-19000,-3000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-20000,-4000}",
+          "y#long_name": "y",
+          "z#actual_range": "{0.6137070655822754,21.51097869873047}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{0.6137070655822754,21.51097869873047}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": 0.6137070655822754,
+        "value_max": 21.51097869873047,
+        "value_mean": 2.001948812615825,
+        "sha256": "52bc3b239f61605e6bb98bab6d6b17acd22389c59e57336862157f2fbd643a33",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Ước lượng sai số độ dốc, độ (theo mô tả PGDA; header không ghi đơn vị)."
+      },
+      "Site01_ldec": {
+        "file": "Site01_final_adj_5mpp_ldec.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site01_final_adj_5mpp_ldec.tif",
+        "size_bytes": 40980744,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -19000.0,
+          5.0,
+          0.0,
+          -4000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -19000.0,
+          0.0,
+          -5.0,
+          -4000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -19000.0,
+          "x_max": -3000.0,
+          "y_min": -20000.0,
+          "y_max": -4000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-1.90000000000e+04/-3.00000000000e+03/-2.00000000000e+04/-4.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-19000,-3000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-20000,-4000}",
+          "y#long_name": "y",
+          "z#actual_range": "{0,5}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{0,5}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": 0.0,
+        "value_max": 5.0,
+        "value_mean": 0.0999919921875,
+        "sha256": "16d6ed21020ad48fa71d94e7437492acf5bf04118f52bcd292f57f22ead4cd23",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Lớp phụ trợ của PGDA; ý nghĩa cần đối chiếu README của PGDA, script này không diễn giải."
+      },
+      "Site04_surf": {
+        "file": "Site04_final_adj_5mpp_surf.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site04_final_adj_5mpp_surf.tif",
+        "size_bytes": 40980806,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -9000.0,
+          5.0,
+          0.0,
+          1000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -9000.0,
+          0.0,
+          -5.0,
+          1000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -9000.0,
+          "x_max": 7000.0,
+          "y_min": -15000.0,
+          "y_max": 1000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-9000,7000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-15000,1000}",
+          "y#long_name": "y",
+          "z#actual_range": "{-2847.877197265625,1805.072631835938}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{-2847.877197265625,1805.072631835938}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": -2847.877197265625,
+        "value_max": 1805.0726318359375,
+        "value_mean": 245.34379158594027,
+        "sha256": "38ff70dbdf2f066c2cfa94a646c3a59d653ce7f6b4528b15fc1b43ee397ce758",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Cao độ bề mặt, mét, so với mặt cầu tham chiếu bán kính 1737,4 km (theo mô tả PGDA; header không ghi đơn vị)."
+      },
+      "Site04_slp": {
+        "file": "Site04_final_adj_5mpp_slp.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site04_final_adj_5mpp_slp.tif",
+        "size_bytes": 40980772,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -9000.0,
+          5.0,
+          0.0,
+          1000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -9000.0,
+          0.0,
+          -5.0,
+          1000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -9000.0,
+          "x_max": 7000.0,
+          "y_min": -15000.0,
+          "y_max": 1000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-9000,7000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-15000,1000}",
+          "y#long_name": "y",
+          "z#actual_range": "{0,69.64722442626953}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{0,69.64722442626953}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": 0.0,
+        "value_max": 69.64722442626953,
+        "value_mean": 20.664146178538907,
+        "sha256": "ec3cfa184b114d95aff498e7452764a8569737ae829e7ff3efd38d5187182579",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Độ dốc, độ (theo mô tả PGDA; header không ghi đơn vị)."
+      },
+      "Site04_toterr": {
+        "file": "Site04_final_adj_5mpp_toterr.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site04_final_adj_5mpp_toterr.tif",
+        "size_bytes": 40980808,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -9000.0,
+          5.0,
+          0.0,
+          1000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -9000.0,
+          0.0,
+          -5.0,
+          1000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -9000.0,
+          "x_max": 7000.0,
+          "y_min": -15000.0,
+          "y_max": 1000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-9000,7000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-15000,1000}",
+          "y#long_name": "y",
+          "z#actual_range": "{0.06385684758424759,7.635095596313477}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{0.06385684758424759,7.635095596313477}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": 0.06385684758424759,
+        "value_max": 7.635095596313477,
+        "value_mean": 0.41166481692317686,
+        "sha256": "416c4baa3b64def0182bb3379a1a9228482efd8ce32a39309ea8de5d0330fbe6",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Ước lượng sai số cao độ tổng, mét (theo mô tả PGDA; header không ghi đơn vị)."
+      },
+      "Site04_slperr": {
+        "file": "Site04_final_adj_5mpp_slperr.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site04_final_adj_5mpp_slperr.tif",
+        "size_bytes": 40980806,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -9000.0,
+          5.0,
+          0.0,
+          1000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -9000.0,
+          0.0,
+          -5.0,
+          1000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -9000.0,
+          "x_max": 7000.0,
+          "y_min": -15000.0,
+          "y_max": 1000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-9000,7000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-15000,1000}",
+          "y#long_name": "y",
+          "z#actual_range": "{0.5000152587890625,28.14303016662598}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{0.5000152587890625,28.14303016662598}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": 0.5000152587890625,
+        "value_max": 28.143030166625977,
+        "value_mean": 1.7707840924176212,
+        "sha256": "067cd4d8e3e8c14a9a5be1915242532f85063f1b300f248407cc8c8b68e90695",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Ước lượng sai số độ dốc, độ (theo mô tả PGDA; header không ghi đơn vị)."
+      },
+      "Site04_ldec": {
+        "file": "Site04_final_adj_5mpp_ldec.tif",
+        "path": "C:\\Tung Duong\\NASA\\raw_task02\\Site04_final_adj_5mpp_ldec.tif",
+        "size_bytes": 40980740,
+        "driver": "GTiff",
+        "width": 3200,
+        "height": 3200,
+        "band_count": 1,
+        "dtype": "float32",
+        "nodata_declared": "nan",
+        "affine_gdal_geotransform": [
+          -9000.0,
+          5.0,
+          0.0,
+          1000.0,
+          0.0,
+          -5.0
+        ],
+        "affine_abcdef": [
+          5.0,
+          0.0,
+          -9000.0,
+          0.0,
+          -5.0,
+          1000.0
+        ],
+        "pixel_size_m": [
+          5.0,
+          5.0
+        ],
+        "bounds": {
+          "x_min": -9000.0,
+          "x_max": 7000.0,
+          "y_min": -15000.0,
+          "y_max": 1000.0
+        },
+        "row_axis": "north-up (y giảm khi số hàng tăng)",
+        "rotation_terms_zero": true,
+        "crs_wkt": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+        "compression": "none",
+        "unit_in_header": null,
+        "tags": {
+          "NC_GLOBAL#Conventions": "COARDS, CF-1.5",
+          "NC_GLOBAL#GMT_version": "5.4.5 [64-bit]",
+          "NC_GLOBAL#history": "xyz2grd -bi3 -I5 -R-9.00000000000e+03/7.00000000000e+03/-1.50000000000e+04/1.00000000000e+03 -Gtest.grd -r",
+          "NC_GLOBAL#node_offset": "1",
+          "x#actual_range": "{-9000,7000}",
+          "x#long_name": "x",
+          "y#actual_range": "{-15000,1000}",
+          "y#long_name": "y",
+          "z#actual_range": "{0,5}",
+          "z#long_name": "z",
+          "z#_FillValue": "nan",
+          "AREA_OR_POINT": "Area"
+        },
+        "band_tags": {
+          "actual_range": "{0,5}",
+          "long_name": "z",
+          "NETCDF_VARNAME": "z",
+          "_FillValue": "nan"
+        },
+        "valid_pixels": 10240000,
+        "total_pixels": 10240000,
+        "nodata_pixels": 0,
+        "value_min": 0.0,
+        "value_max": 5.0,
+        "value_mean": 0.09608525390625,
+        "sha256": "fcc8c2219ae2368d5b2a1f6aec05fcf96cf725f3035ac8d80efc312a4ff29227",
+        "status": "PRESENT_VERIFIED",
+        "layer_note": "Lớp phụ trợ của PGDA; ý nghĩa cần đối chiếu README của PGDA, script này không diễn giải."
+      }
+    },
+    "psr_20m": {
+      "file": "LPSR_80S_20MPP_ADJ.TIF",
+      "path": "C:\\Tung Duong\\NASA\\raw_task02\\LPSR_80S_20MPP_ADJ.TIF",
+      "size_bytes": 154221202,
+      "driver": "GTiff",
+      "width": 30400,
+      "height": 30400,
+      "band_count": 1,
+      "dtype": "float32",
+      "nodata_declared": "nan",
+      "affine_gdal_geotransform": [
+        -304000.0,
+        20.0,
+        0.0,
+        304000.0,
+        0.0,
+        -20.0
+      ],
+      "affine_abcdef": [
+        20.0,
+        0.0,
+        -304000.0,
+        0.0,
+        -20.0,
+        304000.0
+      ],
+      "pixel_size_m": [
+        20.0,
+        20.0
+      ],
+      "bounds": {
+        "x_min": -304000.0,
+        "x_max": 304000.0,
+        "y_min": -304000.0,
+        "y_max": 304000.0
+      },
+      "row_axis": "north-up (y giảm khi số hàng tăng)",
+      "rotation_terms_zero": true,
+      "crs_wkt": "PROJCS[\"Moon (2015) - Sphere / Ocentric / South Polar\",GEOGCS[\"Moon (2015) - Sphere / Ocentric\",DATUM[\"Moon (2015) - Sphere\",SPHEROID[\"Moon (2015) - Sphere\",1737400,0]],PRIMEM[\"Reference Meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+      "compression": "Compression.deflate",
+      "unit_in_header": null,
+      "tags": {
+        "NC_GLOBAL#Conventions": "CF-1.7",
+        "NC_GLOBAL#GMT_version": "6.5.0_daaa813_2022.09.22 [64-bit]",
+        "NC_GLOBAL#node_offset": "1",
+        "NC_GLOBAL#title": "Produced by grdcut",
+        "x#actual_range": "{-304000,304000}",
+        "x#axis": "X",
+        "x#long_name": "x",
+        "y#actual_range": "{-304000,304000}",
+        "y#axis": "Y",
+        "y#long_name": "y",
+        "z#actual_range": "{0,1}",
+        "z#long_name": "z",
+        "z#_FillValue": "nan",
+        "AREA_OR_POINT": "Area"
+      },
+      "band_tags": {
+        "actual_range": "{0,1}",
+        "long_name": "z",
+        "NETCDF_VARNAME": "z",
+        "_FillValue": "nan"
+      },
+      "valid_pixels": 924160000,
+      "total_pixels": 924160000,
+      "nodata_pixels": 0,
+      "value_min": 0.0,
+      "value_max": 1.0,
+      "value_mean": 0.06044080570463989,
+      "sha256": "ad95311b81db773039af441dd66a017f024327858c6e0314b8c92bf2f470834e",
+      "status": "PRESENT_VERIFIED"
+    },
+    "rois_optional": {
+      "Site01": {
+        "file": "Site01_ROIs.tgz",
+        "status": "MISSING"
+      },
+      "Site04": {
+        "file": "Site04_ROIs.tgz",
+        "status": "MISSING"
+      }
+    },
+    "forbidden_files_present": []
+  },
+  "required_inputs_not_verified": [],
+  "crs": {
+    "is_projected": true,
+    "projection_method": "Polar Stereographic (variant B)",
+    "projection_parameters": {
+      "Latitude of standard parallel": -90.0,
+      "Longitude of origin": 0.0,
+      "False easting": 0.0,
+      "False northing": 0.0
+    },
+    "ellipsoid_semi_major_m": 1737400.0,
+    "ellipsoid_semi_minor_m": 1737400.0,
+    "ellipsoid_is_sphere": true,
+    "linear_unit": "metre",
+    "epsg": null,
+    "proj4": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs +type=crs",
+    "note": "CRS của Mặt Trăng, không có mã EPSG Trái Đất. Không gán EPSG.",
+    "wkt_from_Site01_surf": "PROJCS[\"unnamed\",GEOGCS[\"unnamed ellipse\",DATUM[\"unknown\",SPHEROID[\"unnamed\",1737400,0]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH]]",
+    "closed_form_cross_check": {
+      "formula": "lat = −90° + 2·atan(r / 2R), lon_E = atan2(x, y); R lấy từ header",
+      "max_disagreement_with_pyproj_deg": 3.410605131648481e-13
+    }
+  },
+  "grid_alignment": {
+    "reference": "Site01_surf",
+    "checks": [
+      {
+        "raster": "Site01_surf",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          0.0,
+          0.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site01_slp",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          0.0,
+          0.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site01_toterr",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          0.0,
+          0.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site01_slperr",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          0.0,
+          0.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site01_ldec",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          0.0,
+          0.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site04_surf",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          2000.0,
+          1000.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site04_slp",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          2000.0,
+          1000.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site04_toterr",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          2000.0,
+          1000.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site04_slperr",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          2000.0,
+          1000.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      },
+      {
+        "raster": "Site04_ldec",
+        "same_crs_as_Site01_surf": true,
+        "same_pixel_size": true,
+        "offset_from_Site01_surf_px": [
+          2000.0,
+          1000.0
+        ],
+        "pixel_aligned": true,
+        "same_grid_as_own_site_surf": true,
+        "north_up_no_rotation": true
+      }
+    ],
+    "reprojection_needed": false
+  },
+  "coverage": {
+    "method": "Đếm tâm pixel 5 m trên lưới chung; diskMask = (x+8500)²+(y+10500)² ≤ 12500².",
+    "disk_pixel_area": {
+      "pixels": 19635136,
+      "area_km2": 490.8784,
+      "geometric_area_km2": 490.873852
+    },
+    "in_disk": {
+      "site01_only": {
+        "pixels": 7483489,
+        "area_km2": 187.087225,
+        "percent_of_disk": 38.1127
+      },
+      "site04_only": {
+        "pixels": 4657470,
+        "area_km2": 116.43675,
+        "percent_of_disk": 23.7201
+      },
+      "overlap": {
+        "pixels": 2640000,
+        "area_km2": 66.0,
+        "percent_of_disk": 13.4453
+      },
+      "validDEM_total": {
+        "pixels": 14780959,
+        "area_km2": 369.523975,
+        "percent_of_disk": 75.2781
+      },
+      "noDataDisk": {
+        "pixels": 4854177,
+        "area_km2": 121.354425,
+        "percent_of_disk": 24.7219
+      }
+    },
+    "outside_disk_but_has_dem": {
+      "site01": {
+        "pixels": 116511,
+        "area_km2": 2.912775,
+        "percent_of_disk": 0.5934
+      },
+      "site04": {
+        "pixels": 2942530,
+        "area_km2": 73.56325,
+        "percent_of_disk": 14.986
+      }
+    },
+    "site04_status": "VERIFIED_FROM_FILE",
+    "coverage_status": "TWO_SITES",
+    "note": "Tỷ lệ NoData là số đo thật từ hai file, không phải con số 25% ước lượng."
+  },
+  "footprints": {
+    "Site01": {
+      "valid_pixels": 10240000,
+      "nodata_pixels": 0,
+      "valid_area_km2": 256.0,
+      "footprint_is_full_rectangle": true,
+      "polygon_xy_m": [
+        [
+          -19000.0,
+          -20000.0
+        ],
+        [
+          -3000.0,
+          -20000.0
+        ],
+        [
+          -3000.0,
+          -4000.0
+        ],
+        [
+          -19000.0,
+          -4000.0
+        ]
+      ],
+      "note": "Mọi pixel hợp lệ nên footprint theo mask trùng đúng hình chữ nhật bounds."
+    },
+    "Site04": {
+      "valid_pixels": 10240000,
+      "nodata_pixels": 0,
+      "valid_area_km2": 256.0,
+      "footprint_is_full_rectangle": true,
+      "polygon_xy_m": [
+        [
+          -9000.0,
+          -15000.0
+        ],
+        [
+          7000.0,
+          -15000.0
+        ],
+        [
+          7000.0,
+          1000.0
+        ],
+        [
+          -9000.0,
+          1000.0
+        ]
+      ],
+      "note": "Mọi pixel hợp lệ nên footprint theo mask trùng đúng hình chữ nhật bounds."
+    }
+  },
+  "overlap": {
+    "status": "VERIFIED_FROM_MASKS",
+    "pixels": 2640000,
+    "area_km2": 66.0,
+    "bounds": {
+      "x_min": -9000.0,
+      "x_max": -3000.0,
+      "y_min": -15000.0,
+      "y_max": -4000.0
+    },
+    "is_full_rectangle": true,
+    "polygon_xy_m": [
+      [
+        -9000.0,
+        -15000.0
+      ],
+      [
+        -3000.0,
+        -15000.0
+      ],
+      [
+        -3000.0,
+        -4000.0
+      ],
+      [
+        -9000.0,
+        -4000.0
+      ]
+    ],
+    "size_km": [
+      6.0,
+      11.0
+    ],
+    "elevation_comparison": {
+      "definition": "diff = z(Site04) − z(Site01) tại cùng tâm pixel 5 m. Hai lưới trùng nhau từng pixel nên KHÔNG nội suy/resample.",
+      "samples": 2640000,
+      "mean_abs_difference_m": 0.22311387502496893,
+      "max_abs_difference_m": 10.732666015625,
+      "p95_abs_difference_m": 0.748046875,
+      "p99_abs_difference_m": 1.30419921875,
+      "median_abs_difference_m": 0.1226806640625,
+      "rmse_m": 0.380428459000961,
+      "mean_signed_difference_m": -0.02409975454157049,
+      "std_m": 0.3796643441895511,
+      "pixels_abs_diff_gt_1m": 60484,
+      "pixels_abs_diff_gt_5m": 824,
+      "percent_abs_diff_gt_1m": 2.2911,
+      "inside_disk_only": {
+        "samples": 2640000,
+        "mean_abs_difference_m": 0.22311387502496893,
+        "max_abs_difference_m": 10.732666015625,
+        "p95_abs_difference_m": 0.748046875
+      },
+      "edge_band_stats": {
+        "band_width_m": 50.0,
+        "site04_west_edge_x_-9000": {
+          "mean_abs_m": 0.5002019375887784,
+          "max_abs_m": 10.732666015625
+        },
+        "site04_south_edge_y_-15000": {
+          "mean_abs_m": 0.513946767171224,
+          "max_abs_m": 9.1427001953125
+        },
+        "site01_east_edge_x_-3000": {
+          "mean_abs_m": 0.9162955932617187,
+          "max_abs_m": 10.25830078125
+        },
+        "site01_north_edge_y_-4000": {
+          "mean_abs_m": 0.6496993357340495,
+          "max_abs_m": 9.5823974609375
+        },
+        "interior": {
+          "mean_abs_m": 0.2116675976560602,
+          "max_abs_m": 8.330078125,
+          "p95_abs_m": 0.7171630859375
+        },
+        "note": "Các cạnh này chính là nơi đường nối giữa hai tile có thể chạy qua khi dựng mesh."
+      },
+      "vs_published_uncertainty": {
+        "definition": "sigma = sqrt(toterr01² + toterr04²) từ chính hai file toterr của NASA (DERIVED).",
+        "mean_toterr_site01_m": 0.38583322477079784,
+        "mean_toterr_site04_m": 0.31648827366673415,
+        "percent_abs_diff_gt_1sigma": 12.0915,
+        "percent_abs_diff_gt_2sigma": 1.673,
+        "percent_abs_diff_gt_3sigma": 0.2872,
+        "site04_toterr_lower_percent_of_overlap": 80.9381
+      },
+      "source_selection": {
+        "status": "NOT_DECIDED_IN_THIS_STEP",
+        "note": "Bước này chỉ đo. Quy tắc chọn nguồn ở vùng chồng lấn và cờ BLOCKED_BY_SEAM sẽ quyết ở bước dựng mesh; không blend, không sửa cao độ."
+      }
+    }
+  },
+  "anchors": [
+    {
+      "id": "A",
+      "name": "PSR #1470",
+      "anchor_xy_m": [
+        -16970.0,
+        -8485.0
+      ],
+      "anchor_xy_is_approximate_in_source": false,
+      "anchor_moved": false,
+      "latlon_from_file_crs": {
+        "lat_deg": -89.374316,
+        "lon_east_deg": 243.434949
+      },
+      "inside_circle": true,
+      "distance_to_circle_centre_m": 8706.38,
+      "distance_to_circle_edge_m": 3793.62,
+      "valid_dem": true,
+      "in_site01": true,
+      "in_site04": false,
+      "source_tile": "Site01",
+      "pixel_centre_xy_m": [
+        -16967.5,
+        -8487.5
+      ],
+      "samples": {
+        "Site01": {
+          "height_m": 1295.88,
+          "slope_deg": 10.0005,
+          "toterr_m": 0.7485,
+          "slperr_deg": 1.9098,
+          "ldec": 0.0
+        }
+      },
+      "nodata_distance_m": 2032.5,
+      "dossier_check": {
+        "dossier_lat_deg": -89.37432,
+        "dossier_lon_east_deg": 243.43495,
+        "xy_from_dossier_latlon_m": [
+          -16969.88,
+          -8484.94
+        ],
+        "offset_anchor_vs_dossier_latlon_m": 0.13,
+        "lat_difference_deg": 4e-06,
+        "lon_difference_deg": -1e-06,
+        "note": "Chỉ để báo sai khác do làm tròn tọa độ nguồn; anchor KHÔNG bị sửa."
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "B",
+      "name": "PSR #921",
+      "anchor_xy_m": [
+        -4240.0,
+        -12345.0
+      ],
+      "anchor_xy_is_approximate_in_source": false,
+      "anchor_moved": false,
+      "latlon_from_file_crs": {
+        "lat_deg": -89.569547,
+        "lon_east_deg": 198.95549
+      },
+      "inside_circle": true,
+      "distance_to_circle_centre_m": 4642.37,
+      "distance_to_circle_edge_m": 7857.63,
+      "valid_dem": true,
+      "in_site01": true,
+      "in_site04": true,
+      "source_tile": "Site01+Site04 (overlap)",
+      "pixel_centre_xy_m": [
+        -4237.5,
+        -12347.5
+      ],
+      "samples": {
+        "Site01": {
+          "height_m": 1157.5198,
+          "slope_deg": 6.5724,
+          "toterr_m": 0.2558,
+          "slperr_deg": 1.6548,
+          "ldec": 0.0
+        },
+        "Site04": {
+          "height_m": 1157.5117,
+          "slope_deg": 7.179,
+          "toterr_m": 0.1485,
+          "slperr_deg": 1.2046,
+          "ldec": 0.0
+        }
+      },
+      "height_difference_site04_minus_site01_m": -0.0081,
+      "nodata_distance_m": 2933.62,
+      "dossier_check": {
+        "dossier_lat_deg": -89.56955,
+        "dossier_lon_east_deg": 198.95549,
+        "xy_from_dossier_latlon_m": [
+          -4239.97,
+          -12344.91
+        ],
+        "offset_anchor_vs_dossier_latlon_m": 0.09,
+        "lat_difference_deg": 3e-06,
+        "lon_difference_deg": -0.0,
+        "note": "Chỉ để báo sai khác do làm tròn tọa độ nguồn; anchor KHÔNG bị sửa."
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "C",
+      "name": "Connecting Ridge C1",
+      "anchor_xy_m": [
+        -12467.0,
+        -13001.0
+      ],
+      "anchor_xy_is_approximate_in_source": true,
+      "anchor_moved": false,
+      "latlon_from_file_crs": {
+        "lat_deg": -89.405989,
+        "lon_east_deg": 223.798827
+      },
+      "inside_circle": true,
+      "distance_to_circle_centre_m": 4689.57,
+      "distance_to_circle_edge_m": 7810.43,
+      "valid_dem": true,
+      "in_site01": true,
+      "in_site04": false,
+      "source_tile": "Site01",
+      "pixel_centre_xy_m": [
+        -12467.5,
+        -13002.5
+      ],
+      "samples": {
+        "Site01": {
+          "height_m": 1869.1825,
+          "slope_deg": 6.8405,
+          "toterr_m": 0.3978,
+          "slperr_deg": 1.7576,
+          "ldec": 0.0
+        }
+      },
+      "nodata_distance_m": 6535.5,
+      "dossier_check": {
+        "dossier_lat_deg": -89.406,
+        "dossier_lon_east_deg": 223.8,
+        "xy_from_dossier_latlon_m": [
+          -12467.04,
+          -13000.51
+        ],
+        "offset_anchor_vs_dossier_latlon_m": 0.49,
+        "lat_difference_deg": 1.1e-05,
+        "lon_difference_deg": -0.001173,
+        "note": "Chỉ để báo sai khác do làm tròn tọa độ nguồn; anchor KHÔNG bị sửa."
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "D",
+      "name": "Shackleton Rim S",
+      "anchor_xy_m": [
+        -2606.0,
+        -6502.0
+      ],
+      "anchor_xy_is_approximate_in_source": true,
+      "anchor_moved": false,
+      "latlon_from_file_crs": {
+        "lat_deg": -89.768997,
+        "lon_east_deg": 201.840901
+      },
+      "inside_circle": true,
+      "distance_to_circle_centre_m": 7122.02,
+      "distance_to_circle_edge_m": 5377.98,
+      "valid_dem": true,
+      "in_site01": false,
+      "in_site04": true,
+      "source_tile": "Site04",
+      "pixel_centre_xy_m": [
+        -2607.5,
+        -6502.5
+      ],
+      "samples": {
+        "Site04": {
+          "height_m": 1701.8395,
+          "slope_deg": 15.6043,
+          "toterr_m": 0.2335,
+          "slperr_deg": 2.473,
+          "ldec": 0.0
+        }
+      },
+      "nodata_distance_m": 6869.33,
+      "dossier_check": {
+        "dossier_lat_deg": -89.769,
+        "dossier_lon_east_deg": 201.838,
+        "xy_from_dossier_latlon_m": [
+          -2605.63,
+          -6502.04
+        ],
+        "offset_anchor_vs_dossier_latlon_m": 0.37,
+        "lat_difference_deg": 3e-06,
+        "lon_difference_deg": 0.002901,
+        "note": "Chỉ để báo sai khác do làm tròn tọa độ nguồn; anchor KHÔNG bị sửa."
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "BASE",
+      "name": "Căn cứ tạm (SCENARIO)",
+      "anchor_xy_m": [
+        -11000.0,
+        -12000.0
+      ],
+      "anchor_xy_is_approximate_in_source": false,
+      "anchor_moved": false,
+      "latlon_from_file_crs": {
+        "lat_deg": -89.463163,
+        "lon_east_deg": 222.510447
+      },
+      "inside_circle": true,
+      "distance_to_circle_centre_m": 2915.48,
+      "distance_to_circle_edge_m": 9584.52,
+      "valid_dem": true,
+      "in_site01": true,
+      "in_site04": false,
+      "source_tile": "Site01",
+      "pixel_centre_xy_m": [
+        -10997.5,
+        -12002.5
+      ],
+      "samples": {
+        "Site01": {
+          "height_m": 1944.7671,
+          "slope_deg": 3.7994,
+          "toterr_m": 0.1936,
+          "slperr_deg": 1.5239,
+          "ldec": 1.0
+        }
+      },
+      "nodata_distance_m": 8002.5,
+      "result": "PASS"
+    }
+  ],
+  "straight_line_distances_from_base_m": {
+    "A": 6927.9,
+    "B": 6768.8,
+    "C": 1776.0,
+    "D": 10034.3
+  },
+  "route_status": "UNVERIFIED",
+  "acceptance_snapshot": {
+    "circle_centre_radius_unchanged": true,
+    "site04_real_geotiff_read": true,
+    "ldem_80m_or_87s_used": false,
+    "anchors_all_on_valid_dem": true,
+    "anchors_moved": false,
+    "all_required_inputs_verified": true
+  },
+  "status": "PASS",
+  "exit_code": 0
+}

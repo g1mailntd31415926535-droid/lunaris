@@ -89,22 +89,22 @@
     {
       "check": "anchor A unmoved, on valid DEM, height equals raw sample",
       "pass": true,
-      "detail": "Site01 h=1295.88 m route=EXCEEDS_SLOPE_LIMIT"
+      "detail": "Site01 h=1295.88 m route=NOT_NOMINAL"
     },
     {
       "check": "anchor B unmoved, on valid DEM, height equals raw sample",
       "pass": true,
-      "detail": "Site04 h=1157.51 m route=EXCEEDS_SLOPE_LIMIT"
+      "detail": "Site04 h=1157.51 m route=NOT_NOMINAL"
     },
     {
       "check": "anchor C unmoved, on valid DEM, height equals raw sample",
       "pass": true,
-      "detail": "Site01 h=1869.18 m route=EXCEEDS_SLOPE_LIMIT"
+      "detail": "Site01 h=1869.18 m route=NOT_NOMINAL"
     },
     {
       "check": "anchor D unmoved, on valid DEM, height equals raw sample",
       "pass": true,
-      "detail": "Site04 h=1701.84 m route=EXCEEDS_SLOPE_LIMIT"
+      "detail": "Site04 h=1701.84 m route=NOT_NOMINAL"
     },
     {
       "check": "BASE on valid DEM at its locked coordinates",

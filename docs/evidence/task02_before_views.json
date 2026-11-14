@@ -1,0 +1,126 @@
+{
+  "label": "before",
+  "capturedAt": "2026-11-14T08:51:23.518Z",
+  "url": "http://localhost:5173/?debug=1",
+  "commit": "f0af09f",
+  "viewport": {
+    "width": 1366,
+    "height": 768
+  },
+  "deviceScaleFactor": 1,
+  "fovDeg": 40,
+  "cameraYawPolar": "mặc định của game (yaw 0.61, nearPolar 0.925)",
+  "browser": "Chrome 157.0.8103.51 headless",
+  "gpu": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "pageErrors": [],
+  "views": [
+    {
+      "id": "base",
+      "altitudeM": 27,
+      "note": "Góc mặc định khi mở game (Căn cứ)",
+      "files": [
+        "reports/screenshots/before_base_ui.png",
+        "reports/screenshots/before_base_world.png"
+      ],
+      "cameraPositionKm": [
+        0.0227249492406159,
+        0.02701549268628667,
+        0.028866655792716193
+      ],
+      "cameraTargetKm": [
+        0.002199999970825005,
+        0.000015510224861724708,
+        -0.0004999999921254249
+      ],
+      "clearanceM": 27.086330788110885,
+      "mode": "base",
+      "sceneTimeS": 0,
+      "drawCalls": 200,
+      "triangles": 255374,
+      "frameMs": 29.984017647119558,
+      "renderer": "WebGL2 / logarithmic depth",
+      "threeRevision": "185"
+    },
+    {
+      "id": "near",
+      "altitudeM": 89.99999999999112,
+      "note": "Cận cảnh địa hình quanh căn cứ",
+      "files": [
+        "reports/screenshots/before_near_ui.png",
+        "reports/screenshots/before_near_world.png"
+      ],
+      "cameraPositionKm": [
+        0.07050486224340406,
+        0.09001545185832864,
+        0.09722912693993735
+      ],
+      "cameraTargetKm": [
+        0.002199999970825005,
+        0.000015510224861724708,
+        -0.0004999999921254249
+      ],
+      "clearanceM": 90.30910017025909,
+      "mode": "base",
+      "sceneTimeS": 0,
+      "drawCalls": 134,
+      "triangles": 149674,
+      "frameMs": 19.821321972767514,
+      "renderer": "WebGL2 / logarithmic depth",
+      "threeRevision": "185"
+    },
+    {
+      "id": "region",
+      "altitudeM": 899.9999999991968,
+      "note": "Nhìn khu vực quanh căn cứ",
+      "files": [
+        "reports/screenshots/before_region_ui.png",
+        "reports/screenshots/before_region_world.png"
+      ],
+      "cameraPositionKm": [
+        0.3616751978584949,
+        0.9000152030526007,
+        0.5138284816536334
+      ],
+      "cameraTargetKm": [
+        0.002199999970825005,
+        0.000015510224861724708,
+        -0.0004999999921254249
+      ],
+      "clearanceM": 917.2718671878424,
+      "mode": "region",
+      "sceneTimeS": 0,
+      "drawCalls": 134,
+      "triangles": 149674,
+      "frameMs": 16.885265027735052,
+      "renderer": "WebGL2 / logarithmic depth",
+      "threeRevision": "185"
+    },
+    {
+      "id": "wide",
+      "altitudeM": 5999.999999999943,
+      "note": "Nhìn rộng vùng cực Nam",
+      "files": [
+        "reports/screenshots/before_wide_ui.png",
+        "reports/screenshots/before_wide_world.png"
+      ],
+      "cameraPositionKm": [
+        8.231572757392941,
+        5.941125035033285,
+        11.773959897573398
+      ],
+      "cameraTargetKm": [
+        0.0021705205410869847,
+        -23.280694654904043,
+        -0.0004933001217470881
+      ],
+      "clearanceM": 6004.900535402696,
+      "mode": "region",
+      "sceneTimeS": 0,
+      "drawCalls": 3,
+      "triangles": 68864,
+      "frameMs": 16.65663668461147,
+      "renderer": "WebGL2 / logarithmic depth",
+      "threeRevision": "185"
+    }
+  ]
+}

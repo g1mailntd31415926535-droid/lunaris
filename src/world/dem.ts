@@ -25,7 +25,7 @@ export interface ScienceZone {
   valid_dem: boolean; source_tile: string; height_m: number; slope_deg: number
   ice_status: string; verification_needed: string; UI_label: string
   straight_line_from_base_m: number; route_status: string
-  route_check: { slope_limit_deg_SCENARIO: number; max_slope_deg: number; percent_over_limit: number; segments_over_limit_count: number; crosses_nodata: boolean; first_block_at_m: number | null; segments_over_limit: [number, number, number][] }
+  route_check: { route_nominal_slope_limit_deg: number; max_slope_deg: number; percent_over_limit: number; segments_over_limit_count: number; crosses_nodata: boolean; first_block_at_m: number | null; segments_over_limit: [number, number, number][] }
 }
 export interface DemChunk {
   level: number; cx: number; cy: number

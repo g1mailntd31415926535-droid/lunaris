@@ -58,8 +58,8 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
     root.current.quaternion.slerp(s.desired, 1 - Math.exp(-12 * Math.min(delta, 0.1)))
     root.current.position.fromArray(sample.point).addScaledVector(s.normal, -0.0835)
     u.roverPosition.fromArray(sample.point); u.roverNominal.copy(s.nominal); u.roverNormal.copy(s.normal)
-    const limit = leg?.site.zone.route_check.slope_limit_deg_SCENARIO ?? 15
-    const note = !leg ? 'Chưa có tuyến nào được kiểm chứng' : leg.reachesSite ? 'Tuyến chưa kiểm chứng · chỉ quan sát' : `Quay lại sau ${Math.round(leg.reachM)} m: phía trước dốc hơn ${limit}° (giả định) · tuyến chưa kiểm chứng`
+    const limit = leg?.site.zone.route_check.route_nominal_slope_limit_deg ?? 15
+    const note = !leg ? 'Chưa có tuyến nào được kiểm chứng' : leg.reachesSite ? 'Tuyến chưa kiểm chứng · chỉ quan sát' : `Quay lại sau ${Math.round(leg.reachM)} m: phía trước dốc hơn ${limit}° (ngưỡng danh định NASA VIPER) · tuyến chưa kiểm chứng`
     u.roverStatus = { phase, site: phase === 'docked' || !leg ? 'Căn cứ Artemis' : `Hướng tới ${leg.site.id} · ${leg.site.name}`, siteId: leg?.site.id ?? 'base', trip, distance: Math.hypot(sample.point[0], sample.point[2]), speed, note }
     if (Math.floor(clock.current.time * 2) !== lastStatus.current) { lastStatus.current = Math.floor(clock.current.time * 2); onStatus(u.roverStatus) }
 
