@@ -1,13 +1,18 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html, useTexture } from '@react-three/drei'
+import type { TerrainLayer } from '../types'
+import { demMeta } from './dem'
+import { REGION_RHO_MAX, onRegionalChange, regional } from './lunar-frame'
 import * as THREE from 'three'
-import { Crosshair } from 'lucide-react'
+import { MapPin } from 'lucide-react'
+import { BUILDINGS } from '../data'
 import { seededRandom } from './math'
 import { useVisualTime } from './clock'
 import { useUniverse } from './universe-context'
-import { buildMoonGlobe, buildMoonMatteShell } from './planet-geometry'
-import { EARTH_POSITION, EARTH_RADIUS_KM, MOON_CENTER, MOON_RADIUS_KM, STAR_DISTANCE_KM, SUN_RADIUS_KM } from './space-config'
+import { buildMoonGlobe } from './planet-geometry'
+import { TERRAIN_ALBEDO, lunarAlbedoDebugGLSL } from './terrain-material'
+import { BASE_ANCHOR, EARTH_POSITION, EARTH_RADIUS_KM, METRE, MOON_CENTER, MOON_RADIUS_KM, STAR_DISTANCE_KM, SUN_RADIUS_KM } from './space-config'
 
 export function Starfield() {
   const geometry = useMemo(() => {
@@ -26,41 +31,69 @@ export function Starfield() {
   return <points name="celestial:stars" geometry={geometry} frustumCulled={false}><pointsMaterial size={1.35} vertexColors sizeAttenuation={false} transparent opacity={0.86} depthWrite={false} toneMapped={false} /></points>
 }
 
-export function MoonGlobe() {
-  const geometry = useMemo(buildMoonGlobe, [])
-  const [albedo, bump] = useTexture(['/assets/procedural/moon-albedo.png', '/assets/procedural/moon-bump.png'])
-  albedo.colorSpace = THREE.SRGBColorSpace; albedo.anisotropy = 8
-  bump.colorSpace = THREE.NoColorSpace
+/**
+ * The Moon seen from afar: NASA LOLA relief (planet-geometry.ts) with the LROC WAC colour mosaic, normalised to the
+ * terrain's albedo around 75–80°S so the globe and the polar terrain have one tone. Inside ≈ 80°S the polar LOLA
+ * terrain (RegionalTerrain) is drawn instead; once it is loaded this cap is not drawn and its last 3 km ring is lowered 1.5 km under it, so a pixel gap
+ * between the two at the horizon shows the same NASA surface instead of space.
+ */
+export function MoonGlobe({ layer }: { layer: TerrainLayer }) {
+  const [version, setVersion] = useState(regional.version)
+  useEffect(() => onRegionalChange(() => setVersion(regional.version)), [])
+  const baseHeight = demMeta()!.base.height_m
+  const hasGlobal = !!regional.global, hasPolar = !!regional.grids.g2
+  const geometry = useMemo(() => buildMoonGlobe(baseHeight), [baseHeight, hasGlobal, hasPolar])  // rebuilt once per arriving dataset
+  const albedoFile = regional.manifest?.albedo
   const universe = useUniverse()
-  const matte = useMemo(() => ({ value: 1 }), [])
-  // The globe is fictional far-view relief (orbit view). Near the surface it must not pass for lunar
-  // terrain next to the real NASA DEM, so it fades to the plain dark backdrop ("ngoài vùng dữ liệu NASA").
-  // Its inner side, seen through the 50 km hole around the data circle, is always that backdrop.
+  const uniforms = useMemo(() => ({ uCapSink: { value: 0 }, uGame: { value: 0 }, uLunarSun: { value: universe.current.sunDirection } }), [universe])
   const material = useMemo(() => {
-    const m = new THREE.MeshStandardMaterial({ map: albedo, bumpMap: bump, bumpScale: 0.16, color: '#ededed', roughness: 0.96, metalness: 0.015, side: THREE.DoubleSide })
+    const m = new THREE.MeshStandardMaterial({ color: new THREE.Color(...TERRAIN_ALBEDO), roughness: 0.97 })
     m.onBeforeCompile = (shader) => {
-      shader.uniforms.uNearMatte = matte
-      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uNearMatte;')
-        .replace('#include <colorspace_fragment>', '#include <colorspace_fragment>\ngl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(0.0353, 0.0510, 0.1176), gl_FrontFacing ? uNearMatte : 1.0);')
+      Object.assign(shader.uniforms, uniforms)
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nattribute float rho; uniform float uCapSink; varying float vRho; varying vec3 vGlobeRadial;')
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+          vRho = rho; vGlobeRadial = normalize(mat3(modelViewMatrix) * (position + vec3(0.0, ${MOON_RADIUS_KM.toFixed(1)}, 0.0)));
+          transformed -= normalize(transformed + vec3(0.0, ${MOON_RADIUS_KM.toFixed(1)}, 0.0)) * uCapSink * (1.0 - smoothstep(${(REGION_RHO_MAX - 15_000).toFixed(1)}, ${REGION_RHO_MAX.toFixed(1)}, rho));`)
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uGame; uniform float uCapSink; uniform vec3 uLunarSun; varying float vRho; varying vec3 vGlobeRadial;')
+        .replace('#include <map_fragment>', `#include <map_fragment>
+          // Near the pole the WAC mosaic converges into radial streaks: ease it to its own polar mean (= terrain albedo).
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${TERRAIN_ALBEDO.map((v) => v.toFixed(3)).join(', ')}), 1.0 - smoothstep(${REGION_RHO_MAX.toFixed(1)}, ${(REGION_RHO_MAX * 2.2).toFixed(1)}, vRho));`)
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+          totalEmissiveRadiance += diffuseColor.rgb * mix(vec3(0.17), vec3(0.07, 0.085, 0.12), uGame);
+          // Same Game hillshade as the terrain (terrain-material.ts), so the globe and the polar terrain share one tone.
+          vec3 globeUp = normalize(vGlobeRadial);
+          vec3 globeHill = normalize(mat3(viewMatrix) * (normalize(vec3(uLunarSun.x, 0.0, uLunarSun.z)) * 0.643) + globeUp * 0.766);
+          totalEmissiveRadiance += diffuseColor.rgb * uGame * (0.55 * max(dot(normal, globeHill), 0.0) - 0.12);`)
+        .replace('#include <opaque_fragment>', `#include <opaque_fragment>
+          // Inside the polar LOLA terrain the globe is not drawn (its 7.6 km relief would cut through deep craters).
+          if (uCapSink > 0.0 && vRho < ${(REGION_RHO_MAX - 3_000).toFixed(1)}) discard;
+${lunarAlbedoDebugGLSL}`)
     }
-    m.customProgramCacheKey = () => 'lunaris-far-globe-matte-v1'
+    m.customProgramCacheKey = () => 'lunaris-moon-lola-v4'
     return m
-  }, [albedo, bump, matte])
-  useFrame(() => { matte.value = 1 - THREE.MathUtils.smoothstep(Math.log(Math.max(1, universe.current.altitudeM)), Math.log(30_000), Math.log(220_000)) })
-  useEffect(() => () => { geometry.dispose(); material.dispose() }, [geometry, material])
-  // Near the surface the globe is only a dark backdrop, so a few-hundred-triangle shell with the same 50 km hole
-  // stands in for the 28k-triangle relief mesh. Above 30 km (where the relief starts to show) they swap back.
-  const shell = useMemo(() => buildMoonMatteShell(), [])
-  const shellMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: new THREE.Color().setRGB(9 / 255, 13 / 255, 30 / 255, THREE.SRGBColorSpace), side: THREE.DoubleSide, toneMapped: false }), [])
-  const detailed = useRef<THREE.Mesh>(null), lite = useRef<THREE.Mesh>(null)
-  useFrame(() => { const near = universe.current.altitudeM <= 30_000; if (detailed.current) detailed.current.visible = !near; if (lite.current) lite.current.visible = near })
-  useEffect(() => () => { shell.dispose(); shellMaterial.dispose() }, [shell, shellMaterial])
-  // These meshes are rebased to Artemis before upload. Their parent is still the real
-  // Moon centre; the child offset exactly cancels that centre in CPU precision.
-  return <>
-    <mesh ref={detailed} name="moon-surface" geometry={geometry} material={material} position={[0, MOON_RADIUS_KM, 0]} />
-    <mesh ref={lite} name="moon-matte-shell" geometry={shell} material={shellMaterial} position={[0, MOON_RADIUS_KM, 0]} />
-  </>
+  }, [uniforms])
+  useEffect(() => {
+    if (!albedoFile) return
+    let alive = true
+    new THREE.TextureLoader().load(`/lunar/regional/${albedoFile.file}`, (texture) => {
+      if (!alive) { texture.dispose(); return }
+      texture.colorSpace = THREE.SRGBColorSpace
+      texture.anisotropy = 8
+      // Exposure match only: scale the mosaic so its 75–80°S mean equals the terrain albedo.
+      const mean = new THREE.Color().setRGB(...albedoFile.mean_srgb_75S_80S, THREE.SRGBColorSpace)
+      material.color.setRGB(TERRAIN_ALBEDO[0] / mean.r, TERRAIN_ALBEDO[1] / mean.g, TERRAIN_ALBEDO[2] / mean.b)
+      material.map = texture; material.needsUpdate = true
+    }, undefined, () => console.error('LROC albedo not loaded; the globe keeps the uniform terrain albedo'))
+    return () => { alive = false }
+  }, [albedoFile, material])
+  useFrame(() => { uniforms.uCapSink.value = regional.grids.g2 ? 1.5 : 0; uniforms.uGame.value = layer === 'game' ? 1 : 0 })
+  useEffect(() => () => geometry.dispose(), [geometry])
+  useEffect(() => () => { material.map?.dispose(); material.dispose() }, [material])
+  void version
+  // Rebased to Artemis before upload: the parent is the Moon centre, the child offset cancels it exactly.
+  return <mesh name="moon-surface" geometry={geometry} material={material} position={[0, MOON_RADIUS_KM, 0]} renderOrder={-2} userData={{ source: geometry.userData.source }} />
 }
 
 const atmosphereVertex = `
@@ -146,15 +179,39 @@ export function Sun({ reducedMotion }: { reducedMotion: boolean }) {
   </group>
 }
 
+const baseFootprintKm = 2 * METRE * Math.max(...BUILDINGS.map(({ position: [x, , z], radius }) => Math.hypot(x, z) + radius))
+
+export function projectArtemisPin(camera: THREE.Camera, viewportHeight: number, point: THREE.Vector3) {
+  point.fromArray(BASE_ANCHOR).applyMatrix4(camera.matrixWorldInverse)
+  const depth = -point.z
+  point.applyMatrix4(camera.projectionMatrix)
+  if (depth <= 0 || Math.abs(point.x) >= 1 || Math.abs(point.y) >= 1) return 0
+
+  // Artemis is the Moon's +Y surface point in this scene. Fade out at its horizon.
+  const horizon = THREE.MathUtils.smoothstep(camera.position.y / camera.position.length(), 0, 0.035)
+  const footprintPx = baseFootprintKm * camera.projectionMatrix.elements[5] * viewportHeight / (2 * depth)
+  return (1 - THREE.MathUtils.smoothstep(footprintPx, 9, 20)) * horizon
+}
+
 export function ArtemisMarker({ onFocus }: { onFocus: () => void }) {
-  const label = useRef<HTMLDivElement>(null)
-  const universe = useUniverse()
-  useFrame(({ camera }) => {
-    const h = universe.current.altitudeM
-    const visible = h > 110 && camera.position.y > 0
-    if (label.current) { label.current.style.opacity = visible ? '1' : '0'; label.current.style.pointerEvents = visible ? 'auto' : 'none' }
+  const marker = useRef<HTMLButtonElement>(null)
+  const point = useMemo(() => new THREE.Vector3(), [])
+
+  useFrame(({ camera, size }) => {
+    const button = marker.current
+    if (!button) return
+
+    camera.updateMatrixWorld()
+    const opacity = projectArtemisPin(camera, size.height, point)
+    button.style.opacity = opacity.toFixed(3)
+    button.style.visibility = opacity > 0.025 ? 'visible' : 'hidden'
   })
-  return <Html center position={[0, 0.015, 0]} zIndexRange={[28, 12]} style={{ pointerEvents: 'none' }}><div ref={label} className="artemis-marker-anchor"><button className="planet-marker" onClick={onFocus}><Crosshair size={15} /><span>ARTEMIS <small>89.9°S · TIỀN ĐỒN CỰC NAM</small></span><b>↘</b></button></div></Html>
+
+  return <Html position={BASE_ANCHOR} zIndexRange={[28, 12]} style={{ pointerEvents: 'none' }}>
+    <button ref={marker} type="button" className="artemis-pin" aria-label="Về căn cứ Artemis" title="Căn cứ Artemis" onClick={onFocus}>
+      <MapPin size={24} aria-hidden="true" />
+    </button>
+  </Html>
 }
 
 export { MOON_CENTER }

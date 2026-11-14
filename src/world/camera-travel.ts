@@ -1,14 +1,13 @@
 import type { CameraMode } from '../types'
+import { Vector3 } from 'three'
+import type { Quaternion } from 'three'
 import { minimumJerk } from './math.ts'
 
 export interface CameraChannels {
   logAltitude: number
+  surface: Quaternion
   yaw: number
-  polar: number
-  nearYaw: number
-  nearPolar: number
-  panX: number
-  panZ: number
+  tilt: number
 }
 
 export interface CameraFlight {
@@ -16,6 +15,7 @@ export interface CameraFlight {
   to: CameraChannels
   destination: CameraMode
   duration: number
+  lift: number
   lead: number
   stagingLogAltitude: number
 }
@@ -27,33 +27,33 @@ export function shortestAngle(from: number, to: number) {
 /** One captured starting pose, two coordinated channels: align while high,
  * then dolly. This never substitutes geometry or writes a second camera pose. */
 export function createCameraFlight(from: CameraChannels, to: CameraChannels, destination: CameraMode): CameraFlight {
-  const goal = { ...to, yaw: shortestAngle(from.yaw, to.yaw), nearYaw: shortestAngle(from.nearYaw, to.nearYaw) }
-  const descending = goal.logAltitude < from.logAltitude
-  const headingDelta = Math.hypot(goal.yaw - from.yaw, goal.polar - from.polar)
+  const goal = { ...to, yaw: shortestAngle(from.yaw, to.yaw) }
+  const surfaceDelta = new Vector3(0, 1, 0).applyQuaternion(from.surface).angleTo(new Vector3(0, 1, 0).applyQuaternion(to.surface))
   const longJourney = Math.abs(goal.logAltitude - from.logAltitude)
-  const duration = Math.max(0.45, Math.min(2.35, 0.55 + longJourney * 0.15 + Math.min(headingDelta, 2) * 0.12))
-  const lead = descending && from.logAltitude > Math.log(250_000) && headingDelta > 0.45 ? Math.min(0.55, duration * 0.28) : 0
-  const stagingLogAltitude = lead ? Math.max(goal.logAltitude, Math.min(from.logAltitude, Math.log(1_500_000))) : from.logAltitude
-  return { from: { ...from }, to: goal, destination, duration, lead, stagingLogAltitude }
+  const distant = surfaceDelta > 0.06
+  const duration = Math.max(distant ? 1.5 : 0.45, Math.min(2.35, 0.55 + longJourney * 0.15 + surfaceDelta * 0.18))
+  // Lift before flying across the globe so a destination reached from a close-up
+  // on the opposite side never sends the eye skimming along the surface.
+  const stagingLogAltitude = distant ? Math.max(from.logAltitude, Math.log(Math.min(1_500_000, 240_000 * surfaceDelta))) : from.logAltitude
+  const lift = distant && stagingLogAltitude > from.logAltitude ? duration * 0.3 : 0
+  const lead = distant ? duration * (lift > 0 ? 0.36 : 0.32) : 0
+  return { from, to: goal, destination, duration, lift, lead, stagingLogAltitude }
 }
 
 export function sampleCameraFlight(flight: CameraFlight, elapsed: number): CameraChannels {
   if (elapsed <= 0) return { ...flight.from }
   if (elapsed >= flight.duration) return { ...flight.to }
-  const headingDuration = flight.lead || Math.min(0.7, flight.duration)
-  const heading = minimumJerk(elapsed / headingDuration)
-  const pan = minimumJerk(elapsed / flight.duration)
+  const { from, to, duration, lift, lead, stagingLogAltitude } = flight
+  const progress = minimumJerk(elapsed / duration)
+  const surfaceProgress = lead ? minimumJerk((elapsed - lift) / lead) : progress
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-  let logAltitude: number
-  if (flight.lead && elapsed < flight.lead) logAltitude = lerp(flight.from.logAltitude, flight.stagingLogAltitude, minimumJerk(elapsed / flight.lead))
-  else logAltitude = lerp(flight.stagingLogAltitude, flight.to.logAltitude, minimumJerk((elapsed - flight.lead) / (flight.duration - flight.lead)))
+  const logAltitude = elapsed < lift
+    ? lerp(from.logAltitude, stagingLogAltitude, minimumJerk(elapsed / lift))
+    : lerp(stagingLogAltitude, to.logAltitude, minimumJerk((elapsed - lift - lead) / (duration - lift - lead)))
   return {
     logAltitude,
-    yaw: lerp(flight.from.yaw, flight.to.yaw, heading),
-    polar: lerp(flight.from.polar, flight.to.polar, heading),
-    nearYaw: lerp(flight.from.nearYaw, flight.to.nearYaw, pan),
-    nearPolar: lerp(flight.from.nearPolar, flight.to.nearPolar, pan),
-    panX: lerp(flight.from.panX, flight.to.panX, pan),
-    panZ: lerp(flight.from.panZ, flight.to.panZ, pan),
+    surface: from.surface.clone().slerp(to.surface, surfaceProgress),
+    yaw: lerp(from.yaw, to.yaw, progress),
+    tilt: lerp(from.tilt, to.tilt, progress),
   }
 }

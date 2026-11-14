@@ -25,22 +25,25 @@ export function groundTexture() {
   if (textureCache.has('ground')) return textureCache.get('ground')!
   const { canvas: c, ctx } = canvas(512)
   const random = seededRandom(2019)
-  ctx.fillStyle = '#a9a5b4'
-  ctx.fillRect(0, 0, 512, 512)
-  for (let i = 0; i < 25000; i++) {
-    const x = random() * 512, y = random() * 512, size = random() * 2.1 + 0.3
-    ctx.fillStyle = random() > 0.5 ? `rgba(242,239,250,${random() * 0.12})` : `rgba(34,30,49,${random() * 0.14})`
-    ctx.fillRect(x, y, size, size)
+  const pixels = ctx.createImageData(c.width, c.height)
+  const bands = [[5, 25], [13, 15], [31, 10], [73, 5]].map(([size, weight]) => ({ size, weight, cells: Float32Array.from({ length: size * size }, () => random() - 0.5) }))
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
+    let gray = 165 + (random() - 0.5) * 12
+    for (const { size, weight, cells } of bands) {
+      const u = x / c.width * size, v = y / c.height * size
+      const a = Math.floor(u), b = Math.floor(v), nextX = (a + 1) % size, nextY = (b + 1) % size
+      const fx = u - a, fy = v - b, sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy)
+      const top = cells[b * size + a] * (1 - sx) + cells[b * size + nextX] * sx
+      const bottom = cells[nextY * size + a] * (1 - sx) + cells[nextY * size + nextX] * sx
+      gray += weight * (top * (1 - sy) + bottom * sy)
+    }
+    const pixel = (y * c.width + x) * 4
+    pixels.data[pixel] = pixels.data[pixel + 1] = pixels.data[pixel + 2] = gray
+    pixels.data[pixel + 3] = 255
   }
-  for (let i = 0; i < 60; i++) {
-    const x = random() * 512, y = random() * 512, r = 1 + random() * 4
-    ctx.fillStyle = 'rgba(42,38,54,.08)'
-    ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.65, 0, 0, Math.PI * 2); ctx.fill()
-    ctx.strokeStyle = 'rgba(230,226,240,.17)'; ctx.stroke()
-  }
+  ctx.putImageData(pixels, 0, 0)
   const texture = finish(c)
   texture.wrapS = texture.wrapT = RepeatWrapping
-  texture.repeat.set(15, 15)
   texture.anisotropy = 4
   textureCache.set('ground', texture)
   return texture

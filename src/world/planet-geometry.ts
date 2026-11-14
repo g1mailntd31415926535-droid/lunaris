@@ -1,72 +1,56 @@
 import * as THREE from 'three'
-import { CAP_RADIUS_M, CAP_SEGMENTS, METRE, MOON_RADIUS_M } from './space-config.ts'
+import { METRE, MOON_RADIUS_M } from './space-config.ts'
+import { MOON_R, bodyHeight, bodyToStereo, sceneFromBody } from './lunar-frame.ts'
 
-// Far-view Moon globe (fictional relief, orbit view only). It starts 50 km from Artemis, so it has a
-// hole over the whole Task 02 data circle; the procedural south-pole cap that used to fill that
-// hole was removed. Inside the hole the only geometry is the NASA LOLA DEM (DemTerrain.tsx).
-import { moonHeightMeters } from './planet-fields.ts'
+// Far-view Moon globe from NASA LOLA: LDEM_4 (0.25°) everywhere, the 480 m polar grid south of ≈ 79.5°S.
+// Body-fixed latitude/longitude are rotated into the scene with SCENE_FROM_BODY, so Artemis sits on +Y as before
+// and the polar LOLA terrain (RegionalTerrain) lines up with this globe in position and datum.
+// Before the data arrives (or if it fails) the globe is the plain 1737.4 km sphere: smooth, never invented relief.
 
-function globePosition(theta: number, phi: number): [number, number, number] {
-  const n: [number, number, number] = [Math.sin(theta) * Math.cos(phi), Math.cos(theta), Math.sin(theta) * Math.sin(phi)]
-  const radius = MOON_RADIUS_M + moonHeightMeters(...n)
-  return [n[0] * radius * METRE, (n[1] * radius - MOON_RADIUS_M) * METRE, n[2] * radius * METRE]
+/** Latitude rows (deg): 0.5° from the south pole to 72°S, where the polar terrain meets the globe, 1.5° beyond. */
+function latitudes() {
+  const rows: number[] = []
+  for (let lat = -90; lat < -72; lat += 0.5) rows.push(lat)
+  for (let lat = -72; lat <= 90.0001; lat += 1.5) rows.push(Math.min(90, lat))
+  return rows
 }
 
-function seamNormal(phi: number) {
-  const x = Math.cos(phi) * CAP_RADIUS_M, z = Math.sin(phi) * CAP_RADIUS_M, e = 10
-  const point = (xx: number, zz: number) => new THREE.Vector3(...globePosition(Math.asin(Math.hypot(xx, zz) / MOON_RADIUS_M), Math.atan2(zz, xx)))
-  const dx = point(x + e, z).sub(point(x - e, z)), dz = point(x, z + e).sub(point(x, z - e))
-  return dz.cross(dx).normalize()
-}
-
-export function buildMoonGlobe() {
-  const width = CAP_SEGMENTS, rows = 112
-  const thetaStart = Math.asin(CAP_RADIUS_M / MOON_RADIUS_M)
-  const vertices = (width + 1) * rows + 1
-  const position = new Float32Array(vertices * 3), uv = new Float32Array(vertices * 2)
+export function buildMoonGlobe(baseHeight: number) {
+  const lats = latitudes(), width = 256
+  const vertices = lats.length * (width + 1)
+  const position = new Float32Array(vertices * 3), uv = new Float32Array(vertices * 2), rho = new Float32Array(vertices)
   const indices: number[] = []
-  for (let j = 0; j < rows; j++) {
-    const theta = thetaStart + (Math.PI - thetaStart) * j / rows
+  const u = [0, 0, 0], s = [0, 0, 0]
+  let measured = 0
+  for (let j = 0; j < lats.length; j++) {
+    const lat = lats[j] * Math.PI / 180
     for (let i = 0; i <= width; i++) {
-      const index = j * (width + 1) + i
-      position.set(globePosition(theta, i / width * Math.PI * 2), index * 3)
-      uv.set([i / width, 1 - theta / Math.PI], index * 2)
-      if (j < rows - 1 && i < width) {
-        const a = index, b = a + width + 1, c = a + 1, d = b + 1
-        indices.push(a, c, b, b, c, d)
+      const lonDeg = i / width * 360 - 180, lon = lonDeg * Math.PI / 180
+      u[0] = Math.cos(lat) * Math.cos(lon); u[1] = Math.cos(lat) * Math.sin(lon); u[2] = Math.sin(lat)
+      let h = bodyHeight(u)
+      if (Number.isFinite(h)) measured++
+      else h = baseHeight                                  // no data yet: a smooth sphere at the same datum
+      sceneFromBody(u, s)
+      const radius = MOON_R + h - baseHeight, index = j * (width + 1) + i
+      // Rebased to Artemis (the mesh sits at +R in the Moon group), in kilometres.
+      position[index * 3] = s[0] * radius * METRE
+      position[index * 3 + 1] = (s[1] * radius - MOON_RADIUS_M) * METRE
+      position[index * 3 + 2] = s[2] * radius * METRE
+      uv[index * 2] = (lonDeg + 180) / 360; uv[index * 2 + 1] = (lats[j] + 90) / 180
+      rho[index] = lats[j] < -60 ? Math.hypot(...bodyToStereo(u)) : 1e9
+      if (j < lats.length - 1 && i < width) {
+        const a = index, b = a + width + 1
+        indices.push(a, a + 1, b, a + 1, b + 1, b)      // counter-clockwise seen from outside
       }
     }
   }
-  const pole = vertices - 1
-  position.set(globePosition(Math.PI, 0), pole * 3); uv.set([0.5, 0], pole * 2)
-  for (let i = 0; i < width; i++) {
-    const a = (rows - 1) * (width + 1) + i
-    indices.push(a, a + 1, pole)
-  }
   const geometry = new THREE.BufferGeometry()
   geometry.setAttribute('position', new THREE.BufferAttribute(position, 3))
-  geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); geometry.setIndex(indices)
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2))
+  geometry.setAttribute('rho', new THREE.BufferAttribute(rho, 1))
+  geometry.setIndex(indices)
   geometry.computeVertexNormals()
-  for (let i = 0; i <= width; i++) { const n = seamNormal(i / width * Math.PI * 2); geometry.getAttribute('normal').setXYZ(i, n.x, n.y, n.z) }
   geometry.computeBoundingBox(); geometry.computeBoundingSphere()
-  geometry.userData = { owner: 'moon-global', units: 'km', capRadiusMetres: CAP_RADIUS_M, thetaStart, vertices, triangles: indices.length / 3 }
-  return geometry
-}
-
-/** Smooth, unlit stand-in for the globe at close range: same centre, same 50 km hole, no relief. */
-export function buildMoonMatteShell() {
-  const width = 40, rows = 10, thetaStart = Math.asin(CAP_RADIUS_M / MOON_RADIUS_M), radius = MOON_RADIUS_M * METRE
-  const position: number[] = [], indices: number[] = []
-  for (let j = 0; j <= rows; j++) {
-    const theta = thetaStart + (Math.PI - thetaStart) * j / rows
-    for (let i = 0; i <= width; i++) {
-      const phi = i / width * Math.PI * 2
-      position.push(Math.sin(theta) * Math.cos(phi) * radius, (Math.cos(theta) - 1) * radius, Math.sin(theta) * Math.sin(phi) * radius)
-      if (j < rows && i < width) { const a = j * (width + 1) + i, b = a + width + 1; indices.push(a, a + 1, b, b, a + 1, b + 1) }
-    }
-  }
-  const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(position, 3)); geometry.setIndex(indices)
-  geometry.computeBoundingSphere()
+  geometry.userData = { owner: 'moon-global', units: 'km', source: measured ? 'NASA LOLA LDEM_4 + PGDA 480 m polar grid' : 'plain sphere (LOLA not loaded)', measuredVertices: measured, vertices, triangles: indices.length / 3 }
   return geometry
 }

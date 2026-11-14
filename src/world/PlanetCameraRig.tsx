@@ -3,19 +3,128 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { BuildingId, CameraMode, CameraRequest, WorldHandle } from '../types'
 import { BUILDING_BY_ID } from '../data'
-import { actualTerrainHeight, sampleTerrain } from './terrain-query'
-import { moonHeightMeters } from './planet-fields'
+import { actualTerrainHeight } from './terrain-query'
+import { demMeta } from './dem'
+import { BASE_XY, REGION_RHO_MAX, displayPosition, polarHeight, sceneDirectionHeight } from './lunar-frame'
 import { CAMERA_ALTITUDES_M, CAP_RADIUS_M, MAX_ALTITUDE_M, METRE, MIN_ALTITUDE_M, MOON_CENTER, MOON_RADIUS_KM, SURFACE_CLEARANCE_M } from './space-config'
 import { smoothstep } from './math'
 import { useUniverse } from './universe-context'
-import { createCameraFlight, sampleCameraFlight } from './camera-travel'
-import { circleLocal } from './dem'
+import { createCameraFlight, sampleCameraFlight, shortestAngle } from './camera-travel'
 import type { CameraChannels, CameraFlight } from './camera-travel'
 
+const DEFAULT_YAW = 0.61
+const DEFAULT_TILT = 0.925
+const DEFAULT_PAN = [2.2, -0.5] as const
+const UP = new THREE.Vector3(0, 1, 0)
+const MOON = new THREE.Vector3(...MOON_CENTER)
+const orbitFrame = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3().setFromSphericalCoords(1, 0.63, DEFAULT_YAW), UP)
+const geometryClearanceCells = new WeakMap<THREE.BufferGeometry, Map<number, number[]>>()
+const RADIAL_ROW_HEIGHT = Math.PI / 112
+
+function frameAt(x: number, z: number) {
+  const normal = new THREE.Vector3(x * METRE, MOON_RADIUS_KM, z * METRE).normalize()
+  return new THREE.Quaternion().setFromUnitVectors(UP, normal)
+}
+
+function cameraChannels(logAltitude: number, target: readonly [number, number] = DEFAULT_PAN): CameraChannels {
+  return { logAltitude, surface: frameAt(...target), yaw: DEFAULT_YAW, tilt: DEFAULT_TILT }
+}
+
+// The tilt the user chose is kept through local and regional views; only towards orbit distances does the
+// view ease to top-down, so the whole globe stays centred on the observed point.
+function tiltAt(logAltitude: number) {
+  return 1 - 0.9 * smoothstep(Math.log(60_000), Math.log(1_500_000), logAltitude)
+}
+/** 0: a left drag orbits around the observed point. 1: zoomed out to globe scale, the same drag rolls the Moon. */
+function globeDragWeight(logAltitude: number) {
+  return smoothstep(Math.log(200_000), Math.log(2_000_000), logAltitude)
+}
+
+/** Height (m, region-local y) of the surface that is drawn at region-local (x, z): the 5 m DEM where it exists,
+ *  else the LOLA polar grids at their display position, else (before any data) the sphere datum. */
+const displayScratch = [0, 0, 0]
+function groundLocal(x: number, z: number) {
+  const dem = actualTerrainHeight(x, z)
+  if (Number.isFinite(dem)) return dem
+  const X = BASE_XY[0] + x, Y = BASE_XY[1] - z, h = polarHeight(X, Y)
+  if (Number.isFinite(h)) return displayPosition(X, Y, h, demMeta()!.base.height_m, displayScratch)[1]
+  return Number.NaN
+}
+const POLAR_COS = Math.cos(REGION_RHO_MAX / 1_737_400)
+
+function capPoint(normal: THREE.Vector3) {
+  return normal.y > 0 && Math.hypot(normal.x, normal.z) < CAP_RADIUS_M * METRE / MOON_RADIUS_KM
+}
+
+// The visual globe's triangles can be hundreds of metres away from their analytic
+// field between vertices. Bucket them once by polar angle for close-up clearance.
+function radialRows(geometry: THREE.BufferGeometry) {
+  const cached = geometryClearanceCells.get(geometry)
+  if (cached) return cached
+
+  const rows = new Map<number, number[]>()
+  const positions = geometry.getAttribute('position'), indices = geometry.getIndex()!
+  const point = new THREE.Vector3()
+  for (let i = 0; i < indices.count; i += 3) {
+    let min = Infinity, max = -Infinity
+    for (let j = 0; j < 3; j++) {
+      point.fromBufferAttribute(positions, indices.getX(i + j)).sub(MOON)
+      const angle = Math.atan2(Math.hypot(point.x, point.z), point.y)
+      min = Math.min(min, angle); max = Math.max(max, angle)
+    }
+    const first = Math.floor(min / RADIAL_ROW_HEIGHT), last = Math.floor(max / RADIAL_ROW_HEIGHT)
+    for (let row = Math.max(0, first - 1); row <= last + 1; row++) {
+      const triangles = rows.get(row)
+      if (triangles) triangles.push(i)
+      else rows.set(row, [i])
+    }
+  }
+  geometryClearanceCells.set(geometry, rows)
+  return rows
+}
+
+function renderedRadius(globe: THREE.Mesh | null, ray: THREE.Ray, scratch: THREE.Vector3[]) {
+  if (!globe) return Number.NaN
+  const { geometry } = globe
+  const normal = ray.direction
+  const row = Math.floor(Math.atan2(Math.hypot(normal.x, normal.z), normal.y) / RADIAL_ROW_HEIGHT)
+  const triangles = radialRows(geometry).get(row)
+  if (!triangles) return Number.NaN
+  const positions = geometry.getAttribute('position'), indices = geometry.getIndex()!
+  const [a, b, c, point] = scratch
+  for (const index of triangles) {
+    a.fromBufferAttribute(positions, indices.getX(index))
+    b.fromBufferAttribute(positions, indices.getX(index + 1))
+    c.fromBufferAttribute(positions, indices.getX(index + 2))
+    const hit = ray.intersectTriangle(a, b, c, false, point)
+    if (hit) return hit.distanceTo(MOON)
+  }
+  return Number.NaN
+}
+
+function radiusCache() {
+  return { globe: null as THREE.Mesh | null, direction: new THREE.Vector3(), radius: 0, useMesh: false }
+}
+
+function globeRadius(globe: THREE.Mesh | null, normal: THREE.Vector3, useMesh: boolean, cache: ReturnType<typeof radiusCache>, ray: THREE.Ray, hit: THREE.Vector3[]) {
+  if (cache.globe === globe && cache.useMesh === useMesh && cache.direction.distanceToSquared(normal) < 1e-20) return cache.radius
+  // Inside ≈ 80°S the polar LOLA grids are drawn (finer than the globe's triangles): use them directly.
+  const polar = normal.y > POLAR_COS
+  const measured = useMesh && !polar ? renderedRadius(globe, ray.set(MOON, normal), hit) : Number.NaN
+  const lola = sceneDirectionHeight(normal.x, normal.y, normal.z, demMeta()!.base.height_m)
+  cache.radius = Number.isFinite(measured) ? measured : MOON_RADIUS_KM + (Number.isFinite(lola) ? lola : 0) * METRE
+  cache.direction.copy(normal)
+  cache.globe = globe
+  cache.useMesh = useMesh
+  return cache.radius
+}
+
 export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest; followRover: boolean; onStopFollow: () => void; reducedMotion: boolean; onMode: (mode: CameraMode) => void; onTravel: (moving: boolean, destination: CameraMode) => void }>(function PlanetCameraRig({ request, followRover, onStopFollow, reducedMotion, onMode, onTravel }, ref) {
-  const { camera, gl, size } = useThree()
+  const { camera, gl, scene, size } = useThree()
   const universe = useUniverse()
-  const state = useRef({ logAlt: Math.log(27), wantedLogAlt: Math.log(27), yaw: 0.61, wantedYaw: 0.61, polar: 0.63, wantedPolar: 0.63, nearYaw: 0.61, wantedNearYaw: 0.61, nearPolar: 0.925, wantedNearPolar: 0.925, panX: 2.2, panZ: -0.5, wantedPanX: 2.2, wantedPanZ: -0.5, panAnchorX: 0, panAnchorZ: 0, followZoom: 0, followWeight: 0, groundY: 0, lastMode: 'base' as CameraMode })
+  const pose = useRef(cameraChannels(Math.log(27)))
+  const wanted = useRef(cameraChannels(Math.log(27)))
+  const state = useRef({ followZoom: 0, followWeight: 0, lastMode: 'base' as CameraMode })
   const followFlag = useRef(followRover); followFlag.current = followRover
   const stopFollow = useRef(onStopFollow); stopFollow.current = onStopFollow
   const previousFollow = useRef(false)
@@ -24,192 +133,336 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
   const reduced = useRef(reducedMotion); reduced.current = reducedMotion
   const requestedId = useRef(-1)
   const currentSize = useRef(size); currentSize.current = size
-  const scratch = useRef({ moon: new THREE.Vector3(...MOON_CENTER), farDirection: new THREE.Vector3(), nearDirection: new THREE.Vector3(0, 1, 0), surfaceX: new THREE.Vector3(), surfaceZ: new THREE.Vector3(), nearOffset: new THREE.Vector3(), nearEye: new THREE.Vector3(), farEye: new THREE.Vector3(), eye: new THREE.Vector3(), target: new THREE.Vector3(), delta: new THREE.Vector3(), mapFrom: new THREE.Vector3(), mapTo: new THREE.Vector3(), mapTurn: new THREE.Quaternion(), q: new THREE.Quaternion(), identity: new THREE.Quaternion() })
-  const capture = (): CameraChannels => { const s = state.current; return { logAltitude: s.logAlt, yaw: s.yaw, polar: s.polar, nearYaw: s.nearYaw, nearPolar: s.nearPolar, panX: s.panX, panZ: s.panZ } }
-  const apply = (pose: CameraChannels, syncWanted = false) => {
-    const s = state.current
-    s.logAlt = pose.logAltitude; s.yaw = pose.yaw; s.polar = pose.polar; s.nearYaw = pose.nearYaw; s.nearPolar = pose.nearPolar; s.panX = pose.panX; s.panZ = pose.panZ
-    if (syncWanted) { s.wantedLogAlt = s.logAlt; s.wantedYaw = s.yaw; s.wantedPolar = s.polar; s.wantedNearYaw = s.nearYaw; s.wantedNearPolar = s.nearPolar; s.wantedPanX = s.panX; s.wantedPanZ = s.panZ }
+  const globe = useRef<THREE.Mesh | null>(null)
+  const scratch = useRef({
+    surface: new THREE.Quaternion(), normal: new THREE.Vector3(), heading: new THREE.Vector3(),
+    eye: new THREE.Vector3(), target: new THREE.Vector3(), radialEye: new THREE.Vector3(), rover: new THREE.Vector3(),
+    hit: [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()],
+    ray: new THREE.Ray(), targetRadius: radiusCache(), eyeRadius: radiusCache(),
+  })
+
+  const copyPose = (from: CameraChannels, to: CameraChannels) => {
+    to.logAltitude = from.logAltitude
+    to.surface.copy(from.surface)
+    to.yaw = from.yaw
+    to.tilt = from.tilt
   }
-  const cancelTravel = () => {
-    if (!travel.current) return
-    const destination = travel.current.flight.destination
-    travel.current = null; apply(capture(), true)
+  const endTravel = (destination: CameraMode) => {
+    travel.current = null
+    copyPose(pose.current, wanted.current)
     universe.current.cameraTravel = { moving: false, destination }
     reportTravel.current(false, destination)
   }
-  const goTo = (mode: CameraMode, animate = true, altitude?: number, pan: [number, number] = [2.2, -0.5]) => {
-    const s = state.current
-    s.panAnchorX = 0; s.panAnchorZ = 0
+  const cancelTravel = () => {
+    if (travel.current) endTravel(travel.current.flight.destination)
+  }
+  const goTo = (mode: CameraMode, animate = true, altitude?: number, pan: readonly [number, number] = DEFAULT_PAN, keepFocus = false) => {
     const factor = currentSize.current.width < 700 ? 1.47 : currentSize.current.width < 1100 ? 1.13 : 1
     const targetAltitude = altitude ?? CAMERA_ALTITUDES_M[mode] * (mode === 'base' ? factor : 1)
-    if (!animate) { s.wantedLogAlt = Math.log(targetAltitude); return }
-    const goal: CameraChannels = { logAltitude: Math.log(targetAltitude), yaw: 0.61, polar: 0.63, nearYaw: 0.61, nearPolar: 0.925, panX: pan[0], panZ: pan[1] }
-    const flight = createCameraFlight(capture(), goal, mode)
-    if (reduced.current) { flight.duration *= 0.7; flight.lead *= 0.7 }
+    const logAltitude = Math.log(targetAltitude)
+    if (!animate) {
+      wanted.current.logAltitude = logAltitude
+      return
+    }
+
+    const from = { ...pose.current, surface: pose.current.surface.clone() }
+    const goal = keepFocus ? { ...from, logAltitude } : cameraChannels(logAltitude, pan)
+    const flight = createCameraFlight(from, goal, mode)
+    if (reduced.current) {
+      flight.duration *= 0.7
+      flight.lift *= 0.7
+      flight.lead *= 0.7
+    }
     travel.current = { flight, elapsed: 0 }
-    s.wantedLogAlt = goal.logAltitude; s.wantedYaw = goal.yaw; s.wantedPolar = goal.polar; s.wantedNearYaw = goal.nearYaw; s.wantedNearPolar = goal.nearPolar; s.wantedPanX = goal.panX; s.wantedPanZ = goal.panZ
+    copyPose(flight.to, wanted.current)
     universe.current.cameraTravel = { moving: true, destination: mode }
     reportTravel.current(true, mode)
   }
   useEffect(() => {
     const s = state.current
-    if (followRover) { cancelTravel(); s.followZoom = 0 }
-    else if (previousFollow.current) {
-      s.panX = s.wantedPanX = s.panAnchorX = universe.current.roverNominal.x
-      s.panZ = s.wantedPanZ = s.panAnchorZ = universe.current.roverNominal.z
-      s.followWeight = 0; s.wantedLogAlt = s.logAlt
+    if (followRover) {
+      cancelTravel()
+      s.followZoom = 0
+    } else if (previousFollow.current) {
+      const { x, z } = universe.current.roverNominal
+      pose.current.surface.copy(frameAt(x, z))
+      wanted.current.surface.copy(pose.current.surface)
+      s.followWeight = 0
+      wanted.current.logAltitude = pose.current.logAltitude
     }
     previousFollow.current = followRover
     universe.current.followRover = followRover
   }, [followRover, universe])
+  const zoomBy = (step: number) => {
+    cancelTravel()
+    if (followFlag.current) state.current.followZoom = THREE.MathUtils.clamp(state.current.followZoom + step, Math.log(12 / 30), Math.log(3500 / 30))
+    else wanted.current.logAltitude = THREE.MathUtils.clamp(wanted.current.logAltitude + step, Math.log(MIN_ALTITUDE_M), Math.log(MAX_ALTITUDE_M))
+  }
+  const focusPoint = (mode: CameraMode, height: number, point: readonly [number, number]) => {
+    previousFollow.current = false
+    goTo(mode, true, height, point)
+  }
   useImperativeHandle(ref, () => ({
-    zoom(direction) { cancelTravel(); const step = direction === 'in' ? -0.55 : 0.55; if (followFlag.current) state.current.followZoom += step; else state.current.wantedLogAlt = THREE.MathUtils.clamp(state.current.wantedLogAlt + step, Math.log(MIN_ALTITUDE_M), Math.log(MAX_ALTITUDE_M)) },
-    reset() { const s = state.current; s.wantedYaw = 0.61; s.wantedPolar = 0.63; s.wantedNearYaw = 0.61; s.wantedNearPolar = 0.925; if (followFlag.current) s.followZoom = 0; else { s.wantedPanX = 2.2; s.wantedPanZ = -0.5; goTo(s.lastMode) } },
-    focus(id: BuildingId) { previousFollow.current = false; const { position } = BUILDING_BY_ID[id]; goTo('base', true, 21, [position[0], position[2]]) },
-    focusPoint(x: number, z: number) { previousFollow.current = false; goTo('region', true, 420, [x, z]); state.current.panAnchorX = x; state.current.panAnchorZ = z },
-    focusCrew(name: string) { previousFollow.current = false; const actor = window.__LUNARIS__?.actors.find((a) => a.name === `astronaut:${name}`); if (actor) goTo('base', true, 18, [actor.position[0], actor.position[2]]) },
+    zoom(direction) { zoomBy(direction === 'in' ? -0.55 : 0.55) },
+    reset() {
+      if (followFlag.current) {
+        state.current.followZoom = 0
+        wanted.current.yaw = shortestAngle(pose.current.yaw, DEFAULT_YAW)
+        wanted.current.tilt = DEFAULT_TILT
+      } else goTo(state.current.lastMode)
+    },
+    focus(id: BuildingId) {
+      const { position } = BUILDING_BY_ID[id]
+      focusPoint('base', 21, [position[0], position[2]])
+    },
+    focusPoint(x: number, z: number) { focusPoint('region', 420, [x, z]) },
+    focusCrew(name: string) {
+      const actor = window.__LUNARIS__?.actors.find((a) => a.name === 'astronaut:' + name)
+      if (actor) focusPoint('base', 18, [actor.position[0], actor.position[2]])
+    },
   }), [])
   useEffect(() => {
     if (request.id === requestedId.current) return
     const initial = requestedId.current < 0
     requestedId.current = request.id
-    goTo(request.mode, !initial)
+    goTo(request.mode, !initial, undefined, DEFAULT_PAN, request.mode === 'orbit')
   }, [request.id, request.mode])
   useEffect(() => {
-    const s = state.current
-    if (s.lastMode === 'base' && !followFlag.current && !travel.current) goTo('base', false)
+    if (state.current.lastMode === 'base' && !followFlag.current && !travel.current) goTo('base', false)
   }, [size.width])
+
   useEffect(() => {
-    const element = gl.domElement
-    const pointers = new Map<number, { x: number; y: number; button: number; startX: number; startY: number }>()
-    let pinchDistance = 0
-    const down = (e: PointerEvent) => { pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, button: e.button, startX: e.clientX, startY: e.clientY }); if (pointers.size === 2) { cancelTravel(); const p = [...pointers.values()]; pinchDistance = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) } }
-    const move = (e: PointerEvent) => {
-      const p = pointers.get(e.pointerId); if (!p) return
-      const dx = e.clientX - p.x, dy = e.clientY - p.y
-      p.x = e.clientX; p.y = e.clientY
-      const s = state.current
-      if (pointers.size === 2) {
-        const p = [...pointers.values()], d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y)
-        if (pinchDistance > 0 && d > 0) { const zoom = -Math.log(d / pinchDistance); if (followFlag.current) s.followZoom += zoom; else s.wantedLogAlt = THREE.MathUtils.clamp(s.wantedLogAlt + zoom, Math.log(MIN_ALTITUDE_M), Math.log(MAX_ALTITUDE_M)) }
-        pinchDistance = d; return
+    const canvas = gl.domElement, surface = canvas.closest<HTMLElement>('.world') ?? canvas
+    const pointers = new Map<number, { x: number; y: number; pan: boolean; startX: number; startY: number; dragging: boolean; owner: Element }>()
+    const radial = new THREE.Vector3(), heading = new THREE.Vector3(), right = new THREE.Vector3(), axis = new THREE.Vector3()
+    const turn = new THREE.Quaternion()
+    let skipClick = false, touchFrame = 0
+    let touchX = 0, touchY = 0, pinchDistance = 0
+    const moveFocus = (dx: number, dy: number, radiansPerPixel: number) => {
+      const { surface, yaw } = wanted.current
+      radial.copy(UP).applyQuaternion(surface)
+      heading.set(Math.sin(yaw), 0, Math.cos(yaw)).applyQuaternion(surface)
+      right.crossVectors(radial, heading)
+      axis.copy(heading).multiplyScalar(dx).addScaledVector(right, -dy).normalize()
+      const angle = Math.min(0.65, Math.hypot(dx, dy) * radiansPerPixel)
+      surface.premultiply(turn.setFromAxisAngle(axis, angle)).normalize()
+    }
+    const pan = (dx: number, dy: number) => {
+      if (followFlag.current) {
+        const rover = universe.current.roverNominal
+        pose.current.surface.copy(frameAt(rover.x, rover.z))
+        wanted.current.surface.copy(pose.current.surface)
+        wanted.current.logAltitude = pose.current.logAltitude
+        state.current.followWeight = 0
+        previousFollow.current = false
+        followFlag.current = false
+        stopFollow.current()
       }
-      if (Math.hypot(e.clientX - p.startX, e.clientY - p.startY) < 3) return
-      cancelTravel()
-      if (!element.hasPointerCapture(e.pointerId)) element.setPointerCapture(e.pointerId)
-      if (p.button === 2 || p.button === 1) {
-        if (followFlag.current) stopFollow.current()
-        const scale = Math.exp(s.logAlt) / Math.max(200, currentSize.current.height) * 1.25
-        const maxPan = Math.min(20_000, Math.max(36, Math.exp(s.logAlt) * 0.7))
-        s.wantedPanX = THREE.MathUtils.clamp(s.wantedPanX - (dx * Math.cos(s.nearYaw) + dy * Math.sin(s.nearYaw)) * scale, s.panAnchorX - maxPan, s.panAnchorX + maxPan)
-        s.wantedPanZ = THREE.MathUtils.clamp(s.wantedPanZ - (-dx * Math.sin(s.nearYaw) + dy * Math.cos(s.nearYaw)) * scale, s.panAnchorZ - maxPan, s.panAnchorZ + maxPan)
-      } else {
-        s.wantedYaw -= dx * 0.005; s.wantedPolar = THREE.MathUtils.clamp(s.wantedPolar - dy * 0.004, 0.025, Math.PI - 0.025)
-        s.wantedNearYaw -= dx * 0.005; s.wantedNearPolar = THREE.MathUtils.clamp(s.wantedNearPolar - dy * 0.004, 0.30, 1.13)
+      const view = pose.current
+      const tilt = view.tilt * tiltAt(view.logAltitude)
+      const metresPerPixel = 2 * Math.exp(view.logAltitude) * Math.tan(THREE.MathUtils.degToRad((camera as THREE.PerspectiveCamera).fov) / 2) / (Math.cos(tilt) * Math.max(200, currentSize.current.height))
+      moveFocus(dx, dy / Math.max(0.25, Math.cos(tilt)), Math.min(metresPerPixel * METRE / MOON_RADIUS_KM, 0.0035))
+    }
+    const orbit = (dx: number, dy: number) => {
+      const view = pose.current, goal = wanted.current
+      // Free orbit around the observed point at every local and regional height (yaw + tilt). Only at globe scale
+      // does the drag turn into rolling the Moon under the camera, so its far side can still be reached.
+      const globeWeight = followFlag.current ? 0 : globeDragWeight(view.logAltitude)
+      const localWeight = 1 - globeWeight
+      if (globeWeight > 0) moveFocus(dx, dy, globeWeight * 0.0045)
+      goal.yaw -= dx * localWeight * 0.005
+      goal.tilt = THREE.MathUtils.clamp(goal.tilt - dy * localWeight * 0.0048, 0.025, 1.4)
+    }
+    const updateTouch = (start: boolean) => {
+      if (pointers.size !== 2) return
+      const [a, b] = [...pointers.values()]
+      const x = (a.x + b.x) / 2, y = (a.y + b.y) / 2
+      const distance = Math.hypot(a.x - b.x, a.y - b.y)
+      if (!start) {
+        if (pinchDistance > 0 && distance > 0) zoomBy(-Math.log(distance / pinchDistance))
+        if (x !== touchX || y !== touchY) pan(x - touchX, y - touchY)
+      }
+      touchX = x; touchY = y; pinchDistance = distance
+    }
+    const down = (event: PointerEvent) => {
+      const { button, clientX: x, clientY: y, pointerId, shiftKey } = event
+      const owner = event.target
+      if (button > 2 || pointers.size >= 2 || !(owner instanceof Element)) return
+      if (!pointers.size) skipClick = false
+      pointers.set(pointerId, { x, y, startX: x, startY: y, pan: button === 1 || button === 2 || shiftKey, dragging: false, owner })
+      if (pointers.size === 2) {
+        cancelTravel()
+        skipClick = true
+        for (const [id, item] of pointers) {
+          item.owner.setPointerCapture(id)
+          item.dragging = true
+        }
+        updateTouch(true)
       }
     }
-    const up = (e: PointerEvent) => { pointers.delete(e.pointerId); if (element.hasPointerCapture(e.pointerId)) element.releasePointerCapture(e.pointerId); if (pointers.size < 2) pinchDistance = 0 }
-    const wheel = (e: WheelEvent) => { e.preventDefault(); cancelTravel(); const s = state.current; if (followFlag.current) s.followZoom += e.deltaY * 0.0035; else s.wantedLogAlt = THREE.MathUtils.clamp(s.wantedLogAlt + e.deltaY * 0.0035, Math.log(MIN_ALTITUDE_M), Math.log(MAX_ALTITUDE_M)) }
-    const clear = () => { pointers.clear(); pinchDistance = 0 }
-    const contextmenu = (e: Event) => e.preventDefault()
-    element.addEventListener('pointerdown', down); element.addEventListener('pointermove', move); element.addEventListener('pointerup', up); element.addEventListener('pointercancel', up); element.addEventListener('lostpointercapture', up)
-    element.addEventListener('wheel', wheel, { passive: false }); element.addEventListener('contextmenu', contextmenu)
+    const move = (event: PointerEvent) => {
+      const pointer = pointers.get(event.pointerId)
+      if (!pointer) return
+      const dx = event.clientX - pointer.x, dy = event.clientY - pointer.y
+      pointer.x = event.clientX; pointer.y = event.clientY
+      if (pointers.size === 2) {
+        // Coalesce both fingers before reading the midpoint so a symmetric pinch is anchored.
+        if (!touchFrame) touchFrame = requestAnimationFrame(() => { touchFrame = 0; updateTouch(false) })
+        return
+      }
+      if (!pointer.dragging && Math.hypot(pointer.x - pointer.startX, pointer.y - pointer.startY) < 3) return
+      if (!pointer.dragging) {
+        pointer.dragging = true
+        skipClick = true
+        cancelTravel()
+        pointer.owner.setPointerCapture(event.pointerId)
+      }
+      if (pointer.pan) pan(dx, dy)
+      else orbit(dx, dy)
+    }
+    const up = (event: PointerEvent) => {
+      const pointer = pointers.get(event.pointerId)
+      if (!pointer) return
+      if (touchFrame) {
+        cancelAnimationFrame(touchFrame)
+        touchFrame = 0
+        updateTouch(false)
+      }
+      pointers.delete(event.pointerId)
+      if (pointer.owner.hasPointerCapture(event.pointerId)) pointer.owner.releasePointerCapture(event.pointerId)
+    }
+    const click = (event: MouseEvent) => {
+      if (!skipClick || event.detail === 0) return
+      skipClick = false
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    const wheel = (event: WheelEvent) => {
+      event.preventDefault()
+      const pixels = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaY * 16 : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? event.deltaY * currentSize.current.height : event.deltaY
+      if (pixels) zoomBy(pixels * 0.0035)
+    }
+    const clear = () => {
+      if (touchFrame) cancelAnimationFrame(touchFrame)
+      touchFrame = 0
+      pointers.clear()
+      skipClick = false
+    }
+    const contextmenu = (event: Event) => event.preventDefault()
+    surface.addEventListener('pointerdown', down)
+    surface.addEventListener('pointermove', move)
+    surface.addEventListener('pointerup', up)
+    surface.addEventListener('pointercancel', up)
+    surface.addEventListener('lostpointercapture', up)
+    surface.addEventListener('click', click, true)
+    surface.addEventListener('wheel', wheel, { passive: false })
+    surface.addEventListener('contextmenu', contextmenu)
     window.addEventListener('blur', clear)
     if (new URLSearchParams(location.search).has('debug')) window.__LUNARIS_CONTROLS__ = {
-      orbit(yaw, polar) { cancelTravel(); state.current.wantedYaw = yaw; state.current.wantedPolar = THREE.MathUtils.clamp(polar, 0.025, Math.PI - 0.025); state.current.wantedLogAlt = Math.log(CAMERA_ALTITUDES_M.orbit) },
-      altitude(metres) { cancelTravel(); state.current.wantedLogAlt = Math.log(THREE.MathUtils.clamp(metres, MIN_ALTITUDE_M, MAX_ALTITUDE_M)) },
+      orbit(yaw, polar) {
+        cancelTravel()
+        radial.setFromSphericalCoords(1, THREE.MathUtils.clamp(polar, 0, Math.PI), yaw).applyQuaternion(orbitFrame)
+        wanted.current.surface.setFromUnitVectors(UP, radial)
+        wanted.current.logAltitude = Math.log(CAMERA_ALTITUDES_M.orbit)
+      },
+      altitude(metres) {
+        cancelTravel()
+        wanted.current.logAltitude = Math.log(THREE.MathUtils.clamp(metres, MIN_ALTITUDE_M, MAX_ALTITUDE_M))
+      },
     }
-    return () => { element.removeEventListener('pointerdown', down); element.removeEventListener('pointermove', move); element.removeEventListener('pointerup', up); element.removeEventListener('pointercancel', up); element.removeEventListener('lostpointercapture', up); element.removeEventListener('wheel', wheel); element.removeEventListener('contextmenu', contextmenu); window.removeEventListener('blur', clear); delete window.__LUNARIS_CONTROLS__ }
-  }, [gl])
+    return () => {
+      clear()
+      surface.removeEventListener('pointerdown', down)
+      surface.removeEventListener('pointermove', move)
+      surface.removeEventListener('pointerup', up)
+      surface.removeEventListener('pointercancel', up)
+      surface.removeEventListener('lostpointercapture', up)
+      surface.removeEventListener('click', click, true)
+      surface.removeEventListener('wheel', wheel)
+      surface.removeEventListener('contextmenu', contextmenu)
+      window.removeEventListener('blur', clear)
+      delete window.__LUNARIS_CONTROLS__
+    }
+  }, [camera, gl, universe])
+
   useFrame((_, delta) => {
-    const s = state.current, p = scratch.current
+    const view = pose.current, goal = wanted.current
+    const s = state.current, p = scratch.current, u = universe.current
+    if (!globe.current) globe.current = (scene.getObjectByName('moon-surface') as THREE.Mesh | undefined) ?? null
     const dt = Math.min(delta, 0.12), alpha = 1 - Math.exp(-(reducedMotion ? 9 : 4.2) * dt)
-    if (followRover && !travel.current) s.wantedLogAlt = Math.log(THREE.MathUtils.clamp(30 * Math.exp(s.followZoom), 12, 3500))
+    if (followRover && !travel.current) goal.logAltitude = Math.log(30) + s.followZoom
     s.followWeight += ((followRover ? 1 : 0) - s.followWeight) * alpha
     if (travel.current) {
-      const journey = travel.current
-      journey.elapsed = Math.min(journey.flight.duration, journey.elapsed + dt)
-      apply(sampleCameraFlight(journey.flight, journey.elapsed))
-      if (journey.elapsed >= journey.flight.duration) {
-        apply(journey.flight.to, true); travel.current = null
-        universe.current.cameraTravel = { moving: false, destination: journey.flight.destination }
-        reportTravel.current(false, journey.flight.destination)
-      }
+      const { flight } = travel.current
+      travel.current.elapsed = Math.min(flight.duration, travel.current.elapsed + dt)
+      copyPose(sampleCameraFlight(flight, travel.current.elapsed), view)
+      if (travel.current.elapsed >= flight.duration) endTravel(flight.destination)
     } else {
-      const zoomStep = (s.wantedLogAlt - s.logAlt) * (1 - Math.exp(-5 * dt))
+      const zoomStep = (goal.logAltitude - view.logAltitude) * (1 - Math.exp(-5 * dt))
       const maximumLogSpeed = zoomStep > 0 ? 7.5 : reducedMotion ? 7 : 3.4
-      s.logAlt += THREE.MathUtils.clamp(zoomStep, -maximumLogSpeed * dt, maximumLogSpeed * dt)
-      s.yaw += (s.wantedYaw - s.yaw) * alpha; s.polar += (s.wantedPolar - s.polar) * alpha
-      s.nearYaw += (s.wantedNearYaw - s.nearYaw) * alpha; s.nearPolar += (s.wantedNearPolar - s.nearPolar) * alpha
+      view.logAltitude += THREE.MathUtils.clamp(zoomStep, -maximumLogSpeed * dt, maximumLogSpeed * dt)
+      view.surface.slerp(goal.surface, alpha)
+      view.yaw += (goal.yaw - view.yaw) * alpha
+      view.tilt += (goal.tilt - view.tilt) * alpha
     }
-    const h = Math.exp(s.logAlt), maxPan = Math.min(20_000, Math.max(36, h * 0.7))
-    if (!travel.current) {
-      s.wantedPanX = THREE.MathUtils.clamp(s.wantedPanX, s.panAnchorX - maxPan, s.panAnchorX + maxPan); s.wantedPanZ = THREE.MathUtils.clamp(s.wantedPanZ, s.panAnchorZ - maxPan, s.panAnchorZ + maxPan)
-      s.panX += (s.wantedPanX - s.panX) * alpha; s.panZ += (s.wantedPanZ - s.panZ) * alpha
+    const altitude = Math.exp(view.logAltitude), tilt = view.tilt * tiltAt(view.logAltitude)
+    p.surface.copy(view.surface)
+    if (s.followWeight > 0.0001) {
+      const rover = u.roverPosition
+      p.surface.slerp(frameAt(rover.x, rover.z), s.followWeight > 0.995 ? 1 : s.followWeight)
     }
-    const focus = 1 - smoothstep(Math.log(4_000), Math.log(1_500_000), s.logAlt)
-    const near = 1 - smoothstep(Math.log(80), Math.log(12_000), s.logAlt)
-    // Over NoData the look-at point keeps its last real height; nothing is invented there.
-    const surface = sampleTerrain(s.panX, s.panZ, s.groundY)
-    if (surface.valid) s.groundY = surface.point[1]
-    p.target.fromArray(surface.point).multiplyScalar(METRE)
-    if (s.followWeight > 0.0001) p.target.lerp(p.nearOffset.copy(universe.current.roverPosition).multiplyScalar(METRE), s.followWeight > 0.995 ? 1 : s.followWeight)
-    p.nearDirection.copy(p.target).sub(p.moon).normalize()
-    p.farDirection.set(Math.sin(s.polar) * Math.sin(s.yaw), Math.cos(s.polar), Math.sin(s.polar) * Math.cos(s.yaw))
-    p.q.setFromUnitVectors(p.farDirection, p.nearDirection)
-    p.q.slerp(p.identity, 1 - focus)
-    p.farDirection.applyQuaternion(p.q).normalize()
-    p.farEye.copy(p.moon).addScaledVector(p.farDirection, p.target.distanceTo(p.moon) + h * METRE)
-    p.surfaceX.set(1, 0, 0).addScaledVector(p.nearDirection, -p.nearDirection.x).normalize()
-    p.surfaceZ.crossVectors(p.surfaceX, p.nearDirection).normalize()
-    p.nearOffset.copy(p.nearDirection).multiplyScalar(h * METRE).addScaledVector(p.surfaceX, Math.sin(s.nearYaw) * Math.tan(s.nearPolar) * h * METRE).addScaledVector(p.surfaceZ, Math.cos(s.nearYaw) * Math.tan(s.nearPolar) * h * METRE)
-    p.nearEye.copy(p.target).add(p.nearOffset)
-    p.eye.copy(p.farEye).lerp(p.nearEye, near)
-    // Map-centre framing: once zoomed out past the base (1.5 km → 6 km), eye and look-at move together so the centre of
-    // the screen lands on the centre of the NASA data circle instead of the base 2.9 km away. The move is a rotation
-    // about the Moon's centre (not a flat x/z shift): height above the ground and the view angle against the local
-    // surface stay exactly as they were, even when the view ray meets the ground hundreds of km away during the orbit
-    // blend. A flat shift there dragged the eye down to the surface (all-dark screen at 60 km). User pan and rover follow
-    // keep working on top of it. It fades out again between 60 km and 250 km (the switch to orbit mode).
-    const mapWeight = smoothstep(Math.log(1_500), Math.log(6_000), s.logAlt) * (1 - smoothstep(Math.log(60_000), Math.log(250_000), s.logAlt)) * (1 - s.followWeight)
-    p.mapTurn.identity()
-    if (mapWeight > 0.0001) {
-      p.delta.copy(p.target).lerp(p.moon, 1 - focus).sub(p.eye).normalize()   // final view ray
-      // Where the ray meets the base-level sphere (radius = Moon centre → base origin).
-      p.mapFrom.copy(p.eye).sub(p.moon)
-      const b = p.mapFrom.dot(p.delta), c = p.mapFrom.lengthSq() - MOON_RADIUS_KM * MOON_RADIUS_KM, disc = b * b - c
-      const t = disc >= 0 ? -b - Math.sqrt(disc) : -1
-      if (t > 0) {
-        p.mapFrom.addScaledVector(p.delta, t).normalize()
-        // The circle centre plus the user's own pan is where that hit point should go.
-        const circle = circleLocal()
-        p.mapTo.set((circle.x + s.panX - s.panAnchorX) * METRE, 0, (circle.z + s.panZ - s.panAnchorZ) * METRE).sub(p.moon).normalize()
-        p.mapTurn.setFromUnitVectors(p.mapFrom, p.mapTo).slerp(p.identity, 1 - mapWeight)
-        p.eye.sub(p.moon).applyQuaternion(p.mapTurn).add(p.moon)
+    p.normal.copy(UP).applyQuaternion(p.surface)
+    p.heading.set(Math.sin(view.yaw), 0, Math.cos(view.yaw)).applyQuaternion(p.surface)
+
+    if (capPoint(p.normal)) {
+      const x = MOON_RADIUS_KM * p.normal.x / p.normal.y, z = MOON_RADIUS_KM * p.normal.z / p.normal.y
+      const ground = groundLocal(x / METRE, z / METRE)
+      if (Number.isFinite(ground)) p.target.set(x, ground * METRE, z)
+      else p.target.copy(MOON).addScaledVector(p.normal, MOON_RADIUS_KM)
+    } else {
+      const radius = globeRadius(globe.current, p.normal, true, p.targetRadius, p.ray, p.hit)
+      p.target.copy(MOON).addScaledVector(p.normal, radius)
+    }
+    if (s.followWeight > 0.995) p.target.copy(p.rover.copy(u.roverPosition).multiplyScalar(METRE))
+
+    const distance = altitude * METRE
+    p.eye.copy(p.target).addScaledVector(p.normal, distance).addScaledVector(p.heading, Math.tan(tilt) * distance)
+    p.radialEye.copy(p.eye).sub(MOON).normalize()
+    let clearance: number
+    if (capPoint(p.radialEye)) {
+      const ground = groundLocal(p.eye.x / METRE, p.eye.z / METRE)
+      const datum = Number.isFinite(ground) ? ground * METRE : p.radialEye.y * MOON_RADIUS_KM - MOON_RADIUS_KM
+      p.eye.y = Math.max(p.eye.y, datum + SURFACE_CLEARANCE_M * METRE)
+      clearance = p.eye.y - datum
+    } else {
+      const radius = globeRadius(globe.current, p.radialEye, altitude < 10_000, p.eyeRadius, p.ray, p.hit)
+      clearance = p.eye.distanceTo(MOON) - radius
+      if (clearance < SURFACE_CLEARANCE_M * METRE) {
+        clearance = SURFACE_CLEARANCE_M * METRE
+        p.eye.copy(MOON).addScaledVector(p.radialEye, radius + clearance)
       }
     }
-    // Sphere clearance and local terrain clearance are independent safety gates.
-    p.delta.copy(p.eye).sub(p.moon)
-    const radius = p.delta.length(); p.delta.normalize()
-    const solidRadius = MOON_RADIUS_KM + moonHeightMeters(p.delta.x, p.delta.y, p.delta.z) * METRE
-    // Inside the 50 km hole the only solid surface is the NASA DEM; the fictional sphere applies outside it.
-    const insideHole = Math.hypot(p.eye.x, p.eye.z) < CAP_RADIUS_M * METRE * 0.994
-    const ground = insideHole ? actualTerrainHeight(p.eye.x / METRE, p.eye.z / METRE) : Number.NEGATIVE_INFINITY
-    if (!insideHole && radius < solidRadius + SURFACE_CLEARANCE_M * METRE) p.eye.copy(p.moon).addScaledVector(p.delta, solidRadius + SURFACE_CLEARANCE_M * METRE)
-    if (Number.isFinite(ground)) p.eye.y = Math.max(p.eye.y, (ground + SURFACE_CLEARANCE_M) * METRE)
-    p.target.lerp(p.moon, 1 - focus).sub(p.moon).applyQuaternion(p.mapTurn).add(p.moon)
-    camera.position.copy(p.eye); camera.up.set(0, 1, 0).lerp(p.nearDirection, near).applyQuaternion(p.mapTurn).normalize(); camera.lookAt(p.target)
+
+    camera.position.copy(p.eye)
+    camera.up.copy(p.normal).multiplyScalar(Math.sin(tilt)).addScaledVector(p.heading, -Math.cos(tilt))
+    camera.lookAt(p.target)
     const perspective = camera as THREE.PerspectiveCamera
-    const nextNear = THREE.MathUtils.clamp(h * METRE * 0.001, 0.000015, 1)
-    if (Math.abs(perspective.near - nextNear) > nextNear * 0.015) { perspective.near = nextNear; perspective.updateProjectionMatrix() }
-    const u = universe.current
-    u.altitudeM = h; u.clearanceM = insideHole ? (Number.isFinite(ground) ? p.eye.y / METRE - ground : h) : (p.eye.distanceTo(p.moon) - solidRadius) / METRE; u.cameraTarget.copy(p.target)
-    p.delta.copy(p.target).sub(p.eye)
-    if (p.delta.y < -1e-9) u.viewCentre.copy(p.eye).addScaledVector(p.delta, -p.eye.y / p.delta.y); else u.viewCentre.copy(p.target)
-    u.styleDetail = 1 - smoothstep(Math.log(110), Math.log(2200), s.logAlt)
-    const mode: CameraMode = h < 130 ? 'base' : h < 250_000 ? 'region' : 'orbit'
-    if (mode !== s.lastMode) { s.lastMode = mode; u.mode = mode; onMode(mode) }
+    const nextNear = THREE.MathUtils.clamp(distance * 0.001, 0.000015, 1)
+    if (Math.abs(perspective.near - nextNear) > nextNear * 0.015) {
+      perspective.near = nextNear
+      perspective.updateProjectionMatrix()
+    }
+    u.altitudeM = altitude
+    u.clearanceM = clearance / METRE
+    u.cameraTarget.copy(p.target)
+    u.viewCentre.copy(p.target)
+    u.styleDetail = 1 - smoothstep(Math.log(110), Math.log(2200), view.logAltitude)
+    const mode: CameraMode = altitude < 130 ? 'base' : altitude < 250_000 ? 'region' : 'orbit'
+    if (mode !== s.lastMode) {
+      s.lastMode = mode
+      u.mode = mode
+      onMode(mode)
+    }
   }, -3)
   return null
 })

@@ -63,7 +63,7 @@ export default function App() {
   const [history, setHistory] = useState<Notification[]>([{ id: -1, title: 'Chào mừng tới Artemis!', detail: 'Đội phi hành gia và tám công trình đang chờ bạn.', tone: 'success' }, { id: -2, title: 'Mọi hệ thống đã sẵn sàng', detail: 'Một ngày khám phá mới bắt đầu.', tone: 'info' }])
   const [modal, setModal] = useState<'settings' | 'crew' | 'help' | 'activity' | 'timeline' | 'restart' | null>(null)
   const [ready, setReady] = useState(false)
-  const [preferences, setPreferences] = useState<Preferences>({ quality: 'high', reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches, showLabels: false, showRoutes: true, sound: false })
+  const [preferences, setPreferences] = useState<Preferences>({ quality: 'high', terrainLayer: 'game', reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches, showLabels: false, showRoutes: true, sound: false })
   const world = useRef<WorldHandle>(null)
   const root = useRef<HTMLElement>(null), footer = useRef<HTMLDivElement>(null)
   useHudBounds(root, footer)

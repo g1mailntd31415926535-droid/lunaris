@@ -4,6 +4,7 @@ export type BuildingId = 'command' | 'solar' | 'water' | 'oxygen' | 'battery' | 
 export type DemoKind = 'water' | 'battery' | 'solar' | 'radiation' | 'rover' | 'greenhouse' | 'oxygen' | 'command'
 export type DemoPhase = 'walking' | 'working' | 'complete'
 export type Quality = 'high' | 'balanced'
+export type TerrainLayer = 'nasa' | 'game'
 export interface CameraRequest { id: number; mode: CameraMode }
 export interface RoverStatus {
   phase: 'docked' | 'outbound' | 'scanning' | 'returning'
@@ -48,6 +49,7 @@ export interface Notification {
 
 export interface Preferences {
   quality: Quality
+  terrainLayer: TerrainLayer
   reducedMotion: boolean
   showLabels: boolean
   showRoutes: boolean
@@ -100,6 +102,8 @@ export interface SceneDiagnostics {
   cameraTravel: { moving: boolean; destination: CameraMode }
   terrain: { source: string; tiles: number; triangles: number; pending: number; levels: number[]; finestLevel: number; detailScale: number }
   terrainPending: number
+  regional?: { nodes: number; triangles: number; grids: string; pending: number; failed: string }
+  regionalPending?: number
 }
 
 declare global {
@@ -109,5 +113,6 @@ declare global {
     __LUNARIS_ROVER__?: { seek: (seconds: number) => void }
     __LUNARIS_TEST_FOCUS__?: (x: number, z: number) => void
     __LUNARIS_SCENE__?: import('three').Scene
+    __LUNARIS_THREE__?: typeof import('three')
   }
 }

@@ -11,8 +11,10 @@ import { MATERIALS as M } from './model-kit'
 import { ROVER_DEPOT, roverPresentation } from './rover-plan'
 import { routeSlopeLimitDeg } from './dem'
 import type { SurveyLeg } from './rover-plan'
+import { projectArtemisPin } from './Planet'
 
 type Polyline = [number, number, number][]
+const markerPosition: [number, number, number] = [0, 3.4, 0]
 
 /** Samples a ground line on the real DEM; points over NoData are dropped, never interpolated. */
 function groundLine(count: number, at: (t: number) => [number, number], lift: number): Polyline {
@@ -27,6 +29,8 @@ function groundLine(count: number, at: (t: number) => [number, number], lift: nu
 export function ExplorationRover({ selected, follow, mode, reducedMotion, showRoute, onSelect, onFollow, onStatus }: { selected: boolean; follow: boolean; mode: CameraMode; reducedMotion: boolean; showRoute: boolean; onSelect: () => void; onFollow: () => void; onStatus: (status: RoverStatus) => void }) {
   const clock = useVisualTime(), universe = useUniverse()
   const system = useRef<THREE.Group>(null), root = useRef<THREE.Group>(null), scanner = useRef<THREE.Group>(null)
+  const marker = useRef<HTMLButtonElement>(null)
+  const markerProjection = useMemo(() => ({ artemis: new THREE.Vector3(), rover: new THREE.Vector3() }), [])
   const tires = useRef<THREE.InstancedMesh>(null), hubs = useRef<THREE.InstancedMesh>(null), centres = useRef<THREE.InstancedMesh>(null)
   const ring = useRef<THREE.LineLoop>(null), beam = useRef<THREE.Line>(null)
   const model = useMemo(createRoverModel, [])
@@ -91,6 +95,27 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
     }
   }, -3.5)
 
+  useFrame(({ camera, size }) => {
+    const button = marker.current, rover = root.current
+    if (!button || !rover) return
+
+    camera.updateMatrixWorld()
+    const { artemis, rover: projectedRover } = markerProjection
+    const pinOpacity = projectArtemisPin(camera, size.height, artemis)
+    let opacity = 1, offset = 0
+    if (pinOpacity > 0.025) {
+      rover.localToWorld(projectedRover.fromArray(markerPosition)).project(camera)
+      const dx = (projectedRover.x - artemis.x) * size.width / 2
+      const dy = (artemis.y - projectedRover.y) * size.height / 2
+      const overlap = 1 - THREE.MathUtils.smoothstep(Math.hypot(dx, dy), 36, 64)
+      if (selected || follow) offset = Math.max(0, 16 - dy) * overlap
+      else opacity = 1 - overlap * THREE.MathUtils.smoothstep(pinOpacity, 0.025, 0.6)
+    }
+    button.style.opacity = opacity.toFixed(3)
+    button.style.visibility = opacity > 0.025 ? 'visible' : 'hidden'
+    button.style.translate = offset > 0 ? `0 ${offset}px` : ''
+  })
+
   const dash = Math.max(0.4, universe.current.altitudeM * 0.004), gap = Math.max(0.65, universe.current.altitudeM * 0.007)
   return <group ref={system} name="autonomous-exploration-system">
     {(selected || follow) && showRoute && route.driven.length > 1 && <Line name="milo-current-route" points={route.driven} color="#9bd8e0" lineWidth={1.1} dashed dashSize={dash} gapSize={gap} transparent opacity={0.4} />}
@@ -103,7 +128,7 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
       <instancedMesh ref={hubs} args={[undefined, undefined, 6]}><cylinderGeometry args={[0.19, 0.19, 0.03, 10]} /><primitive object={M.trim} attach="material" /></instancedMesh>
       <instancedMesh ref={centres} args={[undefined, undefined, 6]}><cylinderGeometry args={[0.095, 0.095, 0.035, 8]} /><primitive object={M.yellow} attach="material" /></instancedMesh>
       <group ref={scanner} position={[0.1, 2.24, -0.37]}><mesh position={[0.33, 0, 0]}><boxGeometry args={[0.07, 0.13, 0.22]} /><meshStandardMaterial color="#a2f6ce" emissive="#57dba8" emissiveIntensity={1.4} /></mesh></group>
-      {(selected || follow || mode === 'region') && <Html center position={[0, 3.4, 0]} zIndexRange={[24, 10]}><button className={`rover-world-marker ${follow ? 'following' : ''}`} aria-label="Chọn MILO. Nhấp đúp để theo dõi" onClick={onSelect} onDoubleClick={onFollow}><span />MILO{follow && <small>THEO DÕI</small>}</button></Html>}
+      {(selected || follow || mode === 'region') && <Html center position={markerPosition} zIndexRange={[24, 10]} style={{ pointerEvents: 'none' }}><button ref={marker} type="button" className={`rover-world-marker ${follow ? 'following' : ''}`} aria-label="Chọn MILO. Nhấp đúp để theo dõi" onClick={onSelect} onDoubleClick={onFollow}><span />MILO{follow && <small>THEO DÕI</small>}</button></Html>}
     </group>
   </group>
 }

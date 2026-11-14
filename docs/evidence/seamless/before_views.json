@@ -1,0 +1,428 @@
+{
+  "label": "before",
+  "url": "http://localhost:5173/?debug=1",
+  "when": "2026-11-14T17:01:02.062Z",
+  "errors": [],
+  "shots": [
+    {
+      "view": "00900m",
+      "mode": "none",
+      "file": "docs/evidence/seamless/before_00900m_none.png",
+      "altitudeM": 899.999999999108,
+      "triangles": 231328,
+      "trianglesPeak": 231328,
+      "drawCalls": 92,
+      "frameMs": 48.82212159627027,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 30,
+        "triangles": 56658,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          10,
+          9,
+          8,
+          3,
+          0
+        ],
+        "finestLevel": 2,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "00900m",
+      "mode": "wire",
+      "file": "docs/evidence/seamless/before_00900m_wire.png",
+      "altitudeM": 899.9999999999906,
+      "triangles": 145230,
+      "trianglesPeak": 145230,
+      "drawCalls": 92,
+      "frameMs": 81.84238746349259,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 30,
+        "triangles": 56658,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          10,
+          9,
+          8,
+          3,
+          0
+        ],
+        "finestLevel": 2,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "00900m",
+      "mode": "flat",
+      "file": "docs/evidence/seamless/before_00900m_flat.png",
+      "altitudeM": 899.9999999999977,
+      "triangles": 166428,
+      "trianglesPeak": 231328,
+      "drawCalls": 70,
+      "frameMs": 35.114163081905,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 30,
+        "triangles": 56658,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          10,
+          9,
+          8,
+          3,
+          0
+        ],
+        "finestLevel": 2,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "06km",
+      "mode": "none",
+      "file": "docs/evidence/seamless/before_06km_none.png",
+      "altitudeM": 5999.9999999999745,
+      "triangles": 254090,
+      "trianglesPeak": 254090,
+      "drawCalls": 92,
+      "frameMs": 45.013772425848245,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 48,
+        "triangles": 79420,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          48,
+          0,
+          0
+        ],
+        "finestLevel": 4,
+        "detailScale": 0.2785009760094021
+      },
+      "regional": null
+    },
+    {
+      "view": "06km",
+      "mode": "wire",
+      "file": "docs/evidence/seamless/before_06km_wire.png",
+      "altitudeM": 5999.999999999985,
+      "triangles": 145230,
+      "trianglesPeak": 145230,
+      "drawCalls": 92,
+      "frameMs": 64.14971603898974,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 48,
+        "triangles": 79420,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          48,
+          0,
+          0
+        ],
+        "finestLevel": 4,
+        "detailScale": 0.2785009760094021
+      },
+      "regional": null
+    },
+    {
+      "view": "06km",
+      "mode": "flat",
+      "file": "docs/evidence/seamless/before_06km_flat.png",
+      "altitudeM": 5999.999999999985,
+      "triangles": 189190,
+      "trianglesPeak": 254090,
+      "drawCalls": 70,
+      "frameMs": 20.76671870388463,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 48,
+        "triangles": 79420,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          48,
+          0,
+          0
+        ],
+        "finestLevel": 4,
+        "detailScale": 0.2785009760094021
+      },
+      "regional": null
+    },
+    {
+      "view": "30km",
+      "mode": "none",
+      "file": "docs/evidence/seamless/before_30km_none.png",
+      "altitudeM": 29999.9999999999,
+      "triangles": 58634,
+      "trianglesPeak": 58634,
+      "drawCalls": 4,
+      "frameMs": 21.23304407056101,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 22,
+        "triangles": 29194,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          22,
+          0
+        ],
+        "finestLevel": 5,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "30km",
+      "mode": "wire",
+      "file": "docs/evidence/seamless/before_30km_wire.png",
+      "altitudeM": 29999.999999999956,
+      "triangles": 0,
+      "trianglesPeak": 0,
+      "drawCalls": 4,
+      "frameMs": 79.07406379766532,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 22,
+        "triangles": 29194,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          22,
+          0
+        ],
+        "finestLevel": 5,
+        "detailScale": 0.9518080000000001
+      },
+      "regional": null
+    },
+    {
+      "view": "30km",
+      "mode": "flat",
+      "file": "docs/evidence/seamless/before_30km_flat.png",
+      "altitudeM": 29999.999999999956,
+      "triangles": 58634,
+      "trianglesPeak": 58634,
+      "drawCalls": 4,
+      "frameMs": 21.84667975243412,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 22,
+        "triangles": 29194,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          22,
+          0
+        ],
+        "finestLevel": 5,
+        "detailScale": 0.9421760076185602
+      },
+      "regional": null
+    },
+    {
+      "view": "120km",
+      "mode": "none",
+      "file": "docs/evidence/seamless/before_120km_none.png",
+      "altitudeM": 119999.99999999964,
+      "triangles": 36584,
+      "trianglesPeak": 36584,
+      "drawCalls": 4,
+      "frameMs": 22.00845827039938,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 8,
+        "triangles": 7144,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        "finestLevel": 6,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "120km",
+      "mode": "wire",
+      "file": "docs/evidence/seamless/before_120km_wire.png",
+      "altitudeM": 119999.99999999984,
+      "triangles": 0,
+      "trianglesPeak": 0,
+      "drawCalls": 4,
+      "frameMs": 22.383243658939715,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 8,
+        "triangles": 7144,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        "finestLevel": 6,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "120km",
+      "mode": "flat",
+      "file": "docs/evidence/seamless/before_120km_flat.png",
+      "altitudeM": 119999.99999999984,
+      "triangles": 36584,
+      "trianglesPeak": 36584,
+      "drawCalls": 4,
+      "frameMs": 17.21832378183713,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 8,
+        "triangles": 7144,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        "finestLevel": 6,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "600km",
+      "mode": "none",
+      "file": "docs/evidence/seamless/before_600km_none.png",
+      "altitudeM": 599999.9999999977,
+      "triangles": 36584,
+      "trianglesPeak": 36584,
+      "drawCalls": 4,
+      "frameMs": 21.71234807870149,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 8,
+        "triangles": 7144,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        "finestLevel": 6,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "600km",
+      "mode": "wire",
+      "file": "docs/evidence/seamless/before_600km_wire.png",
+      "altitudeM": 599999.9999999977,
+      "triangles": 0,
+      "trianglesPeak": 0,
+      "drawCalls": 4,
+      "frameMs": 25.32153314345988,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 8,
+        "triangles": 7144,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        "finestLevel": 6,
+        "detailScale": 1
+      },
+      "regional": null
+    },
+    {
+      "view": "600km",
+      "mode": "flat",
+      "file": "docs/evidence/seamless/before_600km_flat.png",
+      "altitudeM": 599999.9999999977,
+      "triangles": 36584,
+      "trianglesPeak": 36584,
+      "drawCalls": 4,
+      "frameMs": 17.25848728972756,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 8,
+        "triangles": 7144,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        "finestLevel": 6,
+        "detailScale": 1
+      },
+      "regional": null
+    }
+  ]
+}

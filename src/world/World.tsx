@@ -9,6 +9,7 @@ import { VisualClockContext, useVisualTime } from './clock'
 import type { VisualTime } from './clock'
 import { ColonyDecorations } from './Terrain'
 import { DemGate, DemTerrain, ScienceZoneMarkers, terrainStats } from './DemTerrain'
+import { RegionalTerrain, regionalStats } from './RegionalTerrain'
 import { colonyFrame, colonyToRegion } from './dem'
 import type { CoverageClass } from './dem'
 import { Buildings } from './Buildings'
@@ -135,7 +136,8 @@ function SouthPoleRegion({ props, clock, onCoverage, onFocusPoint }: { props: Wo
     if (settlement.current) settlement.current.visible = universe.current.altitudeM < 20_000
   })
   return <group ref={root} name="south-pole-region" position={[0, MOON_RADIUS_KM, 0]} scale={METRE}>
-    <DemTerrain quality={props.preferences.quality} onCoverage={onCoverage} />
+    <DemTerrain quality={props.preferences.quality} layer={props.preferences.terrainLayer} onCoverage={onCoverage} />
+    <RegionalTerrain quality={props.preferences.quality} layer={props.preferences.terrainLayer} />
     <ScienceZoneMarkers onFocus={onFocusPoint} />
     <ExplorationRover selected={props.selected === 'rover'} follow={props.followRover} mode={props.mode} reducedMotion={props.preferences.reducedMotion} showRoute={props.preferences.showRoutes} onSelect={() => props.onSelect('rover')} onFollow={() => props.onFollowRover(true)} onStatus={props.onRoverStatus} />
     <group ref={settlement} name="artemis-base" position={[0, frame.c, 0]} quaternion={frame.quaternion}>
@@ -158,8 +160,8 @@ function Diagnostics() {
   useEffect(() => {
     // Test-only handle for scripts/scene_breakdown.mjs (present only with ?debug=1).
     if (!new URLSearchParams(location.search).has('debug')) return
-    window.__LUNARIS_SCENE__ = scene
-    return () => { delete window.__LUNARIS_SCENE__ }
+    window.__LUNARIS_SCENE__ = scene; window.__LUNARIS_THREE__ = THREE
+    return () => { delete window.__LUNARIS_SCENE__; delete window.__LUNARIS_THREE__ }
   }, [scene])
   const point = useMemo(() => new THREE.Vector3(), [])
   const frustum = useMemo(() => new THREE.Frustum(), []), projection = useMemo(() => new THREE.Matrix4(), [])
@@ -181,7 +183,7 @@ function Diagnostics() {
     const u = universe.current
     point.copy(u.roverPosition).multiplyScalar(METRE); point.y += 0.0008; point.project(camera)
     const rover = { ...u.roverStatus, position: u.roverPosition.toArray(), nominal: u.roverNominal.toArray(), screen: { x: (point.x * 0.5 + 0.5) * size.width, y: (0.5 - point.y * 0.5) * size.height }, follow: u.followRover, groundError: Math.abs(u.roverPosition.y - actualTerrainHeight(u.roverPosition.x, u.roverPosition.z)) || 0 }
-    window.__LUNARIS__ = { revision: THREE.REVISION, renderer: 'WebGL2 / logarithmic depth', camera: camera.position.toArray(), target: u.cameraTarget.toArray(), viewCentre: u.viewCentre.toArray(), drawCalls: gl.info.render.calls, triangles: gl.info.render.triangles, drawCallsPeak: peakCalls, trianglesPeak: peakTriangles, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures, frameMs: average.current, mode: u.mode, time: clock.current.time, actors, sceneId: scene.uuid, moonId: moon.uuid, baseId: base.uuid, earthId: earth.uuid, sunId: sun.uuid, terrainGeometryId: 'nasa-lola-dem-tiles', moonGeometryId: globe.geometry.uuid, baseScale: base.getWorldScale(new THREE.Vector3()).toArray(), moonCenter: moon.getWorldPosition(new THREE.Vector3()).toArray(), baseAnchor: base.getWorldPosition(new THREE.Vector3()).toArray(), earthPosition: earth.getWorldPosition(new THREE.Vector3()).toArray(), sunPosition: sun.getWorldPosition(new THREE.Vector3()).toArray(), altitudeM: u.altitudeM, clearanceM: u.clearanceM, styleDetail: u.styleDetail, targets, celestialVisibility: { moon: visible(moon), earth: visible(earth), sun: visible(sun) }, rover, cameraTravel: { ...u.cameraTravel }, terrain: { source: 'NASA LOLA 5 m DEM (Site01 + Site04)', ...terrainStats }, terrainPending: terrainStats.pending > 0 ? 1 : 0 }
+    window.__LUNARIS__ = { revision: THREE.REVISION, renderer: 'WebGL2 / logarithmic depth', camera: camera.position.toArray(), target: u.cameraTarget.toArray(), viewCentre: u.viewCentre.toArray(), drawCalls: gl.info.render.calls, triangles: gl.info.render.triangles, drawCallsPeak: peakCalls, trianglesPeak: peakTriangles, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures, frameMs: average.current, mode: u.mode, time: clock.current.time, actors, sceneId: scene.uuid, moonId: moon.uuid, baseId: base.uuid, earthId: earth.uuid, sunId: sun.uuid, terrainGeometryId: 'nasa-lola-dem-tiles', moonGeometryId: globe.geometry.uuid, baseScale: base.getWorldScale(new THREE.Vector3()).toArray(), moonCenter: moon.getWorldPosition(new THREE.Vector3()).toArray(), baseAnchor: base.getWorldPosition(new THREE.Vector3()).toArray(), earthPosition: earth.getWorldPosition(new THREE.Vector3()).toArray(), sunPosition: sun.getWorldPosition(new THREE.Vector3()).toArray(), altitudeM: u.altitudeM, clearanceM: u.clearanceM, styleDetail: u.styleDetail, targets, celestialVisibility: { moon: visible(moon), earth: visible(earth), sun: visible(sun) }, rover, cameraTravel: { ...u.cameraTravel }, terrain: { source: 'NASA LOLA 5 m DEM (Site01 + Site04)', ...terrainStats }, terrainPending: terrainStats.pending > 0 ? 1 : 0, regional: { ...regionalStats }, regionalPending: regionalStats.pending }
   })
   return null
 }
@@ -206,7 +208,7 @@ export const World = forwardRef<WorldHandle, WorldProps>(function World(props, r
   const universe = useRef(initialUniverseState()), rig = useRef<WorldHandle>(null), ready = useRef(false)
   const onReady = useCallback(() => { if (!ready.current) { ready.current = true; setCanvasReady(true); props.onReady() } }, [props.onReady])
   useImperativeHandle(ref, () => ({ zoom: (d) => rig.current?.zoom(d), reset: () => rig.current?.reset(), focus: (id) => rig.current?.focus(id), focusCrew: (name) => rig.current?.focusCrew(name), focusPoint: (x, z) => rig.current?.focusPoint(x, z) }), [])
-  return <div className="world" data-camera-mode={props.mode} data-unified-scene="true" data-ready={canvasReady}>
+  return <div className="world" data-camera-mode={props.mode} data-unified-scene="true" data-ready={canvasReady} data-terrain-layer={props.preferences.terrainLayer}>
     <SceneErrorBoundary>
       <Canvas shadows="percentage" dpr={[1, props.preferences.quality === 'high' ? 1.5 : 1]} camera={{ position: [0.0232, 0.027, 0.0295], fov: 40, near: 0.00002, far: SPACE_FAR_KM }} gl={{ antialias: true, alpha: false, logarithmicDepthBuffer: true, powerPreference: 'high-performance' }} onCreated={({ gl, camera, raycaster }) => { gl.toneMapping = THREE.ACESFilmicToneMapping; gl.toneMappingExposure = 1.08; gl.outputColorSpace = THREE.SRGBColorSpace; camera.layers.enable(1); raycaster.layers.enable(1) }}>
         <color attach="background" args={['#090d1e']} />
@@ -217,7 +219,7 @@ export const World = forwardRef<WorldHandle, WorldProps>(function World(props, r
             <SolarLighting hour={props.forecastHour} radiation={props.demo?.kind === 'radiation' && props.demo.phase !== 'complete'} reducedMotion={props.preferences.reducedMotion} quality={props.preferences.quality} />
             <Starfield /><Earth reducedMotion={props.preferences.reducedMotion} /><Sun reducedMotion={props.preferences.reducedMotion} />
             <group name="celestial:moon" position={MOON_CENTER}>
-              <MoonGlobe />
+              <MoonGlobe layer={props.preferences.terrainLayer} />
               <SouthPoleRegion props={props} clock={clock} onCoverage={setCoverage} onFocusPoint={focusPoint} />
               <group position={[0, MOON_RADIUS_KM, 0]}><ArtemisMarker onFocus={() => props.onMode('base')} /></group>
             </group>
@@ -228,6 +230,6 @@ export const World = forwardRef<WorldHandle, WorldProps>(function World(props, r
     </SceneErrorBoundary>
     <div className="world-vignette" />
     {!canvasReady && <div className="terrain-loading" role="status">Đang tải địa hình NASA LOLA…</div>}
-    {canvasReady && coverage < 2 && props.mode !== 'orbit' && <div className="nodata-chip glass" role="status"><b>Ngoài vùng dữ liệu NASA</b><span>{coverage === 1 ? 'Chưa có DEM LOLA 5 m cho khu này — không hiển thị địa hình, rover không đi vào.' : 'Ngoài bản đồ 25 km — không hiển thị địa hình.'}</span></div>}
+    {canvasReady && coverage < 2 && props.mode !== 'orbit' && <div className="nodata-chip glass" role="status"><b>Ngoài vùng DEM 5 m</b><span>{coverage === 1 ? 'Chưa có DEM LOLA 5 m ở đây. Đang hiện LOLA 40 m (thô hơn); rover không đi vào.' : 'Ngoài vùng DEM 5 m. Địa hình là NASA LOLA 40–480 m, thô hơn; rover không đi vào.'}</span></div>}
   </div>
 })

@@ -1,0 +1,178 @@
+{
+  "label": "after",
+  "url": "http://localhost:5173/?debug=1",
+  "when": "2026-11-14T17:26:10.673Z",
+  "errors": [],
+  "shots": [
+    {
+      "view": "00900m",
+      "mode": "none",
+      "file": "docs/evidence/seamless/after_00900m_none.png",
+      "altitudeM": 899.9999999999874,
+      "triangles": 245020,
+      "trianglesPeak": 309920,
+      "drawCalls": 71,
+      "frameMs": 23.88881776627575,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 30,
+        "triangles": 56658,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          10,
+          9,
+          8,
+          3,
+          0
+        ],
+        "finestLevel": 2,
+        "detailScale": 1
+      },
+      "regional": {
+        "nodes": 88,
+        "triangles": 34304,
+        "grids": "g0,g1,g2,ldem_4",
+        "pending": 0,
+        "failed": ""
+      }
+    },
+    {
+      "view": "06km",
+      "mode": "none",
+      "file": "docs/evidence/seamless/after_06km_none.png",
+      "altitudeM": 5999.999999999964,
+      "triangles": 318474,
+      "trianglesPeak": 318474,
+      "drawCalls": 93,
+      "frameMs": 22.734815244234447,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 48,
+        "triangles": 79420,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          48,
+          0,
+          0
+        ],
+        "finestLevel": 4,
+        "detailScale": 0.2785009760094021
+      },
+      "regional": {
+        "nodes": 55,
+        "triangles": 20096,
+        "grids": "g0,g1,g2,ldem_4",
+        "pending": 0,
+        "failed": ""
+      }
+    },
+    {
+      "view": "30km",
+      "mode": "none",
+      "file": "docs/evidence/seamless/after_30km_none.png",
+      "altitudeM": 29999.99999999969,
+      "triangles": 116618,
+      "trianglesPeak": 116618,
+      "drawCalls": 5,
+      "frameMs": 16.661901594912894,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 22,
+        "triangles": 29194,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          22,
+          0
+        ],
+        "finestLevel": 5,
+        "detailScale": 0.9326414879177829
+      },
+      "regional": {
+        "nodes": 32,
+        "triangles": 13696,
+        "grids": "g0,g1,g2,ldem_4",
+        "pending": 0,
+        "failed": ""
+      }
+    },
+    {
+      "view": "120km",
+      "mode": "none",
+      "file": "docs/evidence/seamless/after_120km_none.png",
+      "altitudeM": 119999.999999999,
+      "triangles": 89192,
+      "trianglesPeak": 89192,
+      "drawCalls": 5,
+      "frameMs": 16.662103983117635,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 8,
+        "triangles": 7144,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        "finestLevel": 6,
+        "detailScale": 1
+      },
+      "regional": {
+        "nodes": 20,
+        "triangles": 8320,
+        "grids": "g0,g1,g2,ldem_4",
+        "pending": 0,
+        "failed": ""
+      }
+    },
+    {
+      "view": "600km",
+      "mode": "none",
+      "file": "docs/evidence/seamless/after_600km_none.png",
+      "altitudeM": 599999.9999999935,
+      "triangles": 82920,
+      "trianglesPeak": 82920,
+      "drawCalls": 4,
+      "frameMs": 16.675380497851997,
+      "terrain": {
+        "source": "NASA LOLA 5 m DEM (Site01 + Site04)",
+        "tiles": 8,
+        "triangles": 7144,
+        "pending": 0,
+        "levels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        "finestLevel": 6,
+        "detailScale": 1
+      },
+      "regional": {
+        "nodes": 4,
+        "triangles": 2048,
+        "grids": "g0,g1,g2,ldem_4",
+        "pending": 0,
+        "failed": ""
+      }
+    }
+  ]
+}
