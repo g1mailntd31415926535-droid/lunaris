@@ -1,0 +1,156 @@
+# LUNARIS
+
+A Vietnamese, interactive lunar-colony **UI prototype** built with React, TypeScript, Vite, React Three Fiber, Drei, Three.js and Motion. Opens directly into the colony, with no introduction or loading-screen overlay.
+
+## Run
+
+Requires Node.js **24+** (the tests use Node's TypeScript type stripping).
+
+```powershell
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173**. The development server uses a fixed port. For a production check:
+
+```powershell
+npm run build
+npm run preview
+```
+
+## One universe, one camera
+
+There is one persistent Canvas and one scene graph:
+
+```text
+Universe (kilometres, fixed render origin at Artemis)
+├── Starfield
+├── Earth — surface, cloud shell, atmosphere
+├── Sun — emissive photosphere and corona
+└── Moon centre (0, -1737.4, 0)
+    ├── Globally curved lunar surface
+    ├── South-pole region (translated +1737.4 km, metre scale)
+    │   ├── Spherical terrain, extending to a 50 km boundary
+    │   └── Permanent colony, decorations, astronauts and rover
+    └── Geographically anchored Artemis annotation
+```
+
+The Moon has a mean radius of **1,737.4 km**. Earth has radius **6,371 km** and is **384,400 km** from the Moon centre. The Sun uses radius **696,340 km** and distance **149.6 million km**. Earth and Sun never follow the camera and are not forced into every shot. Their directions and the forecast trajectory are authored, not ephemeris data.
+
+Close-up geometry is authored in metres and scaled once by `0.001`. The render origin stays at Artemis. Global lunar vertices are rebased in CPU double precision *before* GPU upload, so close-up vertices do not suffer cancellation between kilometre-scale centre and radius values. A logarithmic depth buffer handles the full celestial depth range.
+
+### Camera
+
+`src/world/PlanetCameraRig.tsx` is the only camera-pose writer. It owns:
+
+- Logarithmic manual zoom, exponential damping and capped log-zoom velocity. Manual outward zoom is faster than inward approach, without cuts.
+- Shortcuts use captured, timed camera flights (up to 2.35 s), aligning toward Artemis while high before descending. They remain interruptible by dragging, wheel input or another shortcut.
+- Mouse/touch orbit, wheel/pinch dolly and right-button surface pan.
+- A continuous blend of planet-centred aiming, south-pole radial approach and local overhead/isometric orbit.
+- Independent spherical and local-terrain clearance checks.
+- Moon / Region / Base buttons as camera shortcuts, not scene selectors.
+- Building and crew focus without teleportation.
+
+The displayed mode follows the **actual camera altitude**. Camera requests and observed mode are separate state channels, so wheel zoom cannot trigger a shortcut feedback loop.
+
+### Terrain
+
+`planet-geometry.ts` builds a fixed-topology, multi-resolution spherical polar cap. Its rings begin at **0.6 m** spacing, then grow gradually to kilometre-scale spacing at **50 km**. The outer ring and global surface share the same sample directions, displacement function, positions and seam normals.
+
+There is no floating planar island, cap fade-out, geometry replacement or planetary scale change. Geometry density increases toward Artemis; unresolved details naturally become visible during approach. A continuous material-detail uniform changes realistic lunar grey into the colony's restrained lavender style. Only subpixel colony objects are culled at long range; their scene identities and transforms remain intact.
+
+### Lighting and planets
+
+- Moon: generated spherical geometry, 180 shared procedural macro-crater records, code-generated micro-crater albedo and bump detail.
+- Earth: a spherical surface with code-drawn continent silhouettes, roughness mask, a separate procedural cloud shell and a day-dependent atmospheric rim shader.
+- Sun: a real world-space sphere with an emissive, animated procedural photosphere and geometric corona.
+- Lighting: two **disjoint-layer proxies of the same Sun direction**, not two competing sources. The global proxy lights celestial surfaces; the precision-local proxy owns the base's bounded shadow map. The steady shadow map refreshes at 12.5 Hz; Sun movement invalidates it immediately.
+- The base has restrained, local presentation fill lights for readable low-poly silhouettes.
+
+## UI and visual demonstrations
+
+- Eight selectable, distinct structures and contextual operational panels.
+- Six original pixel astronauts with authored walk/idle/interaction routes.
+- MILO's seeded 20-site exploration cycle, dotted terrain route, radar scans and periodic returns to the depot.
+- Water-recycler activity, charging, panel cleaning, communications, greenhouse care and air checks.
+- Radiation drill, shelter animation and notification feedback.
+- Forecast slider that moves the **actual Sun direction** and changes lighting/shadows.
+- Missions, science journal, commander choices, settings, pause, speed, sound and fullscreen controls.
+- Desktop and mobile layouts, focus states, dialog focus trapping and reduced-motion support.
+
+### HUD layout fixes
+
+**ARTEMIS ONLINE** is part of the top HUD, with a compact, accessible radio/status button on narrow screens. It no longer shares the information panel's position or stacking layer.
+
+Commander Luna, tracking/pause/camera-movement status and camera navigation use shared footer grid slots. Mobile information drawers reserve the footer's measured height, so changing dialogue or tracking state cannot cover another control. The outer world/HUD uses `overflow: clip` to prevent focus-driven container scrolling; the information panel retains its own scroll area.
+
+Camera shortcuts show a small **Đang di chuyển camera…** status while moving. There is no screen-covering transition overlay or scene replacement.
+
+All resource values, missions, actions and alerts are **scripted UI demonstrations**. There is no backend, economy, astronomical solver, pathfinding, task scheduler, inventory, authentication or saved game. Bookmarks and mock achievements last only while the page is open.
+
+### Autonomous exploration rover
+
+MILO now visits **20 nearby survey points**, approximately **30–85 m** from Artemis. Following the requested speed/range correction, normal cruising is capped at **0.7 m/s**, with short, gentle acceleration/deceleration ramps. It no longer makes time-compressed kilometre trips.
+
+Survey legs are compiled once from authored corridors and checked against building footprints, real rock placements, crater rims, mountain footprints and terrain slope. Runtime behavior is a seeded destination sequence and a seekable `docked → outbound → scanning → returning` presentation cycle, not a general AI or live pathfinder.
+
+The rover samples the **actual rendered cap triangles**, including coarse regions, and aligns its body to their surface normal. The route and radar sweep also use those surface samples. Double-click the rover, or choose **Theo dõi MILO**, to follow it. The camera keeps a steady **30 m** default follow altitude; wheel/pinch still adjusts your view. Use the close button or a camera shortcut to leave follow mode.
+
+The communication antenna now has a closed concave reflector, rear hub, yoke and three feed supports. The recycler pipe uses one clean horizontal run, a downward elbow and embedded machine/tank sockets. Other building designs and colours are retained.
+
+## Controls
+
+| Input | Action |
+|---|---|
+| Left drag / one-finger drag | Orbit |
+| Wheel / pinch | Continuous zoom |
+| Right drag | Pan the surface target |
+| Click a building | Select and inspect |
+| Double-click MILO | Follow rover |
+| `1`, `2`, `3` | Moon, Region, Base shortcuts |
+| `B`, `M`, `F`, `J` | Base, Missions, Forecast, Journal |
+| `Space` | Pause/resume visual animation |
+| `+`, `-` | Zoom |
+| `R` | Reset current view |
+| `?` | Help |
+| `Escape` | Dismiss a dialog or collapse selection |
+
+## Generated assets
+
+Runtime celestial maps live in `public/assets/procedural/`. They are original, code-generated maps, **not photographs, screenshots, AI images or NASA terrain datasets**. Geometry and the texture baker share exported crater records and seeded uint32 noise.
+
+To regenerate (optional; the generated maps are included), install Python's `numpy` and `Pillow`, then:
+
+```powershell
+node scripts/export-moon-fields.mjs
+python scripts/generate-space-textures.py
+```
+
+Refresh the browser after regenerating assets. Pixel sprites, equipment decals, solar-cell textures and ground grain are generated by `src/world/textures.ts`. Manrope is self-hosted under the SIL Open Font License; interface icons are Lucide.
+
+## Verification
+
+```powershell
+npm test
+npm run test:ui
+npm run test:rover
+npm run test:hud
+```
+
+Browser tests use installed Chrome on Windows. Override `CHROME_PATH` or `LUNARIS_URL` if needed. They exercise real wheel/drag input, shortcuts, celestial visibility, stable scene/body/base identities, physical anchoring, camera clearance, real 3D picking, water activity, forecasts, radiation, settings, pause and responsive views.
+
+Screenshots and camera traces are written to **`artifacts/unified/`**. The report is `acceptance-report.json`. The test-only camera trace helpers are exposed only with `?debug=1`; there is no player-facing debug UI.
+
+Rover/follow/asset screenshots and checks are in **`artifacts/rover/`**, with `rover-report.json`. Test-only rover phase seeking is also gated behind `?debug=1`; normal player motion never teleports or seeks its route.
+
+HUD hit-testing, overlap checks and shortcut traces across desktop/tablet/mobile views are stored in **`artifacts/ui-fixes/`**, with `regression-report.json`.
+
+See [SKILLS.md](SKILLS.md) for the installed-skill/reference ledger and [VERIFICATION.md](VERIFICATION.md) for the checked results and limitations.
+
+## Important limits
+
+- Lunar geography, crater placement, continent boundaries, clouds and Sun motion are artistic approximations, not scientific data.
+- Real celestial size/distance ratios mean Earth and Sun can be small in the Moon-centred view. Orbit to see them; they may also be occluded or outside the view.
+- This is a bounded south-pole prototype, not a globally detailed Google Earth terrain engine. The entire Moon can be orbited, while the high-resolution region is concentrated around Artemis.
+- Hardware-accelerated WebGL2 is recommended. Rendering quality and performance depend on the browser/GPU; the balanced setting reduces shadow resolution.
+- R3F currently produces a non-blocking upstream `THREE.Clock` deprecation warning. The application's visual time and camera control are separate from it.
