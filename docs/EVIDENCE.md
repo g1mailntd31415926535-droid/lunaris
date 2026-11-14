@@ -1,7 +1,7 @@
 # LUNARIS — EVIDENCE.md
 
 **Hồ sơ kiểm chứng khoa học, địa hình và định lượng cho ban giám khảo**  
-**Cập nhật khởi tạo:** 14/11/2026 (ICT). **Cập nhật gần nhất:** 14/11/2026 17:50 ICT (CAM-01, xem §8). **Phạm vi:** Story Mode v0.9, Task 02 FINAL, kết quả GIS do người dùng báo cáo ngày 14/11/2026.  
+**Cập nhật khởi tạo:** 14/11/2026 (ICT). **Cập nhật gần nhất:** 15/11/2026 ICT (SEAM-01, xem §8). **Phạm vi:** Story Mode v0.9, Task 02 FINAL, kết quả GIS do người dùng báo cáo ngày 14/11/2026.  
 **Trạng thái:** `WORKING_EVIDENCE` — tài liệu dẫn nguồn & thông số tham chiếu; **không** phải tuyên bố toàn bộ game đã được kiểm thử hoặc toàn bộ dữ liệu đã tải về.
 
 > **Quy tắc bắt buộc:** Cập nhật tài liệu này và thêm minh chứng vào `docs/evidence/` **NGAY SAU MỖI BƯỚC được triển khai/kiểm thử**, không gộp ghi vào cuối dự án. Giữ cả các thất bại, `BLOCKED`, `NOT_MEASURED`, `NOT_VERIFIED`. Không sửa số liệu chỉ để đẹp gameplay, không giới thiệu thông số thiết kế LUNARIS như là thông số NASA đã đo.
@@ -96,6 +96,7 @@ Báo cáo [R01] cho cửa sổ **08–16/05/2024**: **45** bản ghi `CME`, **48
 | A, B, C, D, BASE | Cả 5 trong hình tròn và trên DEM hợp lệ; không điểm nào bị dời | `VERIFIED_FROM_PRIMARY_SOURCE` | `task02_coverage.png` + `task02_geospatial_validation.json › anchors` (pixel, cao độ, slope, toterr, khoảng cách tới NoData) |
 | Slope D / BASE | **15,60° / 3,80°** tại pixel chứa điểm (slperr 2,47° / 1,52°) | `VERIFIED_FROM_PRIMARY_SOURCE` | `task02_geospatial_validation.json › anchors[].samples`; dọc tuyến: `task02_route_slope.*` |
 | PSR 20 m đầy đủ | Đã tải và đọc; A = 1, B = 1, C = D = BASE = 0; 46,40 km² PSR trong hình tròn | `VERIFIED_FROM_PRIMARY_SOURCE` | `docs/evidence/task02_psr_check.json`. Micro-PSR quanh C/D: chưa phân tích |
+| Địa hình quanh vùng 5 m (SEAM-01) | LOLA 40 m / 160 m / 480 m quanh cực + LDEM_4 toàn cầu, cùng phép chiếu và mặt cầu 1737,4 km với DEM 5 m. So khớp với DEM 5 m (230.629 ô 40 m): lệch TB **−0,11 m**, RMS **0,53 m**, p99 1,7 m. Không NoData. Thay nền phẳng + quả cầu hư cấu cũ | `VERIFIED_FROM_PRIMARY_SOURCE` (`MEASURED`, khối trung bình 2×2 = `DERIVED`) | `docs/evidence/seamless/regional_terrain_validation.json`, `REPORT.md`, ảnh `before_*` / `after_*` (900 m – 600 km) |
 | Checklist C1/C2/C5 | C2 (metadata gốc) và C5 (tắt terrain giả) có artifact; C1 có PSR tại điểm, thiếu micro-PSR | C2, C5: `VERIFIED_FROM_PRIMARY_SOURCE`; C1: một phần | C5: `task02_validate_outputs.json` (kiểm tra mã nguồn không còn hố/núi công thức, không còn kéo điểm khảo sát) + ảnh `task02_before_*` / `task02_after_*` |
 
 **Lưu ý về checklist:** trạng thái trên dựa vào artifact trong repo; đây chưa phải nghiệm thu độc lập của bên thứ ba. Ảnh trước/sau là ảnh game, không phải ảnh địa hình do NASA chụp.
@@ -117,6 +118,12 @@ Báo cáo [R01] cho cửa sổ **08–16/05/2024**: **45** bản ghi `CME`, **48
 ![Tuyến A* trên lớp độ dốc 5 m: A, B, C có tuyến ≤ 15°, D không](evidence/task02_astar_routes.png)
 
 ![Game sau khi thay địa hình, góc căn cứ](evidence/task02_after_base_ui.png)
+
+**SEAM-01: trước / sau ở 30 km** (trước: DEM 5 m là miếng dán trên đĩa phẳng có hố giả; sau: LOLA liền mạch quanh DEM 5 m):
+
+![Trước: 30 km](evidence/seamless/before_30km_none.png)
+
+![Sau: 30 km](evidence/seamless/after_30km_none.png)
 
 ## 3. Quy tắc mô phỏng để không bịa vật lý
 
@@ -148,7 +155,8 @@ Báo cáo [R01] cho cửa sổ **08–16/05/2024**: **45** bản ghi `CME`, **48
 | `POWER_WATER_OXY` | Công thức và tham chiếu nguồn | Scenario capacities, hiệu suất, tải, kiểm thử cân bằng theo thời gian |
 | `FOOD` | VEG-04 ISS và khoảng năng lượng khẩu phần | Thông số thí nghiệm LUNARIS, LED power, lịch tưới, độ tin cậy grading |
 | `RADIATION` | FLR/SEP quan trắc 2024 và D3 logic | Liều bề mặt+che chắn/đầu dò nếu muốn mô phỏng số; không dùng Kp quy đổi |
-| `WEB_PERFORMANCE` | LOD error đã đo; terrain đầu 1,71 MB; terrain đầu 1,63 MB; đỉnh draw call 91 và 202–223 nghìn tam giác kể cả lượt bóng (**đạt** ≤ 120 / ≤ 250 nghìn trên máy phát triển) | Đo FPS p50/p95 và tải 10 Mbps trên laptop mục tiêu; RAM/GPU; fallback 2D |
+| `TERRAIN_CONTINUITY` | SEAM-01: LOLA khu vực + toàn cầu liền với DEM 5 m (RMS 0,53 m), CDLOD có geomorph, không còn bề mặt tổng hợp; 4 unit test mới; ảnh 5 mức zoom × 4 chế độ chẩn đoán | Ranh giới độ nét tại 80°S ở góc nhìn 600 km (480 m ↔ 7,6 km); mảng ô vuông của DEM 5 m ở 500 m–6 km (có từ trước); nghiệm thu độc lập |
+| `WEB_PERFORMANCE` | LOD error đã đo; terrain đầu 1,71 MB; terrain đầu 1,63 MB; đỉnh draw call 91 và 202–223 nghìn tam giác kể cả lượt bóng (**đạt** ≤ 120 / ≤ 250 nghìn trên máy phát triển). **Sau SEAM-01:** +9,4 MB dữ liệu LOLA tải tuần tự không chặn; 6 km = **318 nghìn tam giác (VƯỢT** 250 nghìn), 30–600 km 83–117 nghìn | Đo FPS p50/p95 và tải 10 Mbps trên laptop mục tiêu; RAM/GPU; fallback 2D |
 | `STORY_INTEGRATION` | v0.9 khung thiết kế | Repo/commit, event runtime logs, test A1–A3 → B/C → D → ending |
 
 ## 5. Nhiệm vụ cập nhật minh chứng ngay sau mỗi bước
@@ -214,6 +222,9 @@ git add docs/EVIDENCE.md docs/evidence scripts/evidence
 | [S19] | NASA CCMC / M2M DONKI 2024 observation / alert: https://ccmc.gsfc.nasa.gov/DONKI/ ; https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/30944/1 | G35–G38; timestamp SEP/flare/CME/Kp; không là đo bức xạ bề mặt. |
 | [S20] | NASA Science, *Strong Solar Flare Erupts from Sun* (10/5/2024): https://science.nasa.gov/blogs/solar-cycle-25/2024/05/10/strong-solar-flare-erupts-from-sun-16/ ; *Sun Releases 2 Strong Flares* (11/5/2024): https://science.nasa.gov/blogs/solar-cycle-25/2024/05/11/sun-releases-2-strong-flares-2/ | G35/G37; nguồn xác nhận X3.9 / X5.8. |
 | [S21] | NASA DONKI (2024), một liên kết sự kiện FLR/SEP: https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/30634/3 ; NASA DONKI API: https://api.nasa.gov/ | G36/G39; phân biệt SEP instrument vs MODEL. |
+| [S22] | NASA PGDA, Barker et al. (2023), *LOLA South Pole DEMs* (PSJ 4, 183, doi:10.3847/PSJ/acf3e1; data doi:10.60903/gsfcpgda-lola-spole): https://pgda.gsfc.nasa.gov/products/90 — `LDEM_80S_40MPP_ADJ`, `LDEM_80S_80MPP_ADJ`, `LDEM_60S_240MPP_ADJ` | SEAM-01: lưới khu vực g0/g1/g2; chỉ đọc cửa sổ cần dùng qua HTTP range. |
+| [S23] | NASA PDS, LRO LOLA GDR `LDEM_4` (LRO-L-LOLA-4-GDR-V1.0): https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ | SEAM-01: độ cao quả cầu. |
+| [S24] | NASA Scientific Visualization Studio, *CGI Moon Kit* (LROC WAC mosaic, NASA/GSFC/ASU): https://svs.gsfc.nasa.gov/4720 | SEAM-01: ảnh màu quả cầu; ảnh trình bày, không phải số đo. |
 | [R01] | *LUNARIS_Site01_Review_KhoaHoc_14-11-2026(1).md*, báo cáo phân tích file người dùng (14/11/2026). | G01/G08/G09/G12/G15. Đường dẫn tham khảo gốc báo cáo (nếu có trong repo) phải chép vào `reports/`. |
 | [R02] | Claude Code, kết quả địa lý Site01+Site04 do người dùng truyền lại (14/11/2026): bounds, pixel-grid, 24,72% NoData, 0,22m seam, slope D/BASE. | G02–G11; **chưa có JSON/PNG gốc**, không coi là chứng minh độc lập. |
 | [R03] | *LUNARIS_Task02_Terrain_Science_Web_FINAL_2026-11-14.md* (đặc tả do đội xác nhận). | Vòng tròn, giới hạn đồ họa/NoData/LOD/hiệu năng; không phải báo cáo benchmark. |
@@ -232,6 +243,9 @@ git add docs/EVIDENCE.md docs/evidence scripts/evidence
 | **2026-11-14T17:00+07:00** | ROUTE-01 (mục 1) / Claude Code | `plan_routes.py`: A* trên `slp` 5 m gốc (8 hướng, không cắt góc, ≤ 15°, né NoData) từ trạm rover tới A–D; ghi `public/lunar/task02/routes.json`, `reports/task02_astar_routes.*` → `docs/evidence/`; rover trong game chạy theo tuyến này (`rover-plan.ts`); `validate_outputs.py` thêm kiểm tra độc lập từng pixel tuyến. | A 19,30 km, B 7,43 km, C 1,89 km: có tuyến; **D: không có tuyến** (pixel anchor 15,60°), không ép. `validate_outputs` PASS; 17/17 unit test; 14/14 kiểm tra trình duyệt. Giới hạn: chưa xét footprint, `slperr`, chiếu sáng, nhiệt, liên lạc ⇒ không gắn an toàn. | `35b43be` |
 | **2026-11-14T17:20+07:00** | PERF-01 (mục 2) / Claude Code | Địa hình DEM gộp thành 1 mesh động (lọc frustum CPU, ngân sách tam giác co khoảng cách LOD); 8 công trình + chi tiết căn cứ gộp theo vật liệu; chọn công trình qua bản sao hình học vô hình; vỏ cầu tối 800 tam giác thay quả cầu 28,5 nghìn khi dưới 30 km; đo đỉnh draw call/tam giác gồm lượt bóng (`__LUNARIS__.drawCallsPeak/trianglesPeak`); `reports/task02_performance.md` + `perf_views.json` → `docs/evidence/`. | Đỉnh **91 draw call / 223 nghìn tam giác** (trước 221 / 285 nghìn): đạt ngân sách trên máy phát triển. Giá trị DEM, camera, phong cách không đổi (lệch ảnh TB ≤ 0,71/255). `validate_outputs` PASS; 17/17 unit test; 15/15 kiểm tra trình duyệt (thêm kiểm tra click 7 công trình). FPS máy mục tiêu: `NOT_MEASURED`. | `647136e` |
 | **2026-11-14T17:50+07:00** | CAM-01 (mục 3) / Claude Code | Dời tâm camera: khi camera ở 1,5–6 km, mắt và điểm nhìn cùng **quay quanh tâm Mặt Trăng** sao cho giữa màn hình rơi vào tâm hình tròn bản đồ (cục bộ (2500, −1500) m); độ cao, góc nhìn so với mặt đất tại chỗ, phong cách giữ nguyên; tắt dần 60 → 250 km, tắt khi bám rover. Bản nháp đầu dùng phép tịnh tiến phẳng x/z: từ ~10 km mắt bị kéo xuống (15 km → clearance 10 km; 55–62 km → 6 m, cả màn hình tối) — đã so với `PlanetCameraRig.tsx` ở `647136e` (60 km bản gốc không tối hẳn) và thay bằng phép quay. Nhãn NoData dựa vào `viewCentre` (điểm giữa màn hình trên mặt đất); quy tắc "camera bay trên vùng không có dữ liệu" chỉ áp dụng dưới 6 km. Lệnh: `npm test`, `npm run build`, `node scripts/terrain/smoke_check.mjs`, `node scripts/capture_views.mjs centre`, `node scripts/dark_fraction.mjs centre 6000 30000 60000 400000`. Ảnh/số: `task02_cam_before_6km_*`, `task02_cam_after_6km_*`, `task02_cam_before_60km_world.png`, `task02_cam_after_60km_world.png`, `task02_cam_dark_fraction.json`, `task02_centre_views.json`. | Tỷ lệ khung chỉ có nền tối (không dữ liệu NASA), trước → sau: **6 km 81,3 % → 0,0 %**; 60 km: trước không thấy DEM (khung là vỏ cầu xám, đếm 5,9 %, có nhãn NoData), sau thấy trọn bản đồ 25 km ở giữa (87,8 % còn lại là vùng thật sự không có dữ liệu, không nhãn NoData, clearance 60,0 km); 400 km 11,2 % → 11,2 % (không đổi, phép dời đã tắt). Góc 520 m vẫn nhìn vào căn cứ. Đỉnh vẫn **91 draw call / 223 nghìn tam giác**. 17/17 unit test; build OK; **19/19** kiểm tra trình duyệt (thêm: 6 km canh giữa, 60 km giữ độ cao + canh giữa, 520 m nhìn căn cứ). Giới hạn: đo trên máy phát triển, Chrome headless, dev server; ngưỡng màu ±6/kênh là quy ước đo, không phải số liệu khoa học. | Rig camera đã nằm trong `07b63c7` (commit ngoài phiên, 17:45); nhãn NoData, smoke check 60 km, ảnh, tài liệu: ghi ở dòng nhật ký kế tiếp |
+
+| **2026-11-14 → 15 (ICT)** | Camera, layer NASA/Game (Codex + Claude Code) | Rig camera tự do xoay ở mọi độ cao khu vực; nút NASA Layer / Game Layer; smoke check thêm 2 kiểm tra camera 30 km. | 35/35 kiểm tra trình duyệt. Ghi kèm commit SEAM-01. | `1f49297` |
+| **2026-11-15 (ICT)** | SEAM-01 ghép địa hình liền mạch / Claude Code | Chẩn đoán (wireframe, vật liệu đồng nhất, chỉ màu) → nguyên nhân: đĩa phẳng + quả cầu hư cấu, lệch datum 1.944,8 m, nền không ghi độ sâu, DEM trộn sang màu giả khi zoom xa. Sửa: `build_regional.py` (PGDA 40/80/240 m + PDS LDEM_4 + SVS LROC) → `public/lunar/regional/`; `RegionalTerrain.tsx` (CDLOD + geomorph), `lunar-frame.ts` (một datum, phẳng ≤ 18 km → cầu thật từ 60 km), quả cầu LOLA, camera dùng độ cao thật; xóa `planet-fields.ts` và bề mặt minh họa. Lệnh: `npm test`, `npm run build`, `smoke_check.mjs`, `seamless_views.mjs before/after`. | LOLA 40 m vs DEM 5 m: RMS 0,53 m (230.629 ô); **21/21** unit test; build OK; **35/35** trình duyệt; `git diff` trên `public/lunar/task02`, `dem.ts`, `terrain-query.ts`, `rover-plan.ts` rỗng. Giới hạn: 318 nghìn tam giác ở 6 km (vượt ngân sách); ranh giới độ nét 80°S ở 600 km; Trái Đất vẫn ở vị trí mỹ thuật. Báo cáo: `docs/evidence/seamless/REPORT.md`. | `1f49297` |
 
 **Mẫu thêm sau mỗi bước:** `YYYY-MM-DDTHH:mm+07:00 | STEP-XX / Claude Code | Input SHA256, command, test, reports, image | PASS/FAIL/BLOCKED + caveats | commit-hash`.
 

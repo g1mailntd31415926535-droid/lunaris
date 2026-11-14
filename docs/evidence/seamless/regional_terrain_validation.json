@@ -1,0 +1,146 @@
+{
+ "format": "lunaris-regional",
+ "version": 1,
+ "generated_utc": "2026-11-14T17:07:52+00:00",
+ "provenance": "MEASURED - NASA LOLA (PGDA south pole DEMs, Barker et al. 2023, doi:10.3847/PSJ/acf3e1, data doi:10.60903/gsfcpgda-lola-spole; PDS LRO-L-LOLA-4-GDR-V1.0 LDEM_4). Block means only; no smoothing, no filling, no procedural relief.",
+ "crs": "Polar Stereographic (south), lat_0 = -90, lon_0 = 0, sphere 1737400 m (same as the 5 m Site01/Site04 product)",
+ "height": "m relative to the 1737.4 km sphere; int16 value * step_m; -32768 = NoData",
+ "registration": "vertex (i, j) = pixel centre: X = x0 + i * spacing_m, Y = y0 - j * spacing_m",
+ "grids": {
+  "g0": {
+   "file": "g0_40m.i16.gz",
+   "bytes": 2408572,
+   "sha256": "8c4cdc8ffdb1af6e6ed88987888fcbae22365f7ce7956cf11353eec08259d016",
+   "cols": 1200,
+   "rows": 1200,
+   "x0": -32500.0,
+   "y0": 13500.0,
+   "spacing_m": 40.0,
+   "step_m": 0.25,
+   "min_m": -2913.500732421875,
+   "max_m": 1958.6129150390625,
+   "nodata_px": 0,
+   "source": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_40MPP_ADJ.TIF",
+   "source_pixel_m": 40.0,
+   "resample": "none",
+   "source_window_col_row_px": [
+    6787,
+    7262,
+    1200
+   ],
+   "same_crs_as_5m_sites": true,
+   "label": "MEASURED (NASA LOLA)",
+   "coverage_distance": {
+    "file": "g0_5m_coverage_distance.u8.gz",
+    "unit": "10 m",
+    "cap_m": 2550,
+    "meaning": "distance from the g0 vertex to the nearest 5 m pixel without Site01/Site04 data (0 = no 5 m data here)"
+   }
+  },
+  "g1": {
+   "file": "g1_160m.i16.gz",
+   "bytes": 1767893,
+   "sha256": "b7deadd14077a813f821b461171a92ad66468e76026da173ed3c2df6c08d01ed",
+   "cols": 1000,
+   "rows": 1000,
+   "x0": -90960.0,
+   "y0": 67920.0,
+   "spacing_m": 160.0,
+   "step_m": 0.25,
+   "min_m": -4377.321533203125,
+   "max_m": 1955.5074768066406,
+   "nodata_px": 0,
+   "source": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+   "source_pixel_m": 80.0,
+   "resample": "2 x 2 mean of source bins",
+   "source_window_col_row_px": [
+    2662,
+    2950,
+    2000
+   ],
+   "same_crs_as_5m_sites": true,
+   "label": "MEASURED (NASA LOLA)"
+  },
+  "g2": {
+   "file": "g2_480m.i16.gz",
+   "bytes": 3158874,
+   "sha256": "8447780b7b9e4e2fa1127e782441ed7a506cbd1ec3d0ee16ce94a8d33deafe45",
+   "cols": 1334,
+   "rows": 1334,
+   "x0": -319920.0,
+   "y0": 319920.0,
+   "spacing_m": 480.0,
+   "step_m": 0.5,
+   "min_m": -7248.767578125,
+   "max_m": 7014.035400390625,
+   "nodata_px": 0,
+   "source": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_60S_240MPP_ADJ.TIF",
+   "source_pixel_m": 240.0,
+   "resample": "2 x 2 mean of source bins",
+   "source_window_col_row_px": [
+    2546,
+    2546,
+    2668
+   ],
+   "same_crs_as_5m_sites": true,
+   "label": "MEASURED (NASA LOLA)"
+  }
+ },
+ "checks": {
+  "g0_vs_5m_sites": {
+   "cells_compared": 230629,
+   "cell_m": 40,
+   "mean_m": -0.10752308123636746,
+   "median_m": -0.11302661895751953,
+   "rms_m": 0.5321506684921584,
+   "p95_abs_m": 1.0909278869628902,
+   "p99_abs_m": 1.6963178634643559,
+   "max_abs_m": 10.977935314178467,
+   "grid_alignment_px": [
+    288,
+    288
+   ],
+   "meaning": "mean of the 64 merged 5 m pixels in each 40 m cell minus the LOLA 40 m bin; small values = same positions and datum"
+  },
+  "g0_vs_g1_nearest": {
+   "mean_m": 0.009261047857324754,
+   "rms_m": 12.96961891617016,
+   "p99_abs_m": 41.27459197998047
+  },
+  "g1_vs_g2_nearest": {
+   "mean_m": 0.02352444195059659,
+   "rms_m": 26.914826383748316,
+   "p99_abs_m": 85.19284576416018
+  }
+ },
+ "global": {
+  "file": "ldem_4.i16.gz",
+  "bytes": 1912968,
+  "sha256": "2343a3422e389f3b902595398a80098fa3122767b81434876eb53dd9738986db",
+  "cols": 1440,
+  "rows": 720,
+  "step_m": 0.5,
+  "layout": "simple cylindrical, row 0 centre = 89.875 N, col 0 centre = 0.125 E, 0.25 deg pixels",
+  "min_m": -8878.5,
+  "max_m": 10504.0,
+  "source": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_4.img",
+  "label_sha256": "b5a197b4d417e3b5e0e84f8fe15f9a1d2203b8eb5d7213236c0ffbc86e940cc6",
+  "label": "MEASURED (NASA LOLA LDEM_4)"
+ },
+ "albedo": {
+  "file": "moon_albedo_lroc_2k.jpg",
+  "bytes": 479710,
+  "size_px": [
+   2048,
+   1024
+  ],
+  "source": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_2k.tif",
+  "credit": "NASA's Scientific Visualization Studio (CGI Moon Kit); LROC WAC mosaic (NASA/GSFC/Arizona State University), poles filled with LOLA albedo",
+  "mean_srgb_75S_80S": [
+   0.679,
+   0.6696,
+   0.6438
+  ],
+  "label": "IMAGERY (presentation, not a measurement)"
+ }
+}

@@ -18,6 +18,9 @@ REQUIRED_EXISTING = [
     "task02_performance.md", "task02_perf_views.json",
     "task02_cam_before_6km_world.png", "task02_cam_after_6km_world.png", "task02_cam_before_60km_world.png", "task02_cam_after_60km_world.png",
     "task02_cam_dark_fraction.json", "task02_centre_views.json",
+    # SEAM-01 (2026-11-15)
+    "seamless/REPORT.md", "seamless/regional_terrain_validation.json", "seamless/before_30km_none.png", "seamless/after_30km_none.png",
+    "seamless/before_600km_none.png", "seamless/after_600km_none.png",
 ]
 PENDING = []
 
