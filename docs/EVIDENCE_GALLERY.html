@@ -193,7 +193,7 @@
   details.evidence summary:hover{color:var(--muted)}
   details.evidence ul{margin:9px 0 0;padding-left:18px;font-size:12.5px;color:var(--muted)}
   details.evidence li{margin:4px 0}
-  code{font-family:"Cascadia Mono",ui-monospace,Consolas,monospace;font-size:11.5px;color:#cfe8ff;background:rgba(111,215,255,.07);border:1px solid rgba(111,215,255,.16);padding:1px 5px;border-radius:4px;word-break:break-all}
+  code{font-family:"Cascadia Mono",ui-monospace,Consolas,monospace;font-size:11.5px;color:#cfe8ff;background:rgba(111,215,255,.07);border:1px solid rgba(111,215,255,.16);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
 
   /* ---------- table ---------- */
   .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
@@ -250,7 +250,14 @@
     .sec-head{flex-wrap:wrap}
     .sec-head .side{margin-left:0}
   }
+  @media (max-width:720px){
+    .topbar .wrap{height:auto;flex-wrap:wrap;padding-top:9px;padding-bottom:9px;gap:10px}
+    nav.menu{order:3;width:100%;margin-left:0;padding-bottom:2px}
+    .printbtn{margin-left:auto}
+    section{scroll-margin-top:132px}
+  }
   @media (max-width:560px){
+    h1 br{display:none}
     .wrap{padding:0 16px}
     .compare{grid-template-columns:1fr}
     .legend{grid-template-columns:1fr}
@@ -310,7 +317,7 @@
     <div class="hero-grid">
       <div>
         <span class="kicker">Hồ sơ minh chứng · <b>Cập nhật 15/11/2026</b></span>
-        <h1>Mỗi thế giới trong game<br><em>bắt đầu từ dữ liệu thật.</em></h1>
+        <h1>Mỗi thế giới trong game <br><em>bắt đầu từ dữ liệu thật.</em></h1>
         <p class="lede">
           LUNARIS không vẽ Mặt Trăng bằng trí tưởng tượng. Địa hình lấy từ <strong>LOLA 5 m/pixel</strong> của NASA PGDA,
           độ dốc và tuyến rover tính trực tiếp trên raster gốc, bốn khu khảo sát băng được đối chiếu với bản đồ
@@ -386,8 +393,8 @@
           Vùng chồng lấn theo mask: <b>66,000 km²</b>.
         </p>
         <figure class="shot">
-          <a href="evidence/task02_coverage.png" data-cap="Vùng phủ DEM LOLA 5 m trong hình tròn 12,5 km — Site01, Site04, chồng lấn, NoData và 5 anchor (BASE, A, B, C, D).">
-            <img src="evidence/task02_coverage.png" width="1209" height="1333" alt="Bản đồ vùng phủ DEM LOLA 5 m với legend valid/NoData, vòng tròn 12,5 km và 5 anchor" loading="lazy" decoding="async">
+          <a href="evidence/web/task02_coverage.webp" data-cap="Vùng phủ DEM LOLA 5 m trong hình tròn 12,5 km — Site01, Site04, chồng lấn, NoData và 5 anchor (BASE, A, B, C, D).">
+            <img src="evidence/web/task02_coverage.webp" width="1209" height="1333" alt="Bản đồ vùng phủ DEM LOLA 5 m với legend valid/NoData, vòng tròn 12,5 km và 5 anchor" loading="lazy" decoding="async">
           </a>
           <figcaption><b>task02_coverage.png</b> — legend valid/NoData kèm km² và %, vòng tròn bán kính 12,5 km, 5 anchor. Tọa độ theo CRS của GeoTIFF gốc.</figcaption>
         </figure>
@@ -420,8 +427,8 @@
           Sau khi ghép, đường nối dài <b>17,00 km</b> với bậc lớn nhất <b>3,14 m</b> — được giữ nguyên, không làm mượt.
         </p>
         <figure class="shot">
-          <a href="evidence/task02_seams.png" data-cap="Trái: chênh cao Site04 − Site01 (cắt ±1,3 m) và đường nối sau ghép. Phải: histogram bậc tuyệt đối tại đường nối (3.400 cặp pixel).">
-            <img src="evidence/task02_seams.png" width="1438" height="988" alt="Bản đồ chênh cao hai tile và histogram bậc tại đường nối" loading="lazy" decoding="async">
+          <a href="evidence/web/task02_seams.webp" data-cap="Trái: chênh cao Site04 − Site01 (cắt ±1,3 m) và đường nối sau ghép. Phải: histogram bậc tuyệt đối tại đường nối (3.400 cặp pixel).">
+            <img src="evidence/web/task02_seams.webp" width="1438" height="988" alt="Bản đồ chênh cao hai tile và histogram bậc tại đường nối" loading="lazy" decoding="async">
           </a>
           <figcaption><b>task02_seams.png</b> — trái: <code>z04 − z01</code>; phải: histogram bậc tại đường nối (3.400 cặp pixel).</figcaption>
         </figure>
@@ -453,8 +460,8 @@
           Đây là <b>bản đồ minh họa địa hình</b>, không phải ảnh chiếu sáng tại một thời điểm và không chứng minh có băng.
         </p>
         <figure class="shot">
-          <a href="evidence/site01_lola_psr_hillshade_illustrative.png" data-cap="Hillshade LOLA Site01 phủ PSR 20 m — ảnh minh họa relief, không phải bóng nắng thời gian thực.">
-            <img src="evidence/site01_lola_psr_hillshade_illustrative.png" width="1710" height="1710" alt="Hillshade địa hình Site01 với các vùng tối vĩnh cửu" loading="lazy" decoding="async">
+          <a href="evidence/web/site01_lola_psr_hillshade_illustrative.webp" data-cap="Hillshade LOLA Site01 phủ PSR 20 m — ảnh minh họa relief, không phải bóng nắng thời gian thực.">
+            <img src="evidence/web/site01_lola_psr_hillshade_illustrative.webp" width="1710" height="1710" alt="Hillshade địa hình Site01 với các vùng tối vĩnh cửu" loading="lazy" decoding="async">
           </a>
           <figcaption><b>site01_lola_psr_hillshade_illustrative.png</b> — sao chép nguyên bản, không chỉnh sửa.</figcaption>
         </figure>
@@ -481,14 +488,14 @@
         <div class="compare">
           <figure class="shot">
             <span class="lbl before">TRƯỚC</span>
-            <a href="evidence/task02_before_region_world.png" data-cap="Trước: địa hình dựng bằng công thức cũ (commit f0af09f).">
-              <img src="evidence/task02_before_region_world.png" width="1366" height="768" alt="Địa hình game trước khi thay bằng DEM thật" loading="lazy" decoding="async">
+            <a href="evidence/web/task02_before_region_world.webp" data-cap="Trước: địa hình dựng bằng công thức cũ (commit f0af09f).">
+              <img src="evidence/web/task02_before_region_world.webp" width="1366" height="768" alt="Địa hình game trước khi thay bằng DEM thật" loading="lazy" decoding="async">
             </a>
           </figure>
           <figure class="shot">
             <span class="lbl after">SAU</span>
-            <a href="evidence/task02_after_region_world.png" data-cap="Sau: địa hình từ DEM LOLA 5 m, cùng góc nhìn và cùng camera.">
-              <img src="evidence/task02_after_region_world.png" width="1366" height="768" alt="Địa hình game sau khi thay bằng DEM LOLA thật" loading="lazy" decoding="async">
+            <a href="evidence/web/task02_after_region_world.webp" data-cap="Sau: địa hình từ DEM LOLA 5 m, cùng góc nhìn và cùng camera.">
+              <img src="evidence/web/task02_after_region_world.webp" width="1366" height="768" alt="Địa hình game sau khi thay bằng DEM LOLA thật" loading="lazy" decoding="async">
             </a>
           </figure>
         </div>
@@ -534,16 +541,16 @@
           <div>
             <span class="lbl before">TRƯỚC · 30 km</span>
             <figure class="shot">
-              <a href="evidence/seamless/before_30km_none.png" data-cap="Trước: DEM 5 m là miếng dán trên đĩa phẳng có miệng hố giả (30 km).">
-                <img src="evidence/seamless/before_30km_none.png" width="1366" height="768" alt="Trước khi ghép liền mạch, góc 30 km" loading="lazy" decoding="async">
+              <a href="evidence/seamless/web/before_30km_none.webp" data-cap="Trước: DEM 5 m là miếng dán trên đĩa phẳng có miệng hố giả (30 km).">
+                <img src="evidence/seamless/web/before_30km_none.webp" width="1366" height="768" alt="Trước khi ghép liền mạch, góc 30 km" loading="lazy" decoding="async">
               </a>
             </figure>
           </div>
           <div>
             <span class="lbl after">SAU · 30 km</span>
             <figure class="shot">
-              <a href="evidence/seamless/after_30km_none.png" data-cap="Sau: LOLA 40 m liền mạch quanh DEM 5 m, cùng datum (30 km).">
-                <img src="evidence/seamless/after_30km_none.png" width="1366" height="768" alt="Sau khi ghép liền mạch, góc 30 km" loading="lazy" decoding="async">
+              <a href="evidence/seamless/web/after_30km_none.webp" data-cap="Sau: LOLA 40 m liền mạch quanh DEM 5 m, cùng datum (30 km).">
+                <img src="evidence/seamless/web/after_30km_none.webp" width="1366" height="768" alt="Sau khi ghép liền mạch, góc 30 km" loading="lazy" decoding="async">
               </a>
             </figure>
           </div>
@@ -552,24 +559,24 @@
           <div>
             <span class="lbl after">SAU · 900 m</span>
             <figure class="shot">
-              <a href="evidence/seamless/after_00900m_none.png" data-cap="Sau — 900 m: DEM 5 m giữ nguyên chi tiết gần căn cứ.">
-                <img src="evidence/seamless/after_00900m_none.png" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 900 m" loading="lazy" decoding="async">
+              <a href="evidence/seamless/web/after_00900m_none.webp" data-cap="Sau — 900 m: DEM 5 m giữ nguyên chi tiết gần căn cứ.">
+                <img src="evidence/seamless/web/after_00900m_none.webp" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 900 m" loading="lazy" decoding="async">
               </a>
             </figure>
           </div>
           <div>
             <span class="lbl after">SAU · 6 km</span>
             <figure class="shot">
-              <a href="evidence/seamless/after_06km_none.png" data-cap="Sau — 6 km: chuyển tiếp giữa DEM 5 m và lưới LOLA khu vực.">
-                <img src="evidence/seamless/after_06km_none.png" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 6 km" loading="lazy" decoding="async">
+              <a href="evidence/seamless/web/after_06km_none.webp" data-cap="Sau — 6 km: chuyển tiếp giữa DEM 5 m và lưới LOLA khu vực.">
+                <img src="evidence/seamless/web/after_06km_none.webp" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 6 km" loading="lazy" decoding="async">
               </a>
             </figure>
           </div>
           <div>
             <span class="lbl after">SAU · 600 km</span>
             <figure class="shot">
-              <a href="evidence/seamless/after_600km_none.png" data-cap="Sau — 600 km: quả cầu LOLA thật, không còn bề mặt hư cấu.">
-                <img src="evidence/seamless/after_600km_none.png" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 600 km" loading="lazy" decoding="async">
+              <a href="evidence/seamless/web/after_600km_none.webp" data-cap="Sau — 600 km: quả cầu LOLA thật, không còn bề mặt hư cấu.">
+                <img src="evidence/seamless/web/after_600km_none.webp" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 600 km" loading="lazy" decoding="async">
               </a>
             </figure>
           </div>
@@ -603,19 +610,19 @@
         <div class="compare" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
           <div>
             <span class="lbl before">6 km · TRƯỚC</span>
-            <figure class="shot"><a href="evidence/task02_cam_before_6km_world.png" data-cap="Camera trước khi canh giữa — 6 km, 81,3 % khung là nền tối."><img src="evidence/task02_cam_before_6km_world.png" width="1366" height="768" alt="Camera trước canh giữa ở 6 km" loading="lazy" decoding="async"></a></figure>
+            <figure class="shot"><a href="evidence/web/task02_cam_before_6km_world.webp" data-cap="Camera trước khi canh giữa — 6 km, 81,3 % khung là nền tối."><img src="evidence/web/task02_cam_before_6km_world.webp" width="1366" height="768" alt="Camera trước canh giữa ở 6 km" loading="lazy" decoding="async"></a></figure>
           </div>
           <div>
             <span class="lbl after">6 km · SAU</span>
-            <figure class="shot"><a href="evidence/task02_cam_after_6km_world.png" data-cap="Camera sau khi canh giữa — 6 km, 0,0 % nền tối."><img src="evidence/task02_cam_after_6km_world.png" width="1366" height="768" alt="Camera sau canh giữa ở 6 km" loading="lazy" decoding="async"></a></figure>
+            <figure class="shot"><a href="evidence/web/task02_cam_after_6km_world.webp" data-cap="Camera sau khi canh giữa — 6 km, 0,0 % nền tối."><img src="evidence/web/task02_cam_after_6km_world.webp" width="1366" height="768" alt="Camera sau canh giữa ở 6 km" loading="lazy" decoding="async"></a></figure>
           </div>
           <div>
             <span class="lbl before">60 km · TRƯỚC</span>
-            <figure class="shot"><a href="evidence/task02_cam_before_60km_world.png" data-cap="Camera trước — 60 km, khung là vỏ cầu xám, có nhãn NoData."><img src="evidence/task02_cam_before_60km_world.png" width="1366" height="768" alt="Camera trước canh giữa ở 60 km" loading="lazy" decoding="async"></a></figure>
+            <figure class="shot"><a href="evidence/web/task02_cam_before_60km_world.webp" data-cap="Camera trước — 60 km, khung là vỏ cầu xám, có nhãn NoData."><img src="evidence/web/task02_cam_before_60km_world.webp" width="1366" height="768" alt="Camera trước canh giữa ở 60 km" loading="lazy" decoding="async"></a></figure>
           </div>
           <div>
             <span class="lbl after">60 km · SAU</span>
-            <figure class="shot"><a href="evidence/task02_cam_after_60km_world.png" data-cap="Camera sau — 60 km, thấy trọn bản đồ 25 km ở giữa, clearance 60,0 km."><img src="evidence/task02_cam_after_60km_world.png" width="1366" height="768" alt="Camera sau canh giữa ở 60 km" loading="lazy" decoding="async"></a></figure>
+            <figure class="shot"><a href="evidence/web/task02_cam_after_60km_world.webp" data-cap="Camera sau — 60 km, thấy trọn bản đồ 25 km ở giữa, clearance 60,0 km."><img src="evidence/web/task02_cam_after_60km_world.webp" width="1366" height="768" alt="Camera sau canh giữa ở 60 km" loading="lazy" decoding="async"></a></figure>
           </div>
         </div>
         <div class="kv" style="margin-top:4px">
@@ -659,8 +666,8 @@
           Vì vậy không thể “nối thẳng” rover tới các khu.
         </p>
         <figure class="shot">
-          <a href="evidence/task02_route_slope.png" data-cap="Độ dốc dọc đường thẳng BASE → A/B/C/D so với ngưỡng danh định 15° của NASA VIPER.">
-            <img src="evidence/task02_route_slope.png" width="1440" height="1560" alt="Biểu đồ độ dốc dọc các đường thẳng tới A, B, C, D" loading="lazy" decoding="async">
+          <a href="evidence/web/task02_route_slope.webp" data-cap="Độ dốc dọc đường thẳng BASE → A/B/C/D so với ngưỡng danh định 15° của NASA VIPER.">
+            <img src="evidence/web/task02_route_slope.webp" width="1440" height="1560" alt="Biểu đồ độ dốc dọc các đường thẳng tới A, B, C, D" loading="lazy" decoding="async">
           </a>
           <figcaption><b>task02_route_slope.png</b> — số đầy đủ trong <code>task02_route_slope.md / .json</code>.</figcaption>
         </figure>
@@ -683,8 +690,8 @@
           <b>D: <code>NO_NOMINAL_ROUTE</code></b> vì pixel anchor dốc <b>15,60°</b> — không dời vị trí, không ép tuyến.
         </p>
         <figure class="shot">
-          <a href="evidence/task02_astar_routes.png" data-cap="Tuyến A* trên lớp độ dốc 5 m: A, B, C có tuyến ≤ 15°, D không có tuyến.">
-            <img src="evidence/task02_astar_routes.png" width="1241" height="1238" alt="Bản đồ các tuyến A* tới A, B, C" loading="lazy" decoding="async">
+          <a href="evidence/web/task02_astar_routes.webp" data-cap="Tuyến A* trên lớp độ dốc 5 m: A, B, C có tuyến ≤ 15°, D không có tuyến.">
+            <img src="evidence/web/task02_astar_routes.webp" width="1241" height="1238" alt="Bản đồ các tuyến A* tới A, B, C" loading="lazy" decoding="async">
           </a>
           <figcaption><b>task02_astar_routes.png</b> — rover trong game chạy đúng các tuyến này (<code>routes.json</code>).</figcaption>
         </figure>
@@ -813,12 +820,12 @@
           Mỗi lựa chọn có màn review nêu hậu quả và yêu cầu giải thích “tại sao”. Điểm hạng là thang của game, không phải thang NASA.
         </p>
         <div class="compare">
-          <figure class="shot"><a href="evidence/story/basic_ice_briefing_ice.png" data-cap="Briefing khu băng — dữ liệu nguồn và nhãn 'băng chưa xác nhận'."><img src="evidence/story/basic_ice_briefing_ice.png" width="1440" height="900" alt="Màn briefing khu băng" loading="lazy" decoding="async"></a><figcaption>Briefing khu băng</figcaption></figure>
-          <figure class="shot"><a href="evidence/story/basic_ice_decision_A1.png" data-cap="Màn ra quyết định A1 trong Story Mode."><img src="evidence/story/basic_ice_decision_A1.png" width="1440" height="900" alt="Màn ra quyết định A1" loading="lazy" decoding="async"></a><figcaption>Quyết định A1</figcaption></figure>
+          <figure class="shot"><a href="evidence/story/web/basic_ice_briefing_ice.webp" data-cap="Briefing khu băng — dữ liệu nguồn và nhãn 'băng chưa xác nhận'."><img src="evidence/story/web/basic_ice_briefing_ice.webp" width="1440" height="900" alt="Màn briefing khu băng" loading="lazy" decoding="async"></a><figcaption>Briefing khu băng</figcaption></figure>
+          <figure class="shot"><a href="evidence/story/web/basic_ice_decision_A1.webp" data-cap="Màn ra quyết định A1 trong Story Mode."><img src="evidence/story/web/basic_ice_decision_A1.webp" width="1440" height="900" alt="Màn ra quyết định A1" loading="lazy" decoding="async"></a><figcaption>Quyết định A1</figcaption></figure>
         </div>
         <div class="compare" style="margin-top:14px">
-          <figure class="shot"><a href="evidence/story/basic_ice_review_A1.png" data-cap="Màn review sau quyết định A1 — nêu hậu quả và câu hỏi truy vết."><img src="evidence/story/basic_ice_review_A1.png" width="1440" height="900" alt="Màn review kết quả A1" loading="lazy" decoding="async"></a><figcaption>Review A1</figcaption></figure>
-          <figure class="shot"><a href="evidence/story/advanced_ice_c2_route_map.png" data-cap="Bản đồ tuyến C2 trong chế độ Advanced."><img src="evidence/story/advanced_ice_c2_route_map.png" width="1440" height="900" alt="Bản đồ tuyến C2" loading="lazy" decoding="async"></a><figcaption>Tuyến C2 · Advanced</figcaption></figure>
+          <figure class="shot"><a href="evidence/story/web/basic_ice_review_A1.webp" data-cap="Màn review sau quyết định A1 — nêu hậu quả và câu hỏi truy vết."><img src="evidence/story/web/basic_ice_review_A1.webp" width="1440" height="900" alt="Màn review kết quả A1" loading="lazy" decoding="async"></a><figcaption>Review A1</figcaption></figure>
+          <figure class="shot"><a href="evidence/story/web/advanced_ice_c2_route_map.webp" data-cap="Bản đồ tuyến C2 trong chế độ Advanced."><img src="evidence/story/web/advanced_ice_c2_route_map.webp" width="1440" height="900" alt="Bản đồ tuyến C2" loading="lazy" decoding="async"></a><figcaption>Tuyến C2 · Advanced</figcaption></figure>
         </div>
         <details class="evidence">
           <summary>Quy tắc gameplay khoa học</summary>
@@ -856,9 +863,9 @@
           Ảnh được chụp tự động ở viewport 1366×768 để so sánh giữa các vòng phát triển.
         </p>
         <div class="compare" style="grid-template-columns:1fr 1fr 1fr">
-          <figure class="shot"><a href="evidence/onboarding/basic_00_welcome.png" data-cap="Màn chào đầu tiên."><img src="evidence/onboarding/basic_00_welcome.png" width="1366" height="768" alt="Màn chào onboarding" loading="lazy" decoding="async"></a><figcaption>Chào</figcaption></figure>
-          <figure class="shot"><a href="evidence/onboarding/basic_01_mode.png" data-cap="Chọn chế độ Basic / Advanced."><img src="evidence/onboarding/basic_01_mode.png" width="1366" height="768" alt="Màn chọn chế độ" loading="lazy" decoding="async"></a><figcaption>Chọn chế độ</figcaption></figure>
-          <figure class="shot"><a href="evidence/onboarding/basic_29_game_start.png" data-cap="Màn bắt đầu nhiệm vụ sau hướng dẫn."><img src="evidence/onboarding/basic_29_game_start.png" width="1366" height="768" alt="Màn bắt đầu game" loading="lazy" decoding="async"></a><figcaption>Game start</figcaption></figure>
+          <figure class="shot"><a href="evidence/onboarding/web/basic_00_welcome.webp" data-cap="Màn chào đầu tiên."><img src="evidence/onboarding/web/basic_00_welcome.webp" width="1366" height="768" alt="Màn chào onboarding" loading="lazy" decoding="async"></a><figcaption>Chào</figcaption></figure>
+          <figure class="shot"><a href="evidence/onboarding/web/basic_01_mode.webp" data-cap="Chọn chế độ Basic / Advanced."><img src="evidence/onboarding/web/basic_01_mode.webp" width="1366" height="768" alt="Màn chọn chế độ" loading="lazy" decoding="async"></a><figcaption>Chọn chế độ</figcaption></figure>
+          <figure class="shot"><a href="evidence/onboarding/web/basic_29_game_start.webp" data-cap="Màn bắt đầu nhiệm vụ sau hướng dẫn."><img src="evidence/onboarding/web/basic_29_game_start.webp" width="1366" height="768" alt="Màn bắt đầu game" loading="lazy" decoding="async"></a><figcaption>Game start</figcaption></figure>
         </div>
         <div class="kv">
           <span>Basic: <b>30 bước</b> hướng dẫn</span>
@@ -877,8 +884,8 @@
           Hai ending Basic và Advanced có ảnh chụp riêng để đối chiếu nhánh truyện.
         </p>
         <div class="compare" style="grid-template-columns:1fr 1fr">
-          <figure class="shot"><a href="evidence/intro_video/film_playing.png" data-cap="Intro film đang phát trong game."><img src="evidence/intro_video/film_playing.png" width="1440" height="900" alt="Intro film đang phát" loading="lazy" decoding="async"></a><figcaption>Intro film</figcaption></figure>
-          <figure class="shot"><a href="evidence/story/advanced_ice_99_ending.png" data-cap="Màn kết thúc nhánh Advanced (ice)."><img src="evidence/story/advanced_ice_99_ending.png" width="1440" height="900" alt="Màn kết thúc Advanced" loading="lazy" decoding="async"></a><figcaption>Ending · Advanced</figcaption></figure>
+          <figure class="shot"><a href="evidence/intro_video/web/film_playing.webp" data-cap="Intro film đang phát trong game."><img src="evidence/intro_video/web/film_playing.webp" width="1440" height="900" alt="Intro film đang phát" loading="lazy" decoding="async"></a><figcaption>Intro film</figcaption></figure>
+          <figure class="shot"><a href="evidence/story/web/advanced_ice_99_ending.webp" data-cap="Màn kết thúc nhánh Advanced (ice)."><img src="evidence/story/web/advanced_ice_99_ending.webp" width="1440" height="900" alt="Màn kết thúc Advanced" loading="lazy" decoding="async"></a><figcaption>Ending · Advanced</figcaption></figure>
         </div>
         <div class="kv">
           <span>Intro: <b>LUNARIS_intro_final.mp4</b></span>
@@ -896,14 +903,14 @@
           Bố cục, chữ, nút và mascot giữ nguyên tỷ lệ; mascot có bộ biểu cảm và kiểm tra nền trong suốt.
         </p>
         <div class="compare" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
-          <figure class="shot"><a href="evidence/ui_consistency/decision_A1_1366x768.png" data-cap="Màn quyết định A1 @ 1366×768."><img src="evidence/ui_consistency/decision_A1_1366x768.png" width="1366" height="768" alt="Quyết định A1 ở 1366x768" loading="lazy" decoding="async"></a><figcaption>1366×768</figcaption></figure>
-          <figure class="shot"><a href="evidence/ui_consistency/decision_A1_1920x1080.png" data-cap="Màn quyết định A1 @ 1920×1080."><img src="evidence/ui_consistency/decision_A1_1920x1080.png" width="1920" height="1080" alt="Quyết định A1 ở 1920x1080" loading="lazy" decoding="async"></a><figcaption>1920×1080</figcaption></figure>
-          <figure class="shot"><a href="evidence/ui_consistency/result_A1_recycle_1440x900.png" data-cap="Màn kết quả A1 @ 1440×900."><img src="evidence/ui_consistency/result_A1_recycle_1440x900.png" width="1440" height="900" alt="Kết quả A1 ở 1440x900" loading="lazy" decoding="async"></a><figcaption>Kết quả · 1440×900</figcaption></figure>
-          <figure class="shot"><a href="evidence/ui_consistency/mascot_expressions.png" data-cap="Bộ biểu cảm mascot dùng trong game."><img src="evidence/ui_consistency/mascot_expressions.png" width="1807" height="326" alt="Bộ biểu cảm mascot" loading="lazy" decoding="async"></a><figcaption>Mascot</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_consistency/web/decision_A1_1366x768.webp" data-cap="Màn quyết định A1 @ 1366×768."><img src="evidence/ui_consistency/web/decision_A1_1366x768.webp" width="1366" height="768" alt="Quyết định A1 ở 1366x768" loading="lazy" decoding="async"></a><figcaption>1366×768</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_consistency/web/decision_A1_1920x1080.webp" data-cap="Màn quyết định A1 @ 1920×1080."><img src="evidence/ui_consistency/web/decision_A1_1920x1080.webp" width="1920" height="1080" alt="Quyết định A1 ở 1920x1080" loading="lazy" decoding="async"></a><figcaption>1920×1080</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_consistency/web/result_A1_recycle_1440x900.webp" data-cap="Màn kết quả A1 @ 1440×900."><img src="evidence/ui_consistency/web/result_A1_recycle_1440x900.webp" width="1440" height="900" alt="Kết quả A1 ở 1440x900" loading="lazy" decoding="async"></a><figcaption>Kết quả · 1440×900</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_consistency/web/mascot_expressions.webp" data-cap="Bộ biểu cảm mascot dùng trong game."><img src="evidence/ui_consistency/web/mascot_expressions.webp" width="1807" height="326" alt="Bộ biểu cảm mascot" loading="lazy" decoding="async"></a><figcaption>Mascot</figcaption></figure>
         </div>
         <div class="compare" style="grid-template-columns:1fr 1fr;gap:14px;margin-top:16px">
-          <figure class="shot"><a href="evidence/ui_round3/task_walking.png" data-cap="Rover đang di chuyển theo tuyến A* trên địa hình thật."><img src="evidence/ui_round3/task_walking.png" width="1440" height="900" alt="Rover di chuyển trên địa hình" loading="lazy" decoding="async"></a><figcaption>Rover chạy tuyến · HUD nhiệm vụ</figcaption></figure>
-          <figure class="shot"><a href="evidence/ui_round3/mode_select_locked.png" data-cap="Chế độ bị khóa hiển thị rõ lý do."><img src="evidence/ui_round3/mode_select_locked.png" width="1440" height="900" alt="Chế độ bị khóa" loading="lazy" decoding="async"></a><figcaption>Trạng thái khóa chế độ</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_round3/web/task_walking.webp" data-cap="Rover đang di chuyển theo tuyến A* trên địa hình thật."><img src="evidence/ui_round3/web/task_walking.webp" width="1440" height="900" alt="Rover di chuyển trên địa hình" loading="lazy" decoding="async"></a><figcaption>Rover chạy tuyến · HUD nhiệm vụ</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_round3/web/mode_select_locked.webp" data-cap="Chế độ bị khóa hiển thị rõ lý do."><img src="evidence/ui_round3/web/mode_select_locked.webp" width="1440" height="900" alt="Chế độ bị khóa" loading="lazy" decoding="async"></a><figcaption>Trạng thái khóa chế độ</figcaption></figure>
         </div>
         <details class="evidence">
           <summary>Bộ kiểm tra tự động</summary>
@@ -965,8 +972,8 @@
           Nghĩa là tối ưu kỹ thuật, không đánh đổi hình ảnh.
         </p>
         <div class="compare">
-          <figure class="shot"><span class="lbl before">TRƯỚC</span><a href="evidence/task02_before_base_world.png" data-cap="Góc base trước tối ưu hiệu năng."><img src="evidence/task02_before_base_world.png" width="1366" height="768" alt="Cảnh căn cứ trước tối ưu" loading="lazy" decoding="async"></a></figure>
-          <figure class="shot"><span class="lbl after">SAU</span><a href="evidence/task02_after_base_world.png" data-cap="Góc base sau tối ưu — cùng vật liệu, camera, phong cách."><img src="evidence/task02_after_base_world.png" width="1366" height="768" alt="Cảnh căn cứ sau tối ưu" loading="lazy" decoding="async"></a></figure>
+          <figure class="shot"><span class="lbl before">TRƯỚC</span><a href="evidence/web/task02_before_base_world.webp" data-cap="Góc base trước tối ưu hiệu năng."><img src="evidence/web/task02_before_base_world.webp" width="1366" height="768" alt="Cảnh căn cứ trước tối ưu" loading="lazy" decoding="async"></a></figure>
+          <figure class="shot"><span class="lbl after">SAU</span><a href="evidence/web/task02_after_base_world.webp" data-cap="Góc base sau tối ưu — cùng vật liệu, camera, phong cách."><img src="evidence/web/task02_after_base_world.webp" width="1366" height="768" alt="Cảnh căn cứ sau tối ưu" loading="lazy" decoding="async"></a></figure>
         </div>
         <div class="kv">
           <span>Địa hình tải ban đầu: <b>1,63 MB</b> (ngân sách 15 MB)</span>
@@ -1074,6 +1081,7 @@
     <div class="sig">
       <span>LUNARIS · Hồ sơ minh chứng cho Ban giám khảo · cập nhật 15/11/2026 (ICT)</span>
       <span>Ảnh game là ảnh render; số liệu khoa học thuộc nguồn NASA được trích dẫn.</span>
+      <span>Ảnh hiển thị là bản WebP tối ưu (2,1 MB) từ file gốc trong <code>docs/evidence/</code>; bản gốc giữ nguyên để kiểm toán.</span>
     </div>
   </footer>
 </main>
