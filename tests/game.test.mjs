@@ -1,7 +1,7 @@
 // Story Mode engine tests: real playthroughs through the pure reducer (no UI).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { gameReducer, createInitialState, clampResources, CAPACITY, DAY, LIFE, SCHEDULE, POWER, saveGame, loadGame, SAVE_KEY } from '../src/game/index.ts'
+import { gameReducer, createInitialState, clampResources, CAPACITY, DAY, LIFE, SCHEDULE, POWER, saveGame, loadGame, SAVE_KEY, buildChains, endingAnalysis } from '../src/game/index.ts'
 
 const ROUTE_C = { zone: 'C', name: 'Connecting Ridge C1', lengthM: 1885.1, maxSlopeDeg: 14.28, meanSlopeDeg: 5.18, nearLimitPercent: 0.68, uncertainPercent: 1.35, inPsr: false, heightM: 1869, slopeDeg: 6.84 }
 const ROUTE_A = { zone: 'A', name: 'PSR #1470', lengthM: 19296.6, maxSlopeDeg: 14.99, meanSlopeDeg: 9.87, nearLimitPercent: 6.15, uncertainPercent: 13.36, inPsr: true, heightM: 1295, slopeDeg: 10 }
@@ -206,4 +206,96 @@ test('clock/skip fast-forwards only through waiting and stops at the next thing 
   s = gameReducer(s, { type: 'a2/activate' }); while (s.inbox.length) s = gameReducer(s, { type: 'notice/ack' })
   s = gameReducer(s, { type: 'clock/skip', maxMinutes: 5 * DAY })
   assert.equal(s.decisions[0]?.key, 'A3', 'stopped at A3'); assert.ok(s.clock.elapsedMinutes < SCHEDULE.a3At + 60)
+})
+
+// ── Ending = cause → effect chains built from the simulation's own records ──
+const hrs = (m) => { const h = m / 60; return h < 1 ? `${Math.round(m)} phút` : `${Math.round(h * 10) / 10} giờ`.replace('.', ',') }
+const eff = (s, k) => s.effects.find((e) => e.key === k)
+const chain = (s, id) => buildChains(s).find((c) => c.id === id)
+const text = (c) => c.steps.map((x) => `${x.title} ${x.detail ?? ''}`).join(' | ')
+const untilD1End = SCHEDULE.d1At + SCHEDULE.d1Min + 120
+
+test('Ending Test 1 · A3 keep: capacity 90 %, recorded with its cause; D1 consequences appear only as measured', () => {
+  const { s } = play('advanced', defaults({ A3: 'keep', D1: 'rover' }), { until: untilD1End, extra: research() })
+  assert.equal(s.power.capacityFactor, 0.9)
+  const cap = eff(s, 'a3.capacity'), a3 = s.history.find((h) => h.key === 'A3')
+  assert.ok(cap && cap.amount === 10 && cap.causeIds.includes(a3.id), 'capacity loss is recorded and linked to the A3 decision')
+  assert.equal(a3.before.capacityPercent, 100, 'the state before the decision is stored')
+  const c = chain(s, 'a3'); assert.ok(c, 'A3 chain exists'); const t = text(c)
+  assert.ok(/100% xuống 90%/.test(t), t)
+  const d1 = eff(s, 'd1.check')
+  assert.ok(d1, 'D1 was checked')
+  const share = d1.amount - d1.facts.deficitIfFullArrayKwh
+  if (d1.amount > 0 && share >= 0.5) assert.ok(/thiếu/.test(t) && /mất 10% công suất|giàn pin còn 100%/i.test(t), 'shortage linked to A3: ' + t)
+  else assert.ok(!/Đèn nhà kính tắt|sạc chậm/.test(t), 'no consequence is invented when A3 did not cause a shortage: ' + t)
+})
+
+test('Ending Test 2 · A3 stow: outage minutes and battery drop are measured; 100 % capacity kept; trade-off explained', () => {
+  const { s } = play('advanced', defaults({ A3: 'stow', D1: 'rover' }), { until: untilD1End, extra: research() })
+  const out = eff(s, 'a3.stowOutage')
+  assert.ok(out && out.amount >= SCHEDULE.a3HazardMin, `outage ${out?.amount} min`)
+  assert.ok(out.facts.batteryEndKwh !== undefined && out.facts.capacityPercent === 100)
+  assert.equal(s.power.capacityFactor, 1); assert.equal(eff(s, 'a3.capacity'), undefined, 'no capacity loss is recorded when stowed')
+  const t = text(chain(s, 'a3'))
+  assert.ok(/Không có điện mặt trời/.test(t) && /100% công suất/.test(t) && /đổi một ít điện/.test(t), t)
+  assert.ok(!/90%/.test(t))
+})
+
+test('Ending Test 3 · power stays sufficient: the report invents no damage to Food or Ice', () => {
+  let { s } = play('advanced', defaults({ A3: 'keep' }), { until: SCHEDULE.d1At - 40, extra: research() })
+  // Nothing left that needs optional power at D1 (food research and ice both finished): the check must find no shortfall.
+  s = { ...s, food: { ...s.food, stage: 'reported' }, ice: { ...s.ice, stage: 'done' } }
+  for (let i = 0; i < 400 && s.clock.elapsedMinutes < untilD1End; i++) { while (s.inbox.length) s = gameReducer(s, { type: 'notice/ack' }); s = tickTo(s, 30) }
+  const d1 = eff(s, 'd1.check'); assert.ok(d1 && d1.amount === 0, `shortfall ${d1?.amount}`)
+  assert.equal(s.power.capacityFactor, 0.9)
+  const c = chain(s, 'a3'), t = text(c)
+  assert.ok(c.steps.some((x) => x.kind === 'avoided'), t)
+  assert.ok(!/Đèn nhà kính tắt|sạc chậm|chậm lớn|nhẹ hơn/.test(t), t)
+  assert.equal(c.target, 'base')
+})
+
+test('Ending Test 4 · A3 → D1 → lamps → growth: the chain follows the measured numbers and decision ids', () => {
+  const { s } = play('advanced', defaults({ A3: 'keep', D1: 'rover' }), { until: untilD1End, extra: research() })
+  const lamp = eff(s, 'lamp.off.d1'), d1 = s.history.find((h) => h.key === 'D1')
+  assert.ok(lamp && lamp.amount > 0, 'the D1 priority really cut the lamps')
+  assert.ok(lamp.causeIds.includes(d1.id), 'recorded with the D1 decision as its cause')
+  const c = chain(s, 'a3'), t = text(c)
+  assert.ok(t.includes(`Đèn nhà kính tắt ${hrs(lamp.amount)}`), t)
+  const kinds = c.steps.map((x) => x.kind)
+  assert.deepEqual(kinds.slice(0, 2), ['choice', 'change']); assert.ok(kinds.includes('later') && kinds.lastIndexOf('choice') >= 2, kinds.join(','))
+  assert.equal(c.target === 'food' || c.target === 'ice', true)
+  const lost = eff(s, 'growth.lostLamp.d1'); assert.ok(lost && lost.amount > 0)
+})
+
+test('Ending Test 5 · early submit: nothing is said about events that never happened', () => {
+  let { s } = play('basic', defaults({ A3: 'keep' }), { until: SCHEDULE.a3At + 600 })
+  for (let i = 0; i < 60 && s.stage !== 'free'; i++) { while (s.inbox.length) s = gameReducer(s, { type: 'notice/ack' }); s = tickTo(s, 30) }
+  while (s.inbox.length) s = gameReducer(s, { type: 'notice/ack' })
+  s = gameReducer(s, { type: 'mission/submit' })
+  assert.equal(s.ending.reason, 'submitted'); assert.equal(eff(s, 'd1.check'), undefined)
+  const a = endingAnalysis(s), t = text(a.chains.find((c) => c.id === 'a3'))
+  assert.ok(/chưa xảy ra/.test(t) && !/Đèn nhà kính tắt|sạc chậm/.test(t), t)
+  assert.ok(a.early.some((x) => /ánh sáng giảm \(D1\)/.test(x)), a.early.join(' / '))
+  assert.equal(a.food.done, false); assert.equal(a.ice.done, false); assert.equal(a.chains.some((c) => c.id === 'd1' || c.id === 'd3'), false)
+})
+
+test('Ending · records are unique (no duplicates on pause / resume) and Restart clears them', () => {
+  let { s } = play('basic', defaults({ A3: 'stow' }), { until: 4 * DAY, extra: research() })
+  const keys = s.effects.map((e) => e.key); assert.equal(new Set(keys).size, keys.length, keys.join(','))
+  const n = s.effects.length; const frozen = gameReducer({ ...s, isPaused: true }, { type: 'clock/tick', minutes: 500 })
+  assert.equal(frozen.effects.length, n); assert.deepEqual(frozen.effects, s.effects, 'a paused clock records nothing')
+  assert.deepEqual(gameReducer(s, { type: 'game/restart' }).effects, [])
+})
+
+test('Ending · B1 chain: different choices give different measured water stress, and the report cites only measured grams', () => {
+  const now = play('advanced', defaults({ B1: 'now', A3: 'stow', D1: 'greenhouse' }), { until: 12 * DAY, extra: research({ ice: false }) }).s
+  const later = play('advanced', defaults({ B1: 'later', A3: 'stow', D1: 'greenhouse' }), { until: 12 * DAY, extra: research({ ice: false }) }).s
+  assert.ok(eff(later, 'b1.waterStress').amount > eff(now, 'b1.waterStress').amount + 300)
+  for (const s of [now, later]) {
+    const c = chain(s, 'b1'); assert.ok(c, 'B1 chain'); const t = text(c), h = eff(s, 'b4.harvest')
+    assert.ok(t.includes(hrs(eff(s, 'b1.waterStress').amount)), t)
+    const g = h.facts.gramsLostToWaterStress + h.facts.gramsLostToSlowerGrowthWater
+    assert.equal(g >= 1 ? /nhẹ hơn khoảng/.test(t) : /gần như không đổi/.test(t), true, t)
+    assert.ok(endingAnalysis(s).why.food.length >= 2)
+  }
 })

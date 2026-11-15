@@ -5,7 +5,7 @@
 // they are still applied to the fictional LUNARIS base, not measurements of it.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const SAVE_SCHEMA_VERSION = 4
+export const SAVE_SCHEMA_VERSION = 5
 
 /** SCENARIO: 1 real second at ×1 = 10 simulated minutes (a sol ≈ 2.4 real minutes). */
 export const SIM_MINUTES_PER_REAL_SECOND = 10

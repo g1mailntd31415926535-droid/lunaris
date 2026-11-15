@@ -2,13 +2,13 @@
 // Everything here reads the one GameState; actions go back through the reducer.
 import type { CSSProperties, ReactNode } from 'react'
 import { motion } from 'motion/react'
-import { ArrowRight, BatteryCharging, BookOpen, Wrench, Check, CircleAlert, Clock3, Eye, FlaskConical, Gauge, Lightbulb, Microscope, Rocket, Scale, ScrollText, Send, ShieldCheck, Sprout, TriangleAlert } from 'lucide-react'
+import { ArrowRight, BatteryCharging, BookOpen, ChevronRight, Wrench, Check, CircleAlert, Clock3, Eye, FlaskConical, Gauge, Lightbulb, Microscope, Rocket, Scale, ScrollText, Send, ShieldCheck, Sprout, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { Modal } from './Common'
 import { EventHeader, GamePanel, ResourceBar, ResultSection } from './GamePanel'
 import { DialogueActionButton } from './Onboarding'
-import { CAPACITY, CREW, DAY, FOOD, LIFE, MISSION_START, ROVER, b1Resolved, decisionCopy, endingReport, missionTime, reviewFor, roverEnergyNeed, EVENT_TOPIC } from '../game'
-import type { Decision, GameState, PlayMode, WorldFacts } from '../game'
+import { CAPACITY, CREW, DAY, FOOD, LIFE, MISSION_START, ROVER, b1Resolved, decisionCopy, missionTime, reviewFor, roverEnergyNeed, EVENT_TOPIC, endingAnalysis } from '../game'
+import type { BranchResult, Chain, Decision, GameState, PlayMode, StepKind, WorldFacts } from '../game'
 
 export type StoryAction = 'a2' | 'observe' | 'harvest' | 'report' | 'ice' | 'food' | 'repair' | 'submit' | 'follow'
 
@@ -192,21 +192,39 @@ export function ReturnCinematic({ reason }: { reason: string }) {
   </motion.div>
 }
 
+const STEP_LABEL: Record<StepKind, string> = { choice: 'Bạn chọn', change: 'Thay đổi', later: 'Sau đó', result: 'Kết quả', avoided: 'Đã tránh được', unknown: 'Chưa biết' }
+function ChainView({ chain }: { chain: Chain }) {
+  return <article className={`chain target-${chain.target}`}>
+    <h4>{chain.title}<span>{chain.target === 'food' ? 'ảnh hưởng Nghiên cứu thực phẩm' : chain.target === 'ice' ? 'ảnh hưởng Nghiên cứu băng' : 'ảnh hưởng căn cứ'}</span></h4>
+    <ol>{chain.steps.map((st, i) => <li key={i} className={`step step-${st.kind}`}>
+      <small>{STEP_LABEL[st.kind]}</small><strong>{st.title}</strong>{st.detail && <p>{st.detail}</p>}
+      {i < chain.steps.length - 1 && <ChevronRight className="chain-arrow" size={18} aria-hidden="true" />}
+    </li>)}</ol>
+  </article>
+}
+
+/** Ending: results, the cause → effect chains of this playthrough, and a plain explanation. All from the game's own records. */
 export function EndingScreen({ game, onRestart }: { game: GameState; onRestart: () => void }) {
-  const report = endingReport(game)
-  const branch = (title: string, icon: ReactNode, b: ReturnType<typeof endingReport>['food']) => <section className={`story-branch ${b.done ? 'done' : 'todo'}`}>
+  const a = endingAnalysis(game)
+  const main = a.chains.slice(0, 5), more = a.chains.slice(5)
+  const branch = (title: string, icon: ReactNode, b: BranchResult) => <section className={`story-branch ${b.done ? 'done' : 'todo'}`}>
     <header>{icon}<h3>{title}</h3><span>{b.status}</span></header>
-    <h4>Kết quả</h4><ul>{b.result.map((r) => <li key={r}>{r}</li>)}</ul>
-    {b.events.length > 0 && <><h4>Sự kiện đã ảnh hưởng</h4><ul>{b.events.map((r, i) => <li key={i}>{r}</li>)}</ul></>}
-    <h4>Tại sao điều này xảy ra?</h4><ul>{(b.why.length ? b.why : ['Chưa có dữ liệu để giải thích.']).map((r) => <li key={r}>{r}</li>)}</ul>
+    <ul>{b.result.map((r) => <li key={r}>{r}</li>)}</ul>
   </section>
+  const why = (title: string, lines: string[]) => <section className="why-block"><h4>{title}</h4>{lines.length ? <ul>{lines.map((l) => <li key={l}>{l}</li>)}</ul> : <p className="story-muted">Chưa có đủ dữ liệu đo được để giải thích kết quả này.</p>}</section>
   return <motion.div className="story-ending" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-    <div className="story-ending-card glass">
+    <div className="story-ending-card glass ending-wide">
       <span className="eyebrow">KẾT QUẢ NHIỆM VỤ · {clock(game.ending?.atMinute ?? game.clock.elapsedMinutes)}</span>
-      <h1>Chào mừng về nhà!</h1><p>{report.reason}</p>
-      <div className="story-branches">{branch('Nghiên cứu thực phẩm', <Sprout size={18} />, report.food)}{branch('Nghiên cứu băng', <Microscope size={18} />, report.ice)}</div>
-      <section className="story-base"><h4>Căn cứ</h4><ul>{report.base.map((r) => <li key={r}>{r}</li>)}</ul></section>
-      <p className="story-muted">Địa hình, vùng tối vĩnh cửu và tuyến rover dùng dữ liệu NASA. Điện, nước, oxy, thực phẩm và kết quả đo của MILO là mô phỏng trong trò chơi. Băng chưa được xác nhận ở bất kỳ khu nào.</p>
+      <h1>Chào mừng về nhà!</h1><p>{a.reason}</p>
+      {a.early.map((e) => <p key={e} className="ending-early"><Clock3 size={13} /> {e}</p>)}
+      <h2 className="ending-part">1 · Kết quả nhiệm vụ</h2>
+      <div className="story-branches">{branch('Nghiên cứu thực phẩm', <Sprout size={18} />, a.food)}{branch('Nghiên cứu băng', <Microscope size={18} />, a.ice)}</div>
+      <h2 className="ending-part">2 · Những quyết định đã thay đổi nhiệm vụ</h2>
+      {main.length ? main.map((c) => <ChainView key={c.id} chain={c} />) : <p className="story-muted">Bạn chưa đưa ra quyết định nào đủ để tạo ra một chuỗi nguyên nhân và kết quả.</p>}
+      {more.length > 0 && <details className="chain-more"><summary>Xem thêm {more.length} chuỗi nữa</summary>{more.map((c) => <ChainView key={c.id} chain={c} />)}</details>}
+      <h2 className="ending-part">3 · Tại sao điều này xảy ra?</h2>
+      <div className="why-grid">{why('Nghiên cứu thực phẩm', a.why.food)}{why('Nghiên cứu băng', a.why.ice)}</div>
+      <p className="story-muted">Địa hình, vùng tối vĩnh cửu và tuyến rover dùng dữ liệu NASA. Điện, nước, oxy, thực phẩm, sự kiện và kết quả đo của MILO là mô phỏng trong trò chơi. Băng chưa được xác nhận ở bất kỳ khu nào.</p>
       <button className="primary-button" onClick={onRestart}>Chơi lại<ArrowRight size={14} /></button>
     </div>
   </motion.div>

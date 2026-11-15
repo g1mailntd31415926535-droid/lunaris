@@ -24,7 +24,7 @@ import { DecisionDialog, EndingScreen, MissionLogDialog, ReturnCinematic, Review
 import type { StoryAction } from './components/Story'
 import { playUiTone } from './audio'
 import { useHudBounds } from './hooks/useHudBounds'
-import { SIM_MINUTES_PER_REAL_SECOND, b1Resolved, currentObjective, browserStorage, clearSave, createInitialState, decisionCopy, endingReport, gameReducer, loadGame, missionTime, saveGame } from './game'
+import { SIM_MINUTES_PER_REAL_SECOND, b1Resolved, currentObjective, browserStorage, clearSave, createInitialState, decisionCopy, endingAnalysis, gameReducer, loadGame, missionTime, saveGame } from './game'
 import type { GameAction, GameState, RouteFacts, WorldFacts, Zone, ZoneInfo } from './game'
 
 function initialGame(): { state: GameState; status: string } {
@@ -430,7 +430,7 @@ export default function App() {
       {reviewEntry && <ReviewPanel key={reviewEntry.id} entryId={reviewEntry.id} game={game} onContinue={ack} />}
       {showDecision && decision.key === 'C2' && <RouteCard key={decision.id} decision={decision} world={facts} game={game} onChoose={choose} />}
       {showDecision && decision.key !== 'C2' && <DecisionDialog key={decision.id} decision={decision} game={game} world={facts} onChoose={choose} onInspect={() => setHiddenDecision(decision.id)} />}
-      {game.phase === 'returning' && <ReturnCinematic key="return" reason={endingReport(game).reason} />}
+      {game.phase === 'returning' && <ReturnCinematic key="return" reason={endingAnalysis(game).reason} />}
       {game.phase === 'ended' && <EndingScreen key="ending" game={game} onRestart={restartGame} />}
       {modal === 'timeline' && <MissionLogDialog game={game} onClose={() => setModal(null)} />}
       {modal === 'restart' && <RestartDialog onConfirm={restartGame} onClose={() => setModal('settings')} />}

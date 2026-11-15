@@ -15,7 +15,15 @@ export interface RouteFacts { zone: Zone; name: string; lengthM: number; maxSlop
 export type DecisionKey = 'A1' | 'A3' | 'B1' | 'C1' | 'C2' | 'C31' | 'D1' | 'D2' | 'D3'
 export interface Decision { id: string; key: DecisionKey; atMinute: number; options: string[]; context: Record<string, number | string | boolean> }
 
-export interface DecisionRecord { id: string; key: DecisionKey; choice: string; rejected: string[]; atMinute: number; deltas: ResourceDelta; causeIds: string[]; effectIds: string[] }
+/** The state of the base right before a decision (so the ending can say what the player was facing). */
+export interface DecisionBefore { battery: number; water: number; oxygen: number; capacityPercent: number; roverBatteryKwh: number; lampOn: boolean }
+export interface DecisionRecord { id: string; key: DecisionKey; choice: string; rejected: string[]; atMinute: number; deltas: ResourceDelta; causeIds: string[]; effectIds: string[]; before: DecisionBefore }
+/**
+ * A real change measured by the simulation (keyed: one record per effect, updated in place, so pausing, resuming or
+ * re-rendering can never duplicate it). `causeIds` are the DecisionRecord ids that contributed. The ending is built
+ * only from these records.
+ */
+export interface EffectRecord { key: string; unit: string; atMinute: number; lastMinute: number; amount: number; causeIds: string[]; facts: Record<string, number | string | boolean> }
 
 export type EventLogKind = 'system' | 'decision' | 'stage' | 'event' | 'consequence' | 'research'
 export interface EventLogEntry { id: string; atMinute: number; kind: EventLogKind; title: string; detail?: string; deltas?: ResourceDelta; causeIds: string[]; tag?: string; /** resources right after this entry (only when it has deltas) */ after?: ResourceState }
@@ -65,6 +73,7 @@ export interface IceState {
   roverBattery: number
   waitingRadiation: boolean
   report: { validNeutron: number; invalidNeutron: number; meanIndex: number; confidence: 'cao' | 'trung bình' | 'thấp'; reasons: string[] } | null
+  chargeStartedAt: number | null    // when MILO began charging for the chosen route (departure wait is measured from here)
 }
 
 export interface SupplyState {
@@ -101,6 +110,8 @@ export interface GameState {
   log: EventLogEntry[]
   /** Log entries the player must read and confirm (results, consequences, events). Basic: time waits for them. */
   inbox: string[]
+  /** Measured consequences (see EffectRecord). */
+  effects: EffectRecord[]
   foodWarned: boolean
   ending: { reason: 'submitted' | 'food'; atMinute: number } | null
   nextId: number
