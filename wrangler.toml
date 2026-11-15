@@ -1,0 +1,4 @@
+# Cloudflare Pages (Direct Upload): `npm run deploy`
+name = "lunaris"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-11-01"

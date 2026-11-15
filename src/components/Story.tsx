@@ -2,10 +2,12 @@
 // Everything here reads the one GameState; actions go back through the reducer.
 import type { CSSProperties, ReactNode } from 'react'
 import { motion } from 'motion/react'
-import { ArrowRight, BatteryCharging, BookOpen, Wrench, Check, CircleAlert, CircleHelp, Clock3, Eye, FlaskConical, Gauge, Lightbulb, Microscope, Rocket, Scale, ScrollText, Send, ShieldCheck, Sprout, TriangleAlert } from 'lucide-react'
+import { ArrowRight, BatteryCharging, BookOpen, Wrench, Check, CircleAlert, Clock3, Eye, FlaskConical, Gauge, Lightbulb, Microscope, Rocket, Scale, ScrollText, Send, ShieldCheck, Sprout, TriangleAlert } from 'lucide-react'
+import { useState } from 'react'
 import { Modal } from './Common'
+import { EventHeader, GamePanel, ResourceBar, ResultSection } from './GamePanel'
 import { DialogueActionButton } from './Onboarding'
-import { CAPACITY, CREW, DAY, FOOD, LIFE, MISSION_START, ROVER, b1Resolved, decisionCopy, endingReport, missionTime, reviewFor, roverEnergyNeed } from '../game'
+import { CAPACITY, CREW, DAY, FOOD, LIFE, MISSION_START, ROVER, b1Resolved, decisionCopy, endingReport, missionTime, reviewFor, roverEnergyNeed, EVENT_TOPIC } from '../game'
 import type { Decision, GameState, PlayMode, WorldFacts } from '../game'
 
 export type StoryAction = 'a2' | 'observe' | 'harvest' | 'report' | 'ice' | 'food' | 'repair' | 'submit' | 'follow'
@@ -31,17 +33,25 @@ export function OpeningCinematic({ onStart }: { onStart: (mode: PlayMode) => voi
 // ── decisions ───────────────────────────────────────────────────────────────
 export function DecisionDialog({ decision, game, world, onChoose, onInspect }: { decision: Decision; game: GameState; world: WorldFacts; onChoose: (choice: string) => void; onInspect: () => void }) {
   const copy = decisionCopy(decision, game, world)
-  return <Modal title={copy.title} eyebrow={`${copy.eyebrow} · ${clock(decision.atMinute)}`} onClose={onInspect} className="game-modal story-decision">
-    <p className="dialog-intro">{copy.intro}</p>
-    <div className="story-options">{copy.options.map((o) => <button key={o.id} className="story-option" disabled={o.disabled} onClick={() => onChoose(o.id)}>
-      <strong>{o.label}</strong>
-      <span className="gain"><Check size={13} /> {o.gain}</span>
-      {o.risk && <span className="risk"><TriangleAlert size={13} /> {o.risk}</span>}
-      {o.disabled && o.reason && <span className="blocked"><CircleAlert size={13} /> {o.reason}</span>}
+  const [picked, setPicked] = useState<string | null>(null)
+  const code = decision.key === 'C31' ? 'C3.1' : decision.key
+  return <GamePanel label={copy.title} className="decision-panel story-decision" footer={<button className="gp-secondary" onClick={onInspect}><Eye size={14} /> Xem căn cứ</button>}>
+    <EventHeader code={code} topic={EVENT_TOPIC[decision.key]} time={clock(decision.atMinute).toUpperCase()} onClose={onInspect} />
+    <h2 className="gp-title">{copy.title}</h2>
+    {copy.intro && <p className="gp-intro">{copy.intro}</p>}
+    {copy.question && <p className="gp-question">{copy.question}</p>}
+    <div className="gp-options" role="radiogroup" aria-label="Các lựa chọn">{copy.options.map((o) => <button key={o.id} role="radio" aria-checked={picked === o.id} className={`gp-option story-option ${picked === o.id ? 'selected' : ''}`} disabled={o.disabled} onClick={() => setPicked(o.id)}>
+      <span className="gp-option-text"><strong>{o.label}</strong>
+        {o.desc && <small>{o.desc}</small>}
+        {!o.desc && o.gain && <small className="gain"><Check size={12} /> {o.gain}</small>}
+        {!o.desc && o.risk && <small className="risk"><TriangleAlert size={12} /> {o.risk}</small>}
+        {o.disabled && o.reason && <small className="blocked"><CircleAlert size={12} /> {o.reason}</small>}</span>
+      {o.preview && <span className="gp-option-bars">{o.preview.map((p) => <ResourceBar key={p.key} k={p.key} before={p.before} after={p.after} emphasis={picked === o.id || picked === null} />)}</span>}
     </button>)}</div>
-    {copy.note && <p className="game-muted"><FlaskConical size={12} /> {copy.note}</p>}
-    <div className="game-actions"><button className="secondary-action" onClick={onInspect}><Eye size={14} /> Xem trong căn cứ trước</button>{game.mode === 'advanced' && <span className="story-muted"><Clock3 size={12} /> Thời gian vẫn đang trôi</span>}</div>
-  </Modal>
+    {copy.note && <p className="gp-note"><FlaskConical size={12} /> {copy.note}</p>}
+    {game.mode === 'advanced' && <p className="gp-note"><Clock3 size={12} /> Thời gian vẫn đang trôi</p>}
+    <DialogueActionButton label="Xác nhận" disabled={!picked} onClick={() => picked && onChoose(picked)} />
+  </GamePanel>
 }
 
 export function PendingDecisionChip({ decision, game, world, onOpen }: { decision: Decision; game: GameState; world: WorldFacts; onOpen: () => void }) {
@@ -107,7 +117,7 @@ export function StoryMissions({ game, onStory, onFocus }: { game: GameState; onS
   const tutorial: Step[] = [
     { tag: 'A1', label: 'Điện dư: lọc nước hay sạc pin', state: st(decided('A1'), game.stage === 'A1') },
     { tag: 'A2', label: 'Bật máy điện phân tạo oxy', state: st(game.a2Enabled, game.stage === 'A2') },
-    { tag: 'A3', label: 'Bảo vệ giàn pin khỏi bụi (ngày 3)', state: st(game.stage === 'free', game.stage === 'A3') },
+    { tag: 'A3', label: 'Bảo vệ giàn pin khỏi mảnh đá nhỏ', state: st(game.stage === 'free', game.stage === 'A3') },
   ]
   const f = game.food, i = game.ice
   const food: Step[] = [
@@ -140,23 +150,24 @@ export function StoryMissions({ game, onStory, onFocus }: { game: GameState; onS
   </>
 }
 
-// ── result review (no timeout: waits for "Tiếp tục") ────────────────────────
-export function ReviewPanel({ entryId, game, onContinue, extra }: { entryId: string; game: GameState; onContinue: () => void; extra?: ReactNode }) {
+// ── result review (reference 7; no timeout: waits for "Tiếp tục") ──────────
+export function ReviewPanel({ entryId, game, onContinue }: { entryId: string; game: GameState; onContinue: () => void }) {
   const entry = game.log.find((e) => e.id === entryId)
   if (!entry) return null
   const r = reviewFor(entry, game)
-  return <motion.section key={entryId} className={`review-panel glass tone-${r.tone}`} role="dialog" aria-label={r.title} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.25 }}>
-    <small className="review-eyebrow">{r.eyebrow} · {clock(entry.atMinute)}</small>
-    <h3>{r.title}</h3>
-    {r.chose && <p className="review-row"><b>Bạn đã chọn</b><span>{r.chose}</span></p>}
-    {r.happened.filter(Boolean).length > 0 && <div className="review-row"><b>Điều gì xảy ra?</b><span>{r.happened.filter(Boolean).map((x) => <span key={x} className="review-line">{x}</span>)}</span></div>}
-    {r.why.length > 0 && <div className="review-row why"><b><CircleHelp size={13} /> Tại sao điều này xảy ra?</b><span>{r.why.map((x) => <span key={x} className="review-line">{x}</span>)}</span></div>}
-    {r.future && <p className="review-row"><b>Ảnh hưởng sau này</b><span>{r.future}</span></p>}
-    {r.lesson && <p className="review-lesson"><Lightbulb size={14} /> {r.lesson}</p>}
-    {r.reflect && <p className="review-reflect">Thử nghĩ: {r.reflect}</p>}
-    {extra && <div className="review-actions">{extra}</div>}
+  const kind = entry.kind === 'decision' ? 'KẾT QUẢ' : entry.kind === 'event' ? 'SỰ KIỆN' : entry.kind === 'consequence' ? 'HỆ QUẢ' : entry.kind === 'research' ? 'NGHIÊN CỨU' : 'NHIỆM VỤ'
+  const accent = entry.kind === 'decision' ? '#59c9ff' : entry.kind === 'event' ? '#ffb45a' : entry.kind === 'consequence' ? '#b8a0ff' : '#5edc88'
+  const happened = r.happened.filter(Boolean)
+  return <GamePanel label={r.title} className={`result-panel tone-${r.tone}`}>
+    <EventHeader code={kind} topic={entry.tag && entry.tag !== 'FREE' ? entry.tag : undefined} time={clock(entry.atMinute).toUpperCase()} accent={accent} />
+    <h2 className="gp-title">{r.title}</h2>
+    {r.chose && <ResultSection label="ĐÃ CHỌN"><strong>{r.chose}</strong></ResultSection>}
+    {(happened.length > 0 || r.bars?.length) && <ResultSection label="ĐÃ XẢY RA">{happened.map((x) => <p key={x}>{x}</p>)}{r.bars?.map((b) => <ResourceBar key={b.key} k={b.key} before={b.before} after={b.after} delta={b.delta} emphasis />)}</ResultSection>}
+    {r.why.length > 0 && <ResultSection label="VÌ SAO">{r.why.map((x) => <p key={x}>{x}</p>)}</ResultSection>}
+    {r.future && <ResultSection label="SAU NÀY"><p>{r.future}</p></ResultSection>}
+    {r.lesson && <ResultSection label="BÀI HỌC"><p className="gp-lesson">{r.lesson}</p></ResultSection>}
     <DialogueActionButton label={game.mode === 'basic' ? 'Tiếp tục' : 'Đã hiểu'} onClick={onContinue} />
-  </motion.section>
+  </GamePanel>
 }
 
 // ── mission journal (decisions, results, causes, lessons) ───────────────────
@@ -228,29 +239,20 @@ export const resourcePercent = (g: GameState) => ({
   foodDays: Math.max(0, g.resources.food / CREW),
 })
 
-// ── C2 on the map: the real A* route is drawn in 3D; this card separates measured data from estimates ──
-export function RouteCard({ decision, world, game, onChoose }: { decision: Decision; world: WorldFacts; game: GameState; onChoose: (choice: string) => void }) {
+// ── C2 on the map: the real A* route is drawn in 3D; this panel separates measured data from estimates ──
+export function RouteCard({ decision, world, onChoose }: { decision: Decision; world: WorldFacts; game: GameState; onChoose: (choice: string) => void }) {
   const zone = world.zones.find((z) => z.zone === decision.context.zone), r = zone?.route
   const need = r ? roverEnergyNeed(r.lengthM) : 0, tooMuch = need > ROVER.batteryKwh
-  return <motion.section className="route-card glass" role="dialog" aria-label={`Tuyến tới khu ${decision.context.zone}`} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
-    <small className="review-eyebrow">NGHIÊN CỨU BĂNG · C2 · CHỌN TUYẾN</small>
-    <h3>Tuyến tới khu {decision.context.zone}{zone ? ` · ${zone.name}` : ''}</h3>
+  return <GamePanel label={`Tuyến tới khu ${decision.context.zone}`} className="route-card" footer={<button className="gp-secondary" onClick={() => onChoose('back')}>Chọn khu khác</button>}>
+    <EventHeader code="C2" topic={EVENT_TOPIC.C2} time={clock(decision.atMinute).toUpperCase()} />
+    <h2 className="gp-title">Tuyến tới khu {decision.context.zone}{zone ? ` · ${zone.name}` : ''}</h2>
     {r ? <>
-      <p className="route-note">Đường vàng trên bản đồ là tuyến A* thật, đi từ MILO tới khu đã chọn. Di chuột lên đường để xem từng đoạn.</p>
-      <div className="review-row"><b>Đo từ dữ liệu NASA (bản đồ độ dốc 5 m)</b><span>
-        <span className="review-line">Dài {(r.lengthM / 1000).toFixed(1)} km một chiều.</span>
-        <span className="review-line">Độ dốc danh nghĩa: lớn nhất {r.maxSlopeDeg.toFixed(1)}°, trung bình {r.meanSlopeDeg.toFixed(1)}° (ngưỡng {15}°).</span>
-        <span className="review-line">Nếu tính cả sai số đo độ dốc, khoảng {r.uncertainPercent.toFixed(0)} % quãng đường có thể vượt 15°.</span>
-        <span className="review-line">Đích {r.inPsr ? 'nằm trong' : 'không nằm trong'} vùng tối vĩnh cửu.</span></span></div>
-      <div className="review-row"><b>Ước tính theo mô hình rover của game</b><span>
-        <span className="review-line">Cần khoảng {Math.round(need)} / {ROVER.batteryKwh} kWh pin cho cả đi, khảo sát và về.</span>
-        <span className="review-line">Khoảng {Math.round(r.lengthM / 1000 / ROVER.speedKmh * 2)} giờ lái đi và về.</span></span></div>
-      <p className="review-row why"><b>Chưa được xét</b><span>Ánh sáng, nhiệt độ, liên lạc và đá nhỏ hơn ô 5 m. Vì vậy đây là tuyến khả thi về độ dốc, chưa phải tuyến được đảm bảo an toàn.</span></p>
-      <p className="game-muted">Thuật toán chỉ tìm được một tuyến tới khu này, nên không có tuyến thứ hai để so sánh.</p>
+      <p className="gp-question">Đường vàng trên bản đồ là tuyến A* thật. Di chuột lên đường để xem từng đoạn.</p>
+      <ResultSection label="ĐO TỪ NASA"><p>Dài {(r.lengthM / 1000).toFixed(1)} km một chiều · dốc danh nghĩa lớn nhất {r.maxSlopeDeg.toFixed(1)}°, trung bình {r.meanSlopeDeg.toFixed(1)}° (ngưỡng 15°)</p><p>Tính cả sai số đo: khoảng {r.uncertainPercent.toFixed(0)} % quãng đường có thể vượt 15° · đích {r.inPsr ? 'trong' : 'ngoài'} vùng tối vĩnh cửu</p></ResultSection>
+      <ResultSection label="ƯỚC TÍNH"><p>Khoảng {Math.round(need)} / {ROVER.batteryKwh} kWh pin rover · {Math.round(r.lengthM / 1000 / ROVER.speedKmh * 2)} giờ lái đi và về (mô hình của game)</p></ResultSection>
+      <ResultSection label="CHƯA XÉT"><p>Ánh sáng, nhiệt độ, liên lạc, đá nhỏ hơn ô 5 m. Đây là tuyến khả thi về độ dốc, chưa phải tuyến được đảm bảo an toàn. Chỉ có một tuyến tìm được tới khu này.</p></ResultSection>
+      {tooMuch && <p className="game-warn">Pin rover không đủ cho cả đi và về.</p>}
     </> : <p>Không có tuyến khả thi tới khu này.</p>}
-    <div className="review-actions"><button className="secondary-action" onClick={() => onChoose('back')}>Chọn khu khác</button></div>
     {r && <DialogueActionButton label="Xác nhận tuyến" disabled={tooMuch} onClick={() => onChoose('go')} />}
-    {tooMuch && <p className="game-warn">Pin rover không đủ cho cả đi và về.</p>}
-    <span className="screen-reader-only">{game.mode}</span>
-  </motion.section>
+  </GamePanel>
 }

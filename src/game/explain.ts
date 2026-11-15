@@ -1,7 +1,8 @@
 // Result review and "Tại sao điều này xảy ra?" text. Built only from the real log entry and the decisions
 // it cites (causeIds → DecisionRecord), so an explanation never names a choice the player did not make.
 import type { DecisionKey, DecisionRecord, EventLogEntry, GameState } from './types.ts'
-import { CAPACITY, CREW, FOOD, POWER, SCHEDULE } from './scenario.ts'
+import { A1, CAPACITY, CREW, FOOD, LIFE, POWER, SCHEDULE } from './scenario.ts'
+const LIFE_RECOVERY = LIFE.recovery, A1_SURPLUS = A1.surplusKwh
 import { roverEnergyNeed } from './reducer.ts'
 
 export interface Review {
@@ -15,6 +16,8 @@ export interface Review {
   why: string[]
   /** "Điều gì có thể ảnh hưởng tới tương lai?" */
   future?: string
+  /** Resource bars before → after (percent of capacity) with the real change, from the entry's own snapshot */
+  bars?: { key: 'battery' | 'water' | 'oxygen' | 'food'; before: number; after: number; delta: string }[]
   /** One key idea per event (STEM) */
   lesson?: string
   /** A short reflection question (not a quiz) */
@@ -23,7 +26,7 @@ export interface Review {
 }
 
 const LABEL: Record<string, string> = {
-  'A1:recycle': 'Dùng điện dư để lọc thêm nước', 'A1:battery': 'Dùng điện dư để sạc pin dự trữ',
+  'A1:recycle': 'Lọc thêm nước', 'A1:battery': 'Sạc pin dự phòng',
   'A3:keep': 'Giữ giàn pin mở', 'A3:stow': 'Thu gọn giàn pin',
   'B1:now': 'Sửa hệ thống tưới ngay', 'B1:later': 'Để sửa sau ca làm việc',
   'C2:go': 'Đi tuyến A* đã kiểm tra', 'C31:slow': 'Đi chậm qua bãi đá', 'C31:detour': 'Đi vòng quanh bãi đá', 'C31:return': 'Cho MILO quay về',
@@ -65,7 +68,7 @@ function future(r: DecisionRecord, s: GameState): string | undefined {
   switch (`${r.key}:${r.choice}`) {
     case 'A1:recycle': return 'Nước lọc thêm ở lại trong bể. Pin không có phần sạc thêm này.'
     case 'A1:battery': return `Pin chỉ chứa tối đa ${CAPACITY.battery} kWh: khi pin đầy, phần sạc thêm không cất được nữa. Nước đã dùng vẫn chờ trong bể lọc.`
-    case 'A3:keep': return `Nếu bụi bắn vào, giàn pin mất ${POWER.a3LossFraction * 100} % công suất mãi mãi. Lúc thiếu sáng (D1) sẽ còn ít điện hơn.`
+    case 'A3:keep': return `Nếu mảnh đá va vào, giàn pin mất ${POWER.a3LossFraction * 100} % công suất mãi mãi. Lúc thiếu sáng (D1) sẽ còn ít điện hơn.`
     case 'A3:stow': return `Khoảng ${Math.round((SCHEDULE.a3PrepMin + SCHEDULE.a3HazardMin + SCHEDULE.a3RedeployMin) / 60)} giờ không có điện mặt trời; căn cứ dùng pin dự trữ. Sau đó giàn pin vẫn đủ 100 %.`
     case 'B1:now': return 'Cây chỉ thiếu nước thêm khoảng 2 giờ. Khối lượng khi thu hoạch sẽ cho thấy điều này.'
     case 'B1:later': return `Cây thiếu nước thêm khoảng ${Math.round((SCHEDULE.b1DelayMin + SCHEDULE.b1RepairMin) / 60)} giờ, nên khi thu hoạch có thể nhẹ hơn.`
@@ -91,8 +94,8 @@ function causes(e: EventLogEntry, s: GameState): string[] {
     if (!r) continue
     const at = `Lúc trước, bạn chọn “${choiceLabel(r)}” (${r.key === 'C31' ? 'C3.1' : r.key}).`
     switch (`${e.tag}:${r.key}:${r.choice}`) {
-      case 'A3:A3:keep': out.push(`${at} Giàn pin vẫn mở khi bụi bay nên bề mặt bị trầy.`); break
-      case 'A3:A3:stow': out.push(`${at} Giàn pin được gập lại nên bụi không làm hư.`); break
+      case 'A3:A3:keep': out.push(`${at} Giàn pin vẫn mở khi mảnh đá bay qua nên bề mặt bị trầy.`); break
+      case 'A3:A3:stow': out.push(`${at} Giàn pin được gập lại nên mảnh đá không làm hư.`); break
       case 'D1:A3:keep': out.push(`${at} Giàn pin đã mất 10 % công suất nên lúc thiếu sáng còn ít điện hơn.`); break
       case 'D1:A3:stow': out.push(`${at} Giàn pin còn đủ 100 % công suất nên lúc thiếu sáng vẫn làm ra nhiều điện hơn.`); break
       case 'B1:B1:now': out.push(`${at} Thợ sửa bắt tay vào việc ngay nên cây thiếu nước ít.`); break
@@ -107,7 +110,7 @@ function causes(e: EventLogEntry, s: GameState): string[] {
 
 const tone = (e: EventLogEntry): Review['tone'] => e.kind === 'decision' ? 'decision' : e.kind === 'event' ? 'event' : e.kind === 'consequence' ? 'consequence' : e.kind === 'stage' ? 'stage' : 'good'
 
-export function reviewFor(e: EventLogEntry, s: GameState): Review {
+function baseReview(e: EventLogEntry, s: GameState): Review {
   const tag = e.tag === 'C3.1' ? 'C31' : e.tag
   const deltas = e.deltas ? Object.entries(e.deltas).filter(([k]) => k !== 'wastewater').map(([k, v]) => `${({ battery: 'Pin dự trữ', water: 'Nước sạch', oxygen: 'Oxy', food: 'Thực phẩm' } as Record<string, string>)[k] ?? k} ${v > 0 ? '+' : ''}${k === 'food' ? `${Math.round(v / CREW * 10) / 10} ngày` : `${Math.round(v * 10) / 10} ${k === 'battery' ? 'kWh' : k === 'oxygen' ? 'kg' : 'L'}`}`) : []
   if (e.kind === 'decision') {
@@ -152,8 +155,8 @@ export function currentObjective(g: GameState): Objective | null {
   const now = g.clock.elapsedMinutes, f = g.food, i = g.ice, sup = g.supply
   if (g.stage === 'A1') return null
   if (g.stage === 'A2') return { title: 'Bật máy điện phân', detail: 'Chạm vào trạm hỗ trợ sự sống.', building: 'oxygen' }
-  if (g.stage === 'A3' && g.a3Choice === null) return { title: 'Chờ tàu thiết bị khoa học', detail: `Hạ cánh theo lịch: Ngày 3 · ${hhmm(SCHEDULE.a3At)}.`, progress: frac(0, SCHEDULE.a3At, now), canSkip: true, building: 'solar' }
-  if (g.a3HazardEndsAt !== null && now < g.a3HazardEndsAt) return { title: g.a3Choice === 'stow' ? 'Giàn pin đang thu gọn chờ tàu đáp' : 'Tàu đang hạ cánh, giàn pin vẫn mở', detail: `Hết nguy cơ bụi lúc ${hhmm(g.a3HazardEndsAt)}.`, progress: frac(g.a3HazardEndsAt - SCHEDULE.a3HazardMin - SCHEDULE.a3PrepMin, g.a3HazardEndsAt, now), canSkip: true, building: 'solar' }
+  if (g.stage === 'A3' && g.a3Choice === null) return { title: 'Theo dõi căn cứ', detail: 'Hệ thống theo dõi không gian sẽ báo nếu có nguy cơ cho giàn pin.', canSkip: true, building: 'solar' }
+  if (g.a3HazardEndsAt !== null && now < g.a3HazardEndsAt) return { title: g.a3Choice === 'stow' ? 'Giàn pin đang thu gọn, chờ đợt mảnh đá đi qua' : 'Đợt mảnh đá đang bay qua, giàn pin vẫn mở', detail: `Hết đợt mảnh đá lúc ${hhmm(g.a3HazardEndsAt)} (mốc giả định).`, progress: frac(g.a3HazardEndsAt - SCHEDULE.a3HazardMin - SCHEDULE.a3PrepMin, g.a3HazardEndsAt, now), canSkip: true, building: 'solar' }
   if (g.radiation.active && g.radiation.endsAt) return { title: 'Bão bức xạ: cả đội đang trú ẩn', detail: `Hết lúc ${hhmm(g.radiation.endsAt)}. Việc ngoài trời tạm dừng.`, progress: frac(g.radiation.endsAt - SCHEDULE.d3Min, g.radiation.endsAt, now), canSkip: true, building: 'shelter' }
   if (sup.stage === 'landing' && sup.landingEndsAt) return { title: 'Tàu tiếp tế đang hạ cánh', progress: frac(sup.landingEndsAt - SCHEDULE.d2LandingMin, sup.landingEndsAt, now), canSkip: true }
   if (sup.stage === 'pickup') {
@@ -175,4 +178,34 @@ export function currentObjective(g: GameState): Objective | null {
   if (f.report && i.report) return { title: 'Nộp báo cáo và trở về', detail: 'Chạm vào trung tâm chỉ huy.', building: 'command' }
   if (f.started && f.stage === 'growing') return { title: `Chờ cây lớn tới ${Math.round(FOOD.readyIndex * 100)} %`, detail: `Hiện ${Math.round(f.growth * 100)} %. Quan sát mỗi ngày giúp dữ liệu đáng tin hơn.`, progress: f.growth / FOOD.readyIndex, canSkip: true, building: 'greenhouse' }
   return { title: 'Theo dõi căn cứ', detail: 'Sự kiện tiếp theo sẽ tự báo cho bạn.', canSkip: true }
+}
+
+const UNIT: Record<string, string> = { battery: 'kWh', water: 'L', oxygen: 'kg', food: 'ngày' }
+/** Result review with before → after bars and, for A1, the exact litres / kWh of this run. */
+export function reviewFor(e: EventLogEntry, s: GameState): Review {
+  const r = baseReview(e, s)
+  if (e.after && e.deltas) {
+    const keys = (['water', 'battery', 'oxygen', 'food'] as const).filter((k) => e.deltas![k] !== undefined || (e.tag === 'A1' && (k === 'water' || k === 'battery')))
+    r.bars = keys.map((k) => {
+      const d = e.deltas![k] ?? 0, after = e.after![k], v = k === 'food' ? d / CREW : d
+      return { key: k, before: Math.round((after - d) / CAPACITY[k] * 100), after: Math.round(after / CAPACITY[k] * 100), delta: Math.abs(v) < 0.05 ? '±0' : `${v > 0 ? '+' : '−'}${Math.round(Math.abs(v) * 10) / 10} ${UNIT[k]}` }
+    })
+    r.happened = r.happened.filter((x) => !/(Pin dự trữ|Nước sạch|Oxy|Thực phẩm) [+−-]/.test(x))
+  }
+  if (e.kind === 'decision' && e.tag === 'A1' && e.deltas && e.after) {
+    const water = e.deltas.water ?? 0, battery = e.deltas.battery ?? 0, batteryPct = Math.round(e.after.battery / CAPACITY.battery * 100)
+    if (water > 0) {
+      const litres = water / LIFE_RECOVERY
+      r.title = `Chỉ huy đã dùng ${A1_SURPLUS} kWh điện dư để lọc thêm nước`
+      r.happened = [`Máy lọc biến ${Math.round(litres)} L nước đục thành ${Math.round(water)} L nước sạch`]
+      r.why = [`${Math.round(litres - water)} L còn lại là cặn bẩn bị giữ trong lõi lọc nên không dùng được`]
+      r.future = `Pin dự phòng không được sạc thêm nên nếu ngày mai trời tối lâu, căn cứ chỉ còn ${batteryPct}% pin để dùng`
+    } else {
+      r.title = `Chỉ huy đã dùng ${A1_SURPLUS} kWh điện dư để sạc pin dự phòng`
+      r.happened = [`Pin dự phòng được sạc thêm ${Math.round(battery * 10) / 10} kWh`]
+      r.why = [`Khoảng ${Math.round((A1_SURPLUS - battery) * 10) / 10} kWh mất thành nhiệt khi sạc (hiệu suất sạc 90 %, giả định của game)`]
+      r.future = `Nước đục vẫn chờ trong bể lọc. Pin đầy thì phần sạc thêm không cất được nữa`
+    }
+  } else if (e.kind === 'decision') r.title = e.title
+  return r
 }

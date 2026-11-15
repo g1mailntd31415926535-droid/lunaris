@@ -13,7 +13,9 @@ await page.waitForFunction(() => document.querySelector('.world')?.getAttribute(
 // Story Mode: start in Advanced from the opening, answer the A1 tutorial question, pause the mission clock.
 await onboard(page, 'advanced')
 await page.locator('.story-option').first().click({ timeout: 15000 })
-await page.locator('.review-panel .dialogue-action').click({ timeout: 5000 }).catch(() => null)   // read the A1 result
+await page.locator('#action-dock .dialogue-action').click({ timeout: 5000 })   // confirm in the fixed action dock
+await page.waitForSelector('.result-panel', { timeout: 5000 }).catch(() => null); await page.waitForTimeout(500)
+await page.locator('#action-dock .dialogue-action').click({ timeout: 5000 }).catch(() => null)   // read the A1 result
 await page.locator('.objective-head').click({ timeout: 3000 }).catch(() => null)   // collapse the objective chip so it does not cover scene clicks
 await page.waitForTimeout(800)
 if (await page.locator('.hud-time button[aria-label^="Tạm dừng"]').count()) await page.locator('.hud-time button[aria-label^="Tạm dừng"]').click()

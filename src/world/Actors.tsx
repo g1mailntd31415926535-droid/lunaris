@@ -9,10 +9,22 @@ import { useVisualTime } from './clock'
 import { CREW, DEMO_ROUTES, LINEUP, pointOnPath } from './actor-plan'
 import { METRE } from './space-config'
 
+let glowTexture: THREE.CanvasTexture | null = null
+function haloTexture() {
+  if (glowTexture) return glowTexture
+  const c = document.createElement('canvas'); c.width = c.height = 128
+  const x = c.getContext('2d')!, g = x.createRadialGradient(64, 64, 4, 64, 64, 62)
+  g.addColorStop(0, 'rgba(255,232,160,0.95)'); g.addColorStop(0.45, 'rgba(255,214,120,0.38)'); g.addColorStop(1, 'rgba(255,200,100,0)')
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128)
+  glowTexture = new THREE.CanvasTexture(c); glowTexture.colorSpace = THREE.SRGBColorSpace
+  return glowTexture
+}
+
 function Astronaut({ index, demo, reducedMotion, onInspect, greet, away }: { index: number; demo: DemoAction | null; reducedMotion: boolean; onInspect: () => void; greet: boolean; away: boolean }) {
   const crew = CREW[index]
   const root = useRef<THREE.Group>(null)
   const sprite = useRef<THREE.Mesh>(null)
+  const halo = useRef<THREE.Mesh>(null), ground = useRef<THREE.Mesh>(null)
   const clock = useVisualTime()
   const texture = useMemo(() => {
     const t = astronautAtlas(crew.color).clone()
@@ -75,12 +87,18 @@ function Astronaut({ index, demo, reducedMotion, onInspect, greet, away }: { ind
     const frame = (walking || workingHands) && clock.current.delta > 0 ? Math.floor(time * (isActive && demo.kind === 'radiation' ? 11 : workingHands ? 4 : 7) + index) % 4 : 0
     texture.offset.set(frame / 4, atlasRow(facingBack ? 1 : 0))
     root.current.position.set(position[0], heightAt(...position) + 0.04, position[1])
+    // The crew member carrying out the player's task glows softly (never during the radiation drill).
+    const glowing = !!isActive && index === 0 && demo!.kind !== 'radiation'
+    const pulse = reducedMotion ? 0.75 : 0.7 + Math.sin(time * 4) * 0.15
+    if (halo.current) { halo.current.visible = glowing; (halo.current.material as THREE.MeshBasicMaterial).opacity = pulse }
+    if (ground.current) { ground.current.visible = glowing; (ground.current.material as THREE.MeshBasicMaterial).opacity = pulse * 0.8 }
     if (sprite.current) sprite.current.position.y = reducedMotion ? 0 : walking ? Math.abs(Math.sin(time * 8 + index)) * 0.033 : Math.sin(time * 2 + index) * 0.012
     previous.current = position
   })
   return <group ref={root} name={`astronaut:${crew.name}`} position={[crew.route[0][0], 0.04, crew.route[0][1]]} onClick={(e) => { e.stopPropagation(); if (e.delta < 6) onInspect() }}>
+    <mesh name="glow-ground" ref={ground} visible={false} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}><circleGeometry args={[1.25, 32]} /><meshBasicMaterial map={haloTexture()} transparent opacity={0.7} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} /></mesh>
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}><circleGeometry args={[0.34, 16]} /><meshBasicMaterial color="#10172b" transparent opacity={0.3} depthWrite={false} /></mesh>
-    <Billboard position={[0, 0.7, 0]} follow><mesh ref={sprite}><planeGeometry args={[1.1, 1.38]} /><meshBasicMaterial map={texture} transparent alphaTest={0.3} toneMapped={false} depthWrite={false} /></mesh></Billboard>
+    <Billboard position={[0, 0.7, 0]} follow><mesh name="glow-halo" ref={halo} visible={false} position={[0, 0, -0.04]} renderOrder={-1}><planeGeometry args={[3.0, 3.0]} /><meshBasicMaterial map={haloTexture()} transparent opacity={0.7} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} /></mesh><mesh ref={sprite}><planeGeometry args={[1.1, 1.38]} /><meshBasicMaterial map={texture} transparent alphaTest={0.3} toneMapped={false} depthWrite={false} /></mesh></Billboard>
   </group>
 }
 

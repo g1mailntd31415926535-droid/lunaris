@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LUNARIS — Hồ sơ minh chứng cho Ban giám khảo</title>
+<meta name="description" content="Hồ sơ minh chứng LUNARIS: địa hình NASA thật, tuyến rover, bốn khu khảo sát băng, gameplay và hiệu năng — kèm ảnh và số liệu đo được." />
+<style>
+  :root{
+    --bg:#05070f;
+    --bg-2:#080b16;
+    --panel:rgba(255,255,255,.045);
+    --panel-2:rgba(255,255,255,.075);
+    --line:rgba(255,255,255,.12);
+    --line-soft:rgba(255,255,255,.07);
+    --text:#e9ecf5;
+    --muted:#a3abc4;
+    --dim:#7a839c;
+    --violet:#9b8cff;
+    --cyan:#6fd7ff;
+    --green:#63e2a4;
+    --amber:#ffc06b;
+    --rose:#ff8fa3;
+    --radius:18px;
+    --max:1180px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 700px at 12% -10%, rgba(123,104,255,.20), transparent 60%),
+      radial-gradient(900px 620px at 92% 4%, rgba(60,190,255,.13), transparent 60%),
+      radial-gradient(700px 500px at 50% 100%, rgba(255,170,90,.07), transparent 65%),
+      var(--bg);
+    color:var(--text);
+    font-family:Arial,"Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.55), transparent),
+      radial-gradient(1px 1px at 70% 12%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1px 1px at 42% 62%, rgba(255,255,255,.3), transparent),
+      radial-gradient(1.4px 1.4px at 85% 48%, rgba(255,255,255,.35), transparent),
+      radial-gradient(1px 1px at 12% 78%, rgba(255,255,255,.28), transparent),
+      radial-gradient(1px 1px at 58% 88%, rgba(255,255,255,.24), transparent),
+      radial-gradient(1px 1px at 92% 82%, rgba(255,255,255,.3), transparent);
+    opacity:.8;
+  }
+  .wrap{position:relative;z-index:1;max-width:var(--max);margin:0 auto;padding:0 24px}
+  a{color:var(--cyan);text-decoration:none}
+  b,strong{font-weight:600;color:#fff}
+  a:hover{text-decoration:underline}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:blur(14px) saturate(140%);
+    background:rgba(5,7,15,.78);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .topbar .wrap{display:flex;align-items:center;gap:18px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.14em;font-size:12px;white-space:nowrap}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green)}
+  .brand span{color:var(--dim);font-weight:600;letter-spacing:.08em}
+  nav.menu{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-left:auto}
+  nav.menu::-webkit-scrollbar{display:none}
+  nav.menu a{
+    color:var(--muted);font-size:12.5px;font-weight:600;padding:7px 11px;border-radius:999px;white-space:nowrap;
+  }
+  nav.menu a:hover{color:#fff;background:var(--panel);text-decoration:none}
+  .printbtn{
+    font:inherit;font-size:11.5px;font-weight:600;letter-spacing:.06em;
+    color:var(--muted);background:var(--panel);border:1px solid var(--line);
+    border-radius:999px;padding:7px 13px;cursor:pointer;white-space:nowrap;flex:none;
+  }
+  .printbtn:hover{color:#fff;border-color:rgba(155,140,255,.45);background:rgba(155,140,255,.12)}
+  .printbtn[disabled]{opacity:.6;cursor:progress}
+
+  /* ---------- hero ---------- */
+  header.hero{padding:62px 0 34px;position:relative;overflow:hidden}
+  .hero-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);gap:44px;align-items:end}
+  .kicker{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+    color:#cfd6ff;background:rgba(155,140,255,.13);
+    border:1px solid rgba(155,140,255,.34);border-radius:999px;padding:7px 14px;
+  }
+  .kicker b{color:var(--amber);letter-spacing:.16em}
+  h1{
+    font-family:Arial,"Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-size:clamp(34px,4.4vw,54px);
+    line-height:1.1;letter-spacing:-.024em;margin:22px 0 18px;font-weight:600;
+  }
+  h1 em{font-style:normal;background:linear-gradient(100deg,#c9c1ff,#6fd7ff 55%,#63e2a4);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:17px;color:#c3cada;max-width:60ch;margin:0}
+  .lede strong{color:#fff}
+  .hero-note{
+    margin-top:26px;display:flex;flex-wrap:wrap;gap:8px;
+  }
+  .chip{
+    font-size:11.5px;font-weight:600;letter-spacing:.04em;
+    border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--muted);
+    background:var(--panel);
+  }
+  .chip.ok{color:var(--green);border-color:rgba(99,226,164,.35);background:rgba(99,226,164,.09)}
+  .chip.warn{color:var(--amber);border-color:rgba(255,192,107,.32);background:rgba(255,192,107,.08)}
+
+  .statbox{
+    border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.028));
+    padding:6px 20px;backdrop-filter:blur(6px);
+  }
+  .statbox .row{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px dashed var(--line-soft)}
+  .statbox .row:last-child{border-bottom:0}
+  .statbox b{font-size:19px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .statbox small{color:var(--dim);font-size:11.5px;text-align:right;max-width:25ch}
+
+  /* ---------- sections ---------- */
+  section{padding:44px 0 6px;scroll-margin-top:74px}
+  .sec-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:30px;border-bottom:1px solid var(--line);padding-bottom:16px}
+  .sec-num{margin-top:2px}
+  .sec-num{
+    font-size:11.5px;font-weight:600;letter-spacing:.16em;color:var(--violet);
+    border:1px solid rgba(155,140,255,.34);border-radius:9px;padding:6px 10px;white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .sec-head h2{
+    font-family:Arial,"Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-weight:600;font-size:clamp(22px,2.6vw,30px);margin:0;letter-spacing:-.02em;
+  }
+  .sec-head p{margin:6px 0 0;color:var(--muted);font-size:14px;max-width:80ch}
+  .sec-head .side{margin-left:auto;margin-top:6px;color:var(--dim);font-size:12px;white-space:nowrap}
+
+  /* ---------- cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+  .card{
+    border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.02));
+    padding:22px;display:flex;flex-direction:column;gap:16px;min-width:0;
+    transition:border-color .2s ease, transform .2s ease;
+  }
+  .card:hover{border-color:rgba(155,140,255,.4);transform:translateY(-2px)}
+  .card.full{grid-column:1/-1}
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .card h3{font-size:17.5px;line-height:1.35;margin:0;font-weight:600;letter-spacing:-.01em}
+  .tag{
+    font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    padding:5px 9px;border-radius:6px;border:1px solid transparent;white-space:nowrap;flex:none;
+  }
+  .tag.measured{color:var(--green);background:rgba(99,226,164,.1);border-color:rgba(99,226,164,.3)}
+  .tag.derived{color:var(--cyan);background:rgba(111,215,255,.1);border-color:rgba(111,215,255,.3)}
+  .tag.scenario{color:var(--amber);background:rgba(255,192,107,.1);border-color:rgba(255,192,107,.3)}
+  .tag.candidate{color:var(--rose);background:rgba(255,143,163,.1);border-color:rgba(255,143,163,.3)}
+  .desc{font-size:14px;color:#c6cddd;margin:0}
+  .desc b{color:#fff;font-weight:600}
+  .kv{display:flex;flex-wrap:wrap;gap:7px}
+  .kv span{
+    font-size:11.5px;color:var(--muted);background:rgba(255,255,255,.05);
+    border:1px solid var(--line-soft);border-radius:7px;padding:4px 8px;font-variant-numeric:tabular-nums;
+  }
+  .kv span b{color:#e9ecf5}
+
+  /* ---------- figures ---------- */
+  figure.shot{margin:0;min-width:0}
+  figure.shot a{display:block;position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#02040a}
+  figure.shot img{display:block;width:100%;height:auto;transition:transform .35s ease, filter .35s ease}
+  figure.shot a:hover img{transform:scale(1.015);filter:brightness(1.06)}
+  figure.shot a::after{
+    content:"⤢";position:absolute;right:9px;bottom:9px;width:26px;height:26px;border-radius:8px;
+    display:grid;place-items:center;font-size:13px;color:#fff;
+    background:rgba(5,7,15,.62);border:1px solid rgba(255,255,255,.2);opacity:0;transition:opacity .2s
+  }
+  figure.shot a:hover::after{opacity:1}
+  figcaption{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.5}
+  figcaption b{color:var(--muted);font-weight:600}
+
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .compare > div{display:flex;flex-direction:column;min-width:0}
+  .compare figure.shot{display:flex;flex-direction:column;flex:1;min-width:0}
+  .compare figcaption{margin-top:auto;padding-top:8px}
+  .compare .lbl{
+    display:inline-block;align-self:flex-start;font-size:10px;font-weight:600;letter-spacing:.14em;padding:3px 8px;border-radius:5px;margin-bottom:7px;
+  }
+  .lbl.before{color:#ffb3b3;background:rgba(255,90,90,.13);border:1px solid rgba(255,90,90,.3)}
+  .lbl.after{color:var(--green);background:rgba(99,226,164,.12);border:1px solid rgba(99,226,164,.3)}
+  details.evidence{border-top:1px dashed var(--line-soft);padding-top:12px}
+  details.evidence summary{cursor:pointer;font-size:12px;color:var(--dim);font-weight:600;letter-spacing:.03em}
+  details.evidence summary:hover{color:var(--muted)}
+  details.evidence ul{margin:9px 0 0;padding-left:18px;font-size:12.5px;color:var(--muted)}
+  details.evidence li{margin:4px 0}
+  code{font-family:"Cascadia Mono",ui-monospace,Consolas,monospace;font-size:11.5px;color:#cfe8ff;background:rgba(111,215,255,.07);border:1px solid rgba(111,215,255,.16);padding:1px 5px;border-radius:4px;word-break:break-all}
+
+  /* ---------- table ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:13px;min-width:720px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  th{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:600;background:rgba(255,255,255,.03)}
+  tr:last-child td{border-bottom:0}
+  td b{color:#fff}
+  .mono{font-variant-numeric:tabular-nums;font-family:"Cascadia Mono",ui-monospace,Consolas,monospace;font-size:12px}
+  .yes{color:var(--green);font-weight:600}
+  .no{color:var(--rose);font-weight:600}
+
+  /* ---------- legend ---------- */
+  .legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:26px}
+  .legend div{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel)}
+  .legend h4{margin:0 0 6px;font-size:12px;letter-spacing:.1em}
+  .legend p{margin:0;font-size:12px;color:var(--muted)}
+
+  /* ---------- callout ---------- */
+  .callout{
+    border:1px solid rgba(255,192,107,.28);border-left:3px solid var(--amber);
+    background:rgba(255,192,107,.06);border-radius:12px;padding:16px 20px;font-size:13.5px;color:#e6d9c4;
+  }
+  .callout b{color:#fff}
+  .callout.cyan{border-color:rgba(111,215,255,.26);border-left-color:var(--cyan);background:rgba(111,215,255,.05);color:#d4e6f2}
+
+  /* ---------- footer ---------- */
+  footer{margin-top:70px;border-top:1px solid var(--line);padding:44px 0 60px;color:var(--dim);font-size:12.5px}
+  footer .cols{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:30px}
+  footer h5{margin:0 0 10px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  footer ul{margin:0;padding-left:16px}
+  footer li{margin:5px 0}
+  .sig{margin-top:34px;padding-top:18px;border-top:1px solid var(--line-soft);display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between}
+
+  /* ---------- lightbox ---------- */
+  .lightbox{
+    position:fixed;inset:0;z-index:100;display:none;place-items:center;
+    background:rgba(2,3,8,.93);padding:28px;backdrop-filter:blur(6px);
+  }
+  .lightbox.open{display:grid}
+  .lightbox img{max-width:min(1500px,94vw);max-height:82vh;border-radius:10px;border:1px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.7)}
+  .lightbox .cap{position:absolute;bottom:24px;left:0;right:0;text-align:center;color:var(--muted);font-size:12.5px;padding:0 40px}
+  .lightbox .close{
+    position:absolute;top:18px;right:22px;width:40px;height:40px;border-radius:50%;
+    border:1px solid var(--line);background:rgba(255,255,255,.07);color:#fff;font-size:20px;cursor:pointer;
+  }
+  .lightbox .close:hover{background:rgba(255,255,255,.15)}
+
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr;align-items:start;gap:30px}
+    .grid{grid-template-columns:1fr}
+    .legend{grid-template-columns:repeat(2,minmax(0,1fr))}
+    footer .cols{grid-template-columns:1fr}
+    .sec-head{flex-wrap:wrap}
+    .sec-head .side{margin-left:0}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 16px}
+    .compare{grid-template-columns:1fr}
+    .legend{grid-template-columns:1fr}
+    header.hero{padding:46px 0 34px}
+  }
+
+  @media print{
+    @page{margin:14mm 12mm}
+    body{background:#fff !important;color:#111 !important}
+    body::before{display:none !important}
+    .topbar,.lightbox{display:none !important}
+    h1,h2,h3,h4,h5,.brand,.sec-num{color:#111 !important}
+    b,strong,em,.desc b,.kv span b,td b,figcaption b,footer b{color:#111 !important}
+    .card,.tablewrap,.statbox,.legend div,.callout{
+      background:#fff !important;border-color:#c9c9c9 !important;break-inside:avoid;
+      box-shadow:none !important;
+    }
+    .card:hover{transform:none}
+    .desc,.lede,.lede strong,figcaption,footer,.legend p,.sec-head p,.statbox small,
+    .kv span,.callout,.chip,.side,.tag,.lbl,.mono,.yes,.no,td,th{color:#222 !important}
+    h1 em{color:#111 !important;-webkit-text-fill-color:#111;background:none !important}
+    .tag,.chip,.lbl,.kv span{background:#f4f4f4 !important;border-color:#c9c9c9 !important}
+    th{background:#f0f0f0 !important;color:#444 !important}
+    code{background:#f2f2f2 !important;color:#222 !important;border-color:#ddd !important}
+    a{color:#111 !important;text-decoration:none}
+    .kicker{background:#f2f2f2 !important;border-color:#ccc !important;color:#111 !important}
+    .statbox{background:#fff !important}
+    figure.shot a{border-color:#c9c9c9 !important}
+    figure.shot a::after{display:none !important}
+    section{padding-top:22px}
+    .sec-head{break-after:avoid}
+    .card{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="brand"><i class="dot"></i>LUNARIS <span>/ EVIDENCE DOSSIER</span></div>
+    <nav class="menu">
+      <a href="#overview">Tổng quan</a>
+      <a href="#terrain">Địa hình NASA</a>
+      <a href="#seamless">Liền mạch</a>
+      <a href="#routes">Tuyến rover</a>
+      <a href="#ice">Bốn khu băng</a>
+      <a href="#gameplay">Gameplay</a>
+      <a href="#perf">Hiệu năng</a>
+      <a href="#limits">Giới hạn</a>
+    </nav>
+    <button class="printbtn" id="printBtn" type="button">In / PDF</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="kicker">Hồ sơ minh chứng · <b>Cập nhật 15/11/2026</b></span>
+        <h1>Mỗi thế giới trong game<br><em>bắt đầu từ dữ liệu thật.</em></h1>
+        <p class="lede">
+          LUNARIS không vẽ Mặt Trăng bằng trí tưởng tượng. Địa hình lấy từ <strong>LOLA 5 m/pixel</strong> của NASA PGDA,
+          độ dốc và tuyến rover tính trực tiếp trên raster gốc, bốn khu khảo sát băng được đối chiếu với bản đồ
+          <strong>PSR 20 m</strong>. Trang này gom lại <strong>tiêu đề – mô tả – minh chứng</strong> để Ban giám khảo
+          kiểm tra từng bước, kể cả những phần còn <em>chưa</em> chứng minh được.
+        </p>
+        <div class="hero-note">
+          <span class="chip ok">✓ Ảnh &amp; JSON gốc trong repo</span>
+          <span class="chip ok">✓ Script tái chạy được</span>
+          <span class="chip">21/21 unit test · 35/35 browser check</span>
+          <span class="chip warn">Không tự đánh dấu PASS khi thiếu bằng chứng</span>
+        </div>
+      </div>
+      <aside class="statbox" aria-label="Số liệu nổi bật">
+        <div class="row"><b>5 m/px</b><small>độ phân giải DEM LOLA</small></div>
+        <div class="row"><b>66,000 km²</b><small>vùng chồng lấn 2 tile</small></div>
+        <div class="row"><b>20,4 triệu</b><small>đỉnh lưới khớp mẫu DEM</small></div>
+        <div class="row"><b>0,223 m</b><small>lệch tuyệt đối trung bình</small></div>
+        <div class="row"><b>19,30 km</b><small>tuyến A* dài nhất (tới A)</small></div>
+        <div class="row"><b>91</b><small>draw call đỉnh / ngân sách 120</small></div>
+      </aside>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ================= OVERVIEW ================= -->
+  <section id="overview">
+    <div class="sec-head">
+      <span class="sec-num">00</span>
+      <div>
+        <h2>Cách đọc hồ sơ này</h2>
+        <p>Mỗi thẻ là một minh chứng độc lập: <b>tiêu đề</b> → <b>mô tả &amp; số đo</b> → <b>ảnh/tệp gốc</b> → <b>giới hạn</b>. Nhãn khoa học giữ nguyên như trong <code>docs/EVIDENCE.md</code>.</p>
+      </div>
+      <span class="side">4 nhãn · 40 hạng mục G01–G40</span>
+    </div>
+
+    <div class="legend">
+      <div><h4 style="color:var(--green)">MEASURED</h4><p>Số liệu/bản đồ được đo hoặc công bố trực tiếp trong nguồn NASA được nêu.</p></div>
+      <div><h4 style="color:var(--cyan)">DERIVED</h4><p>Giá trị tính từ nguồn đo, có công thức, đầu vào, đơn vị và sai số.</p></div>
+      <div><h4 style="color:var(--amber)">SCENARIO</h4><p>Giả định thiết kế của LUNARIS; tham số chưa chốt ghi <code>UNSET</code>, không điền số ngẫu nhiên.</p></div>
+      <div><h4 style="color:var(--rose)">CANDIDATE_UNVERIFIED</h4><p>Vị trí đáng khảo sát, <b>chưa</b> xác nhận có băng tại điểm đó.</p></div>
+    </div>
+
+    <div class="callout" style="margin-top:22px">
+      <b>Nguyên tắc trình bày:</b> NASA quan sát ≠ LUNARIS giả định. Ảnh game là ảnh render, không phải ảnh NASA chụp.
+      Chỗ nào thiếu artifact, hồ sơ ghi rõ <code>PENDING</code> / <code>NOT_MEASURED</code> thay vì tô hồng.
+    </div>
+  </section>
+
+  <!-- ================= TERRAIN ================= -->
+  <section id="terrain">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <div>
+        <h2>Địa hình thật từ NASA LOLA</h2>
+        <p>Hai tile DEM 5 m/pixel (Site01 &amp; Site04) ghép thành một vùng khảo sát liên tục quanh cực Nam Mặt Trăng.</p>
+      </div>
+      <span class="side">G01–G07 · G40</span>
+    </div>
+
+    <div class="grid">
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Vùng phủ DEM 5 m: 66 km² chồng lấn, 5 mốc khảo sát</h3>
+          <span class="tag measured">Measured</span>
+        </div>
+        <p class="desc">
+          Site01 và Site04 đều là <b>3.200 × 3.200 pixel</b>, 5 m/pixel, cùng hệ chiếu Polar Stereographic cực Nam.
+          Hai tile lệch nhau đúng <b>2.000 × 1.000 pixel nguyên</b> nên khớp lưới từng pixel, không cần reproject.
+          Vùng chồng lấn theo mask: <b>66,000 km²</b>.
+        </p>
+        <figure class="shot">
+          <a href="evidence/task02_coverage.png" data-cap="Vùng phủ DEM LOLA 5 m trong hình tròn 12,5 km — Site01, Site04, chồng lấn, NoData và 5 anchor (BASE, A, B, C, D).">
+            <img src="evidence/task02_coverage.png" width="1209" height="1333" alt="Bản đồ vùng phủ DEM LOLA 5 m với legend valid/NoData, vòng tròn 12,5 km và 5 anchor" loading="lazy" decoding="async">
+          </a>
+          <figcaption><b>task02_coverage.png</b> — legend valid/NoData kèm km² và %, vòng tròn bán kính 12,5 km, 5 anchor. Tọa độ theo CRS của GeoTIFF gốc.</figcaption>
+        </figure>
+        <div class="kv">
+          <span>NoData <b>24,72 %</b> = 121,35 km²</span>
+          <span>Có dữ liệu <b>75,28 %</b> = 369,52 km²</span>
+          <span>Site01 <b>38,11 %</b></span>
+          <span>Site04 <b>23,72 %</b></span>
+          <span>Chồng lấn <b>13,45 %</b></span>
+        </div>
+        <details class="evidence">
+          <summary>Nguồn &amp; kiểm chứng</summary>
+          <ul>
+            <li>Nguồn: NASA PGDA product 78 — LOLA 5 m South Pole DEM (Barker et al. 2021).</li>
+            <li>Tệp: <code>Site01_final_adj_5mpp_surf.tif</code>, <code>Site04_final_adj_5mpp_surf.tif</code>; SHA-256 trong <code>task02_geospatial_validation.json</code>.</li>
+            <li>Script: <code>scripts/terrain/inspect_inputs.py</code> → <code>build_terrain.py</code> → <code>validate_outputs.py</code> (PASS).</li>
+            <li>Giới hạn: cao độ là DEM, không phải phép đo trực tiếp 5 m tại mọi pixel; diện tích tính trên mặt phẳng chiếu.</li>
+          </ul>
+        </details>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Đường nối giữa hai sản phẩm NASA: giữ lại và báo cáo</h3>
+          <span class="tag derived">Derived</span>
+        </div>
+        <p class="desc">
+          Chênh cao tại <b>2.640.000 pixel</b> trùng nhau (không resample): trung bình có dấu <b>−0,024 m</b>,
+          trung bình tuyệt đối <b>0,223 m</b>, p95 <b>0,748 m</b>, RMSE <b>0,380 m</b>.
+          Sau khi ghép, đường nối dài <b>17,00 km</b> với bậc lớn nhất <b>3,14 m</b> — được giữ nguyên, không làm mượt.
+        </p>
+        <figure class="shot">
+          <a href="evidence/task02_seams.png" data-cap="Trái: chênh cao Site04 − Site01 (cắt ±1,3 m) và đường nối sau ghép. Phải: histogram bậc tuyệt đối tại đường nối (3.400 cặp pixel).">
+            <img src="evidence/task02_seams.png" width="1438" height="988" alt="Bản đồ chênh cao hai tile và histogram bậc tại đường nối" loading="lazy" decoding="async">
+          </a>
+          <figcaption><b>task02_seams.png</b> — trái: <code>z04 − z01</code>; phải: histogram bậc tại đường nối (3.400 cặp pixel).</figcaption>
+        </figure>
+        <div class="kv">
+          <span>mean-abs <b>0,223 m</b></span>
+          <span>p95 <b>0,748 m</b></span>
+          <span>p99 <b>1,304 m</b></span>
+          <span>max <b>10,73 m</b></span>
+          <span>bậc sau ghép <b>3,14 m</b></span>
+        </div>
+        <details class="evidence">
+          <summary>Vì sao không làm mượt đường nối?</summary>
+          <ul>
+            <li>Đây là gián đoạn thật giữa hai sản phẩm NASA; làm mượt sẽ tạo địa hình không tồn tại.</li>
+            <li>Quy tắc ghép: dùng Site04 cho vùng chồng lấn (toterr TB 0,316 m &lt; 0,386 m), trừ dải 50 m sát mép.</li>
+            <li>Tuyến A* cắt đường nối được ghi bậc tại điểm cắt: 0,05–0,23 m (A), 0,19 m (B).</li>
+            <li>Giới hạn: chưa chứng minh đường nối an toàn cho bánh xe — cần đặc tính rover LUNARIS.</li>
+          </ul>
+        </details>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Địa hình quanh Site01 &amp; các vùng tối vĩnh cửu (PSR)</h3>
+          <span class="tag measured">Measured</span>
+        </div>
+        <p class="desc">
+          Hillshade dựng từ chính file Site01 mà đội nhận được, phủ lên bản đồ PSR 20 m của NASA.
+          Đây là <b>bản đồ minh họa địa hình</b>, không phải ảnh chiếu sáng tại một thời điểm và không chứng minh có băng.
+        </p>
+        <figure class="shot">
+          <a href="evidence/site01_lola_psr_hillshade_illustrative.png" data-cap="Hillshade LOLA Site01 phủ PSR 20 m — ảnh minh họa relief, không phải bóng nắng thời gian thực.">
+            <img src="evidence/site01_lola_psr_hillshade_illustrative.png" width="1710" height="1710" alt="Hillshade địa hình Site01 với các vùng tối vĩnh cửu" loading="lazy" decoding="async">
+          </a>
+          <figcaption><b>site01_lola_psr_hillshade_illustrative.png</b> — sao chép nguyên bản, không chỉnh sửa.</figcaption>
+        </figure>
+        <details class="evidence">
+          <summary>Nguồn &amp; giới hạn</summary>
+          <ul>
+            <li>PSR: NASA PGDA South Polar PSR Map 20 m (Mazarico et al. 2011).</li>
+            <li>PSR = vùng tối theo mô hình/bản đồ, <b>không</b> đồng nghĩa có băng.</li>
+            <li>Hillshade không dùng để tính điện mặt trời hay nhiệt độ.</li>
+          </ul>
+        </details>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Đỉnh lưới 3D khớp từng mẫu DEM — không san phẳng</h3>
+          <span class="tag derived">Derived</span>
+        </div>
+        <p class="desc">
+          <code>validate_outputs.py</code> giải mã lại toàn bộ lưới: <b>20,4 triệu đỉnh</b> khớp mẫu DEM gốc,
+          <b>không ô nào bắc qua NoData</b>. Căn cứ đặt trên mặt phẳng bình phương tối thiểu cục bộ (bán kính 14 m):
+          dốc <b>4,04°</b>, RMS <b>0,13 m</b> — địa hình không bị san phẳng.
+        </p>
+        <div class="compare">
+          <figure class="shot">
+            <span class="lbl before">TRƯỚC</span>
+            <a href="evidence/task02_before_region_world.png" data-cap="Trước: địa hình dựng bằng công thức cũ (commit f0af09f).">
+              <img src="evidence/task02_before_region_world.png" width="1366" height="768" alt="Địa hình game trước khi thay bằng DEM thật" loading="lazy" decoding="async">
+            </a>
+          </figure>
+          <figure class="shot">
+            <span class="lbl after">SAU</span>
+            <a href="evidence/task02_after_region_world.png" data-cap="Sau: địa hình từ DEM LOLA 5 m, cùng góc nhìn và cùng camera.">
+              <img src="evidence/task02_after_region_world.png" width="1366" height="768" alt="Địa hình game sau khi thay bằng DEM LOLA thật" loading="lazy" decoding="async">
+            </a>
+          </figure>
+        </div>
+        <figcaption>Cùng góc nhìn <code>region</code> (900 m), viewport 1366×768, DPR 1, FOV 40°. Ảnh game — không phải ảnh NASA chụp.</figcaption>
+        <details class="evidence">
+          <summary>Sai số LOD đã đo (so với mọi pixel 5 m)</summary>
+          <ul>
+            <li>L0 5 m: mean 0,005 m · p95 0,010 m · max 0,01 m.</li>
+            <li>L1 10 m: 0,066 / 0,270 / 16,09 m · L2 20 m: 0,178 / 0,599 / 21,25 m.</li>
+            <li>L3 40 m: 0,382 / 1,142 / 22,00 m · L4 80 m: 0,787 / 2,285 / 25,71 m.</li>
+            <li>Đây là <b>sai lệch do thưa lưới</b>, không phải sai số đo LOLA. Số đầy đủ: <code>task02_lod_error.csv</code>.</li>
+          </ul>
+        </details>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================= SEAMLESS ================= -->
+  <section id="seamless">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <div>
+        <h2>Ghép địa hình liền mạch tới toàn cầu</h2>
+        <p>Từ ô 5 m quanh căn cứ ra tới quả cầu: LOLA 40 m → 160 m → 480 m → LDEM_4, cùng một phép chiếu và cùng mặt cầu 1.737.400 m.</p>
+      </div>
+      <span class="side">SEAM-01 · 5 mức cao</span>
+    </div>
+
+    <div class="grid">
+
+      <article class="card full">
+        <div class="card-top">
+          <h3>Trước / sau: hết “miếng dán” trên đĩa phẳng, hết miệng hố giả</h3>
+          <span class="tag measured">Measured</span>
+        </div>
+        <p class="desc">
+          Bản cũ chỉ có DEM thật trong hình tròn 12,5 km; từ 12,5–50 km là đĩa phẳng tô miệng hố bằng shader, ngoài 50 km là địa hình hư cấu.
+          Bản mới nối LOLA khu vực vào đúng datum, dùng <b>CDLOD + geomorphing</b>, không nứt, không nhảy hình.
+          So khớp trên <b>230.629 ô 40 m</b>: lệch trung bình <b>−0,11 m</b>, RMS <b>0,53 m</b>, p99 <b>1,7 m</b>.
+        </p>
+        <div class="compare" style="grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <span class="lbl before">TRƯỚC · 30 km</span>
+            <figure class="shot">
+              <a href="evidence/seamless/before_30km_none.png" data-cap="Trước: DEM 5 m là miếng dán trên đĩa phẳng có miệng hố giả (30 km).">
+                <img src="evidence/seamless/before_30km_none.png" width="1366" height="768" alt="Trước khi ghép liền mạch, góc 30 km" loading="lazy" decoding="async">
+              </a>
+            </figure>
+          </div>
+          <div>
+            <span class="lbl after">SAU · 30 km</span>
+            <figure class="shot">
+              <a href="evidence/seamless/after_30km_none.png" data-cap="Sau: LOLA 40 m liền mạch quanh DEM 5 m, cùng datum (30 km).">
+                <img src="evidence/seamless/after_30km_none.png" width="1366" height="768" alt="Sau khi ghép liền mạch, góc 30 km" loading="lazy" decoding="async">
+              </a>
+            </figure>
+          </div>
+        </div>
+        <div class="compare" style="grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:18px">
+          <div>
+            <span class="lbl after">SAU · 900 m</span>
+            <figure class="shot">
+              <a href="evidence/seamless/after_00900m_none.png" data-cap="Sau — 900 m: DEM 5 m giữ nguyên chi tiết gần căn cứ.">
+                <img src="evidence/seamless/after_00900m_none.png" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 900 m" loading="lazy" decoding="async">
+              </a>
+            </figure>
+          </div>
+          <div>
+            <span class="lbl after">SAU · 6 km</span>
+            <figure class="shot">
+              <a href="evidence/seamless/after_06km_none.png" data-cap="Sau — 6 km: chuyển tiếp giữa DEM 5 m và lưới LOLA khu vực.">
+                <img src="evidence/seamless/after_06km_none.png" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 6 km" loading="lazy" decoding="async">
+              </a>
+            </figure>
+          </div>
+          <div>
+            <span class="lbl after">SAU · 600 km</span>
+            <figure class="shot">
+              <a href="evidence/seamless/after_600km_none.png" data-cap="Sau — 600 km: quả cầu LOLA thật, không còn bề mặt hư cấu.">
+                <img src="evidence/seamless/after_600km_none.png" width="1366" height="768" alt="Địa hình sau ghép ở độ cao 600 km" loading="lazy" decoding="async">
+              </a>
+            </figure>
+          </div>
+        </div>
+        <div class="kv" style="margin-top:4px">
+          <span>Nguồn: <b>LDEM_80S_40MPP_ADJ</b>, <b>160 m</b>, <b>240 m</b>, <b>LDEM_4</b>, LROC WAC</span>
+          <span>Dữ liệu khu vực <b>9,4 MB</b></span>
+          <span>Không NoData trong g0/g1/g2</span>
+          <span>Đọc qua <b>HTTP range</b>, không tải file 181–685 MB</span>
+        </div>
+        <details class="evidence">
+          <summary>Giới hạn còn tồn tại (ghi đúng như báo cáo)</summary>
+          <ul>
+            <li>Ở 600 km vẫn thấy ranh giới độ nét 80°S: trong là LOLA 480 m, ngoài là LDEM_4 7,6 km — khác biệt độ phân giải thật của hai bộ dữ liệu NASA.</li>
+            <li>500 m–6 km còn mảng ô vuông/hình thoi do LOD thô của DEM 5 m (lỗi có từ trước, không do lưới mới).</li>
+            <li>Vị trí Trái Đất vẫn là vị trí mỹ thuật, chưa đúng kinh độ 0° thật.</li>
+            <li>Báo cáo đầy đủ: <code>docs/evidence/seamless/REPORT.md</code>.</li>
+          </ul>
+        </details>
+      </article>
+
+      <article class="card full">
+        <div class="card-top">
+          <h3>Camera canh giữa bản đồ ở mọi độ cao</h3>
+          <span class="tag derived">Derived</span>
+        </div>
+        <p class="desc">
+          Trước đây ở 6 km, <b>81,3 %</b> khung hình chỉ là nền tối vì mắt bị kéo xuống; ở 60 km không thấy DEM.
+          Sau khi cho mắt và điểm nhìn cùng quay quanh tâm Mặt Trăng: <b>0,0 %</b> nền tối ở 6 km và thấy trọn bản đồ 25 km ở 60 km.
+        </p>
+        <div class="compare" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+          <div>
+            <span class="lbl before">6 km · TRƯỚC</span>
+            <figure class="shot"><a href="evidence/task02_cam_before_6km_world.png" data-cap="Camera trước khi canh giữa — 6 km, 81,3 % khung là nền tối."><img src="evidence/task02_cam_before_6km_world.png" width="1366" height="768" alt="Camera trước canh giữa ở 6 km" loading="lazy" decoding="async"></a></figure>
+          </div>
+          <div>
+            <span class="lbl after">6 km · SAU</span>
+            <figure class="shot"><a href="evidence/task02_cam_after_6km_world.png" data-cap="Camera sau khi canh giữa — 6 km, 0,0 % nền tối."><img src="evidence/task02_cam_after_6km_world.png" width="1366" height="768" alt="Camera sau canh giữa ở 6 km" loading="lazy" decoding="async"></a></figure>
+          </div>
+          <div>
+            <span class="lbl before">60 km · TRƯỚC</span>
+            <figure class="shot"><a href="evidence/task02_cam_before_60km_world.png" data-cap="Camera trước — 60 km, khung là vỏ cầu xám, có nhãn NoData."><img src="evidence/task02_cam_before_60km_world.png" width="1366" height="768" alt="Camera trước canh giữa ở 60 km" loading="lazy" decoding="async"></a></figure>
+          </div>
+          <div>
+            <span class="lbl after">60 km · SAU</span>
+            <figure class="shot"><a href="evidence/task02_cam_after_60km_world.png" data-cap="Camera sau — 60 km, thấy trọn bản đồ 25 km ở giữa, clearance 60,0 km."><img src="evidence/task02_cam_after_60km_world.png" width="1366" height="768" alt="Camera sau canh giữa ở 60 km" loading="lazy" decoding="async"></a></figure>
+          </div>
+        </div>
+        <div class="kv" style="margin-top:4px">
+          <span>Tỷ lệ nền tối 6 km: <b>81,3 % → 0,0 %</b></span>
+          <span>400 km: <b>11,2 % → 11,2 %</b> (phép dời đã tắt)</span>
+          <span>Góc 520 m vẫn nhìn vào căn cứ</span>
+        </div>
+        <details class="evidence">
+          <summary>Cách đo</summary>
+          <ul>
+            <li>Tỷ lệ nền tối = pixel trong ±6/kênh quanh màu nền rgb(9,13,30) — quy ước đo ảnh game, không phải số đo NASA.</li>
+            <li>Ảnh &amp; số: <code>task02_cam_*</code>, <code>task02_cam_dark_fraction.json</code>, <code>task02_centre_views.json</code>.</li>
+          </ul>
+        </details>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================= ROUTES ================= -->
+  <section id="routes">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <div>
+        <h2>Độ dốc và tuyến rover — tính trên raster gốc</h2>
+        <p>Ngưỡng 15° lấy từ rover VIPER của NASA, dùng làm giới hạn quy hoạch bảo thủ. Tuyến A* chạy trực tiếp trên lớp độ dốc 5 m.</p>
+      </div>
+      <span class="side">G11 · G17 · ROUTE-01</span>
+    </div>
+
+    <div class="grid">
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Đường thẳng BASE → A/B/C/D: cả bốn đều vượt ngưỡng</h3>
+          <span class="tag measured">Measured</span>
+        </div>
+        <p class="desc">
+          Lấy mẫu độ dốc 5 m dọc đường chim bay tới từng khu. Kết quả: <b>0,28 %</b> chiều dài tới C vượt 15°,
+          nhưng tới B là <b>16,32 %</b>, tới A là <b>24,29 %</b>, tới D là <b>43,15 %</b>.
+          Vì vậy không thể “nối thẳng” rover tới các khu.
+        </p>
+        <figure class="shot">
+          <a href="evidence/task02_route_slope.png" data-cap="Độ dốc dọc đường thẳng BASE → A/B/C/D so với ngưỡng danh định 15° của NASA VIPER.">
+            <img src="evidence/task02_route_slope.png" width="1440" height="1560" alt="Biểu đồ độ dốc dọc các đường thẳng tới A, B, C, D" loading="lazy" decoding="async">
+          </a>
+          <figcaption><b>task02_route_slope.png</b> — số đầy đủ trong <code>task02_route_slope.md / .json</code>.</figcaption>
+        </figure>
+        <div class="kv">
+          <span>C: <b>0,28 %</b> vượt ngưỡng</span>
+          <span>B: <b>16,32 %</b></span>
+          <span>A: <b>24,29 %</b></span>
+          <span>D: <b>43,15 %</b></span>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Tuyến A* thật: A, B, C có tuyến; D không có tuyến</h3>
+          <span class="tag derived">Derived</span>
+        </div>
+        <p class="desc">
+          A* 8 hướng, không cắt góc, chỉ vào pixel có DEM và <code>slp ≤ 15°</code>. Tổng chiều dài:
+          <b>A 19,297 km</b> (phải vòng qua dãy dốc), <b>B 7,425 km</b>, <b>C 1,885 km</b>.
+          <b>D: <code>NO_NOMINAL_ROUTE</code></b> vì pixel anchor dốc <b>15,60°</b> — không dời vị trí, không ép tuyến.
+        </p>
+        <figure class="shot">
+          <a href="evidence/task02_astar_routes.png" data-cap="Tuyến A* trên lớp độ dốc 5 m: A, B, C có tuyến ≤ 15°, D không có tuyến.">
+            <img src="evidence/task02_astar_routes.png" width="1241" height="1238" alt="Bản đồ các tuyến A* tới A, B, C" loading="lazy" decoding="async">
+          </a>
+          <figcaption><b>task02_astar_routes.png</b> — rover trong game chạy đúng các tuyến này (<code>routes.json</code>).</figcaption>
+        </figure>
+        <div class="kv">
+          <span>A* A: <b>19,297 km</b> · max 14,99°</span>
+          <span>B: <b>7,425 km</b> · cắt seam 1 lần</span>
+          <span>C: <b>1,885 km</b> · max 14,28°</span>
+          <span>D: <b>không tuyến</b></span>
+        </div>
+        <details class="evidence">
+          <summary>Kiểm chứng độc lập</summary>
+          <ul>
+            <li>Lấy mẫu 1 m dọc từng tuyến (1.886–19.297 mẫu) trên raster gốc: <b>0 pixel vượt 15°</b>, <b>0 NoData</b>.</li>
+            <li><code>validate_outputs.py</code> giải mã lại chuỗi bước và kiểm tra từng pixel + quy tắc không cắt góc: PASS.</li>
+            <li>“Có tuyến” chỉ nghĩa là dốc ≤ 15° và không cắt NoData. <b>Chưa</b> xét footprint xe, chiếu sáng, nhiệt, liên lạc, đá nhỏ hơn 5 m ⇒ không tuyến nào được gắn nhãn “an toàn”.</li>
+          </ul>
+        </details>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================= ICE ================= -->
+  <section id="ice">
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <div>
+        <h2>Bốn khu khảo sát băng — trung thực về độ tin cậy</h2>
+        <p>Hai khu nằm trong pixel PSR đã lập bản đồ; hai khu là anchor công bố. Cả bốn đều gắn nhãn “băng chưa xác nhận · chờ rover xác minh”.</p>
+      </div>
+      <span class="side">G08–G13 · CANDIDATE_UNVERIFIED</span>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Khu</th><th>Tọa độ (m, CRS gốc)</th><th>Cao độ</th><th>Độ dốc pixel</th><th>PSR 20 m</th><th>Tuyến A*</th><th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>A</b> — PSR #1470</td>
+            <td class="mono">−16.970 ; −8.485</td>
+            <td class="mono">1.295,88 m</td>
+            <td class="mono">10,00°</td>
+            <td class="yes">1 (trong PSR)</td>
+            <td class="mono">19,297 km</td>
+            <td><span class="tag candidate">Chưa xác nhận</span></td>
+          </tr>
+          <tr>
+            <td><b>B</b> — PSR #921</td>
+            <td class="mono">−4.240 ; −12.345</td>
+            <td class="mono">1.157,51 m</td>
+            <td class="mono">7,18°</td>
+            <td class="yes">1 (trong PSR)</td>
+            <td class="mono">7,425 km</td>
+            <td><span class="tag candidate">Chưa xác nhận</span></td>
+          </tr>
+          <tr>
+            <td><b>C</b> — Connecting Ridge</td>
+            <td class="mono">−12.467 ; −13.001</td>
+            <td class="mono">1.869,18 m</td>
+            <td class="mono">6,84°</td>
+            <td class="no">0</td>
+            <td class="mono">1,885 km</td>
+            <td><span class="tag candidate">Chưa xác nhận</span></td>
+          </tr>
+          <tr>
+            <td><b>D</b> — Shackleton Rim S</td>
+            <td class="mono">−2.606 ; −6.502</td>
+            <td class="mono">1.701,84 m</td>
+            <td class="no">15,60°</td>
+            <td class="no">0</td>
+            <td class="no">Không có tuyến</td>
+            <td><span class="tag candidate">Chưa xác nhận</span></td>
+          </tr>
+          <tr>
+            <td><b>BASE</b> — căn cứ</td>
+            <td class="mono">−11.000 ; −12.000</td>
+            <td class="mono">1.944,77 m</td>
+            <td class="mono">3,80°</td>
+            <td class="no">0</td>
+            <td>—</td>
+            <td><span class="tag scenario">Scenario</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid" style="margin-top:22px">
+
+      <article class="card">
+        <div class="card-top">
+          <h3>PSR 20 m: đã tải và đọc toàn bộ raster</h3>
+          <span class="tag measured">Measured</span>
+        </div>
+        <p class="desc">
+          <code>LPSR_80S_20MPP_ADJ.TIF</code> — <b>30.400 × 30.400 pixel</b>, 20 m, cùng phép chiếu, SHA-256 <code>ad95311b81db7730…</code>.
+          Lấy mẫu tại pixel chứa điểm: <b>A = 1, B = 1, C = 0, D = 0, BASE = 0</b>.
+          Trong hình tròn bản đồ có <b>115.988 pixel PSR = 46,40 km² (9,45 %)</b>.
+        </p>
+        <div class="kv">
+          <span>PSR #1470 (A): <b>1,0654 km²</b> phần giao Site01</span>
+          <span>PSR #921 (B): <b>1,9580 km²</b></span>
+          <span>Hydro gần Site01: <b>143,85 ppm</b> (ô 0,5°)</span>
+        </div>
+        <details class="evidence">
+          <summary>Điều KHÔNG được khẳng định</summary>
+          <ul>
+            <li>PSR chỉ chứng minh vùng tối theo model/bản đồ — <b>không</b> chứng minh có băng.</li>
+            <li>Hydro 0,5° không quy thành xác suất băng ở pixel LOLA 5 m.</li>
+            <li>Chưa có pixel M3 đồng tọa độ tại A–D; LCROSS (Cabeus) nằm ngoài map, chỉ tham khảo.</li>
+            <li>T_max ≲110 K của Diviner là chỉ báo bẫy lạnh, không phải số đo tại A–D.</li>
+          </ul>
+        </details>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Trong game: briefing, quyết định và log thí nghiệm</h3>
+          <span class="tag scenario">Scenario</span>
+        </div>
+        <p class="desc">
+          Người chơi nhận briefing khu băng, chọn tuyến, rồi ra quyết định khoa học (A1/A3, B1, C1/C2, D1/D2…).
+          Mỗi lựa chọn có màn review nêu hậu quả và yêu cầu giải thích “tại sao”. Điểm hạng là thang của game, không phải thang NASA.
+        </p>
+        <div class="compare">
+          <figure class="shot"><a href="evidence/story/basic_ice_briefing_ice.png" data-cap="Briefing khu băng — dữ liệu nguồn và nhãn 'băng chưa xác nhận'."><img src="evidence/story/basic_ice_briefing_ice.png" width="1440" height="900" alt="Màn briefing khu băng" loading="lazy" decoding="async"></a><figcaption>Briefing khu băng</figcaption></figure>
+          <figure class="shot"><a href="evidence/story/basic_ice_decision_A1.png" data-cap="Màn ra quyết định A1 trong Story Mode."><img src="evidence/story/basic_ice_decision_A1.png" width="1440" height="900" alt="Màn ra quyết định A1" loading="lazy" decoding="async"></a><figcaption>Quyết định A1</figcaption></figure>
+        </div>
+        <div class="compare" style="margin-top:14px">
+          <figure class="shot"><a href="evidence/story/basic_ice_review_A1.png" data-cap="Màn review sau quyết định A1 — nêu hậu quả và câu hỏi truy vết."><img src="evidence/story/basic_ice_review_A1.png" width="1440" height="900" alt="Màn review kết quả A1" loading="lazy" decoding="async"></a><figcaption>Review A1</figcaption></figure>
+          <figure class="shot"><a href="evidence/story/advanced_ice_c2_route_map.png" data-cap="Bản đồ tuyến C2 trong chế độ Advanced."><img src="evidence/story/advanced_ice_c2_route_map.png" width="1440" height="900" alt="Bản đồ tuyến C2" loading="lazy" decoding="async"></a><figcaption>Tuyến C2 · Advanced</figcaption></figure>
+        </div>
+        <details class="evidence">
+          <summary>Quy tắc gameplay khoa học</summary>
+          <ul>
+            <li>Không cho O₂ nếu thiếu nước/điện/thiết bị; 1,000 kg O₂ cần tối thiểu 1,125 kg H₂O.</li>
+            <li>Không dùng Kp (từ trường Trái Đất) quy đổi thành liều bức xạ Mặt Trăng.</li>
+            <li>Tham số chưa chốt để <code>UNSET</code>, không dùng <code>Math.random()</code> làm độ đo khoa học.</li>
+          </ul>
+        </details>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================= GAMEPLAY ================= -->
+  <section id="gameplay">
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <div>
+        <h2>Gameplay, onboarding và UI</h2>
+        <p>Bằng chứng luồng chơi thực tế: từ màn chào, chọn chế độ, hướng dẫn, tới kết thúc nhiệm vụ — chụp tự động qua Playwright.</p>
+      </div>
+      <span class="side">Story v0.9 · 35/35 browser check</span>
+    </div>
+
+    <div class="grid">
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Onboarding: chào, chọn chế độ, bắt đầu</h3>
+          <span class="tag scenario">Scenario</span>
+        </div>
+        <p class="desc">
+          Luồng mở game có hai chế độ (Basic / Advanced), hướng dẫn theo bước, đếm ngược và màn “game start”.
+          Ảnh được chụp tự động ở viewport 1366×768 để so sánh giữa các vòng phát triển.
+        </p>
+        <div class="compare" style="grid-template-columns:1fr 1fr 1fr">
+          <figure class="shot"><a href="evidence/onboarding/basic_00_welcome.png" data-cap="Màn chào đầu tiên."><img src="evidence/onboarding/basic_00_welcome.png" width="1366" height="768" alt="Màn chào onboarding" loading="lazy" decoding="async"></a><figcaption>Chào</figcaption></figure>
+          <figure class="shot"><a href="evidence/onboarding/basic_01_mode.png" data-cap="Chọn chế độ Basic / Advanced."><img src="evidence/onboarding/basic_01_mode.png" width="1366" height="768" alt="Màn chọn chế độ" loading="lazy" decoding="async"></a><figcaption>Chọn chế độ</figcaption></figure>
+          <figure class="shot"><a href="evidence/onboarding/basic_29_game_start.png" data-cap="Màn bắt đầu nhiệm vụ sau hướng dẫn."><img src="evidence/onboarding/basic_29_game_start.png" width="1366" height="768" alt="Màn bắt đầu game" loading="lazy" decoding="async"></a><figcaption>Game start</figcaption></figure>
+        </div>
+        <div class="kv">
+          <span>Basic: <b>30 bước</b> hướng dẫn</span>
+          <span>Advanced: <b>7 bước</b> rút gọn</span>
+          <span>Đếm ngược &amp; tour có ảnh từng bước</span>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Intro film &amp; kết thúc nhiệm vụ</h3>
+          <span class="tag scenario">Scenario</span>
+        </div>
+        <p class="desc">
+          Intro là phim dựng riêng (ElevenLabs + source project), phát trong game trước khi vào nhiệm vụ.
+          Hai ending Basic và Advanced có ảnh chụp riêng để đối chiếu nhánh truyện.
+        </p>
+        <div class="compare" style="grid-template-columns:1fr 1fr">
+          <figure class="shot"><a href="evidence/intro_video/film_playing.png" data-cap="Intro film đang phát trong game."><img src="evidence/intro_video/film_playing.png" width="1440" height="900" alt="Intro film đang phát" loading="lazy" decoding="async"></a><figcaption>Intro film</figcaption></figure>
+          <figure class="shot"><a href="evidence/story/advanced_ice_99_ending.png" data-cap="Màn kết thúc nhánh Advanced (ice)."><img src="evidence/story/advanced_ice_99_ending.png" width="1440" height="900" alt="Màn kết thúc Advanced" loading="lazy" decoding="async"></a><figcaption>Ending · Advanced</figcaption></figure>
+        </div>
+        <div class="kv">
+          <span>Intro: <b>LUNARIS_intro_final.mp4</b></span>
+          <span>Kết thúc Basic + Advanced đều có ảnh</span>
+        </div>
+      </article>
+
+      <article class="card full">
+        <div class="card-top">
+          <h3>UI nhất quán ở 3 độ phân giải — không vỡ layout</h3>
+          <span class="tag measured">Measured</span>
+        </div>
+        <p class="desc">
+          Cùng một màn quyết định A1 và màn kết quả được chụp ở <b>1366×768</b>, <b>1440×900</b>, <b>1920×1080</b>.
+          Bố cục, chữ, nút và mascot giữ nguyên tỷ lệ; mascot có bộ biểu cảm và kiểm tra nền trong suốt.
+        </p>
+        <div class="compare" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+          <figure class="shot"><a href="evidence/ui_consistency/decision_A1_1366x768.png" data-cap="Màn quyết định A1 @ 1366×768."><img src="evidence/ui_consistency/decision_A1_1366x768.png" width="1366" height="768" alt="Quyết định A1 ở 1366x768" loading="lazy" decoding="async"></a><figcaption>1366×768</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_consistency/decision_A1_1920x1080.png" data-cap="Màn quyết định A1 @ 1920×1080."><img src="evidence/ui_consistency/decision_A1_1920x1080.png" width="1920" height="1080" alt="Quyết định A1 ở 1920x1080" loading="lazy" decoding="async"></a><figcaption>1920×1080</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_consistency/result_A1_recycle_1440x900.png" data-cap="Màn kết quả A1 @ 1440×900."><img src="evidence/ui_consistency/result_A1_recycle_1440x900.png" width="1440" height="900" alt="Kết quả A1 ở 1440x900" loading="lazy" decoding="async"></a><figcaption>Kết quả · 1440×900</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_consistency/mascot_expressions.png" data-cap="Bộ biểu cảm mascot dùng trong game."><img src="evidence/ui_consistency/mascot_expressions.png" width="1807" height="326" alt="Bộ biểu cảm mascot" loading="lazy" decoding="async"></a><figcaption>Mascot</figcaption></figure>
+        </div>
+        <div class="compare" style="grid-template-columns:1fr 1fr;gap:14px;margin-top:16px">
+          <figure class="shot"><a href="evidence/ui_round3/task_walking.png" data-cap="Rover đang di chuyển theo tuyến A* trên địa hình thật."><img src="evidence/ui_round3/task_walking.png" width="1440" height="900" alt="Rover di chuyển trên địa hình" loading="lazy" decoding="async"></a><figcaption>Rover chạy tuyến · HUD nhiệm vụ</figcaption></figure>
+          <figure class="shot"><a href="evidence/ui_round3/mode_select_locked.png" data-cap="Chế độ bị khóa hiển thị rõ lý do."><img src="evidence/ui_round3/mode_select_locked.png" width="1440" height="900" alt="Chế độ bị khóa" loading="lazy" decoding="async"></a><figcaption>Trạng thái khóa chế độ</figcaption></figure>
+        </div>
+        <details class="evidence">
+          <summary>Bộ kiểm tra tự động</summary>
+          <ul>
+            <li><code>npm test</code>: 21/21 đạt (gồm 4 test mới cho ghép địa hình khu vực).</li>
+            <li><code>node scripts/terrain/smoke_check.mjs</code>: 35/35 — rover trên DEM sai số 0 m, marker A–D, đổi layer giữ nguyên hình học, camera 30 km.</li>
+            <li>Ảnh UI: <code>docs/evidence/ui_consistency/</code>, <code>ui_round3/</code>.</li>
+          </ul>
+        </details>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================= PERF ================= -->
+  <section id="perf">
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <div>
+        <h2>Hiệu năng: trong ngân sách trên máy phát triển</h2>
+        <p>Đo bằng Chrome headless, Intel Iris Xe, 1366×768, dev server. Chưa phải nghiệm thu trên laptop mục tiêu — ghi rõ <code>NOT_MEASURED</code>.</p>
+      </div>
+      <span class="side">PERF-01 · commit 647136e</span>
+    </div>
+
+    <div class="grid">
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Draw call 221 → 91 · tam giác 285k → 223k</h3>
+          <span class="tag derived">Derived</span>
+        </div>
+        <p class="desc">
+          Địa hình gộp thành <b>1 mesh động</b> (lọc frustum trên CPU + ngân sách tam giác). Cụm căn cứ gộp theo vật liệu:
+          <b>~90 → 17 mesh</b>. Quả cầu 28.500 tam giác thay bằng vỏ tối 800 tam giác khi dưới 30 km.
+          Giá trị DEM, camera và phong cách không đổi (lệch ảnh trung bình ≤ 0,71/255 mỗi pixel).
+        </p>
+        <div class="tablewrap" style="border:0;background:transparent">
+          <table style="min-width:0">
+            <thead><tr><th>Góc</th><th>Trước</th><th>Sau (đỉnh)</th><th>Ngân sách</th></tr></thead>
+            <tbody>
+              <tr><td>base 27 m</td><td class="mono">269.806 / 216</td><td class="mono">219.072 / 91</td><td class="yes">đạt</td></tr>
+              <tr><td>near 90 m</td><td class="mono">273.902 / 218</td><td class="mono">223.168 / 91</td><td class="yes">đạt</td></tr>
+              <tr><td>region 900 m</td><td class="mono">285.230 / 221</td><td class="mono">202.048 / 91</td><td class="yes">đạt</td></tr>
+              <tr><td>wide 6 km</td><td class="mono">50.350 / 21</td><td class="mono">78.196 / 25</td><td class="yes">đạt</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figcaption>Số dạng <b>tam giác / draw call</b>, đỉnh trong cửa sổ 0,12 s (luôn gồm lượt vẽ bóng). Ngân sách: ≤ 250.000 tam giác, ≤ 120 draw call.</figcaption>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <h3>Phong cách không đổi sau khi tối ưu</h3>
+          <span class="tag derived">Derived</span>
+        </div>
+        <p class="desc">
+          Ảnh trước/sau tối ưu được so từng pixel: lệch trung bình <b>0,01–0,71 / 255</b>, chỉ ≤ 0,15 % pixel lệch quá 24/255.
+          Nghĩa là tối ưu kỹ thuật, không đánh đổi hình ảnh.
+        </p>
+        <div class="compare">
+          <figure class="shot"><span class="lbl before">TRƯỚC</span><a href="evidence/task02_before_base_world.png" data-cap="Góc base trước tối ưu hiệu năng."><img src="evidence/task02_before_base_world.png" width="1366" height="768" alt="Cảnh căn cứ trước tối ưu" loading="lazy" decoding="async"></a></figure>
+          <figure class="shot"><span class="lbl after">SAU</span><a href="evidence/task02_after_base_world.png" data-cap="Góc base sau tối ưu — cùng vật liệu, camera, phong cách."><img src="evidence/task02_after_base_world.png" width="1366" height="768" alt="Cảnh căn cứ sau tối ưu" loading="lazy" decoding="async"></a></figure>
+        </div>
+        <div class="kv">
+          <span>Địa hình tải ban đầu: <b>1,63 MB</b> (ngân sách 15 MB)</span>
+          <span>Toàn bộ địa hình trên đĩa: <b>16,5 MB / 390 tệp</b></span>
+          <span>Build <code>dist/</code>: <b>23 MB</b></span>
+        </div>
+        <details class="evidence">
+          <summary>Điều chưa đo / chưa đạt</summary>
+          <ul>
+            <li>FPS p50/p95 trên laptop i5/8 GB, tải 10 Mbps: <code>NOT_MEASURED</code>. Chrome headless bị vsync 60 Hz che FPS thật.</li>
+            <li>RAM/GPU: <code>NOT_MEASURED</code>. Chưa có fallback bản đồ 2D khi WebGL lỗi.</li>
+            <li>Sau SEAM-01, góc 6 km lên <b>318 nghìn tam giác</b> — vượt ngân sách 250k. Đã ghi nhận, chưa xử lý.</li>
+            <li>Chi tiết: <code>task02_performance.md</code>, <code>task02_perf_views.json</code>.</li>
+          </ul>
+        </details>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ================= LIMITS ================= -->
+  <section id="limits">
+    <div class="sec-head">
+      <span class="sec-num">07</span>
+      <div>
+        <h2>Điều hồ sơ này không tuyên bố</h2>
+        <p>Phần minh bạch — quan trọng ngang phần minh chứng. Ban giám khảo có thể đối chiếu từng dòng với <code>docs/EVIDENCE.md</code> §4.</p>
+      </div>
+      <span class="side">PENDING / NOT_MEASURED</span>
+    </div>
+
+    <div class="grid">
+      <article class="card">
+        <div class="card-top"><h3>Chưa xác nhận có băng</h3><span class="tag candidate">Candidate</span></div>
+        <p class="desc">
+          A và B nằm trong pixel PSR đã lập bản đồ — nhưng PSR <b>không</b> phải băng. C và D là anchor công bố,
+          chưa phân tích micro-PSR. Chưa có pixel M3 đồng tọa độ tại A–D. Trong game, cả bốn khu đều hiện nhãn
+          “băng chưa xác nhận · chờ rover xác minh”.
+        </p>
+      </article>
+      <article class="card">
+        <div class="card-top"><h3>Chưa có tuyến nào là “an toàn”</h3><span class="tag scenario">Scenario</span></div>
+        <p class="desc">
+          A* chỉ kiểm tra dốc ≤ 15° trên từng pixel và không cắt NoData. Chưa xét footprint bánh xe, chiếu sáng, nhiệt,
+          liên lạc, đá nhỏ hơn 5 m. Khu D dốc 15,60° nên <b>không được gửi rover tới</b>, không dời vị trí để đẹp hình.
+        </p>
+      </article>
+      <article class="card">
+        <div class="card-top"><h3>Thông số hệ thống còn UNSET</h3><span class="tag scenario">Scenario</span></div>
+        <p class="desc">
+          Số người, dung tích pin, công suất điện phân, hiệu suất ECLSS, diện tích pin mặt trời, tốc độ rover LUNARIS…
+          để <code>UNSET</code>. Các số NASA (0,84 kg O₂/người/ngày, 1.361 W/m², 15°, ~0,72 km/h) chỉ là <b>nguồn tham chiếu</b>,
+          không phải cấu hình game.
+        </p>
+      </article>
+      <article class="card">
+        <div class="card-top"><h3>Đo trên máy phát triển</h3><span class="tag derived">Derived</span></div>
+        <p class="desc">
+          FPS, RAM/GPU và tải 10 Mbps trên laptop mục tiêu: <code>NOT_MEASURED</code>. Chưa có fallback 2D.
+          Địa hình 6 km sau SEAM-01 vượt ngân sách tam giác. Đây là hồ sơ làm việc, không phải chứng nhận của bên thứ ba.
+        </p>
+      </article>
+    </div>
+
+    <div class="callout cyan" style="margin-top:24px">
+      <b>Cách tái lập nhanh:</b> mở thư mục <code>UI/</code> → chạy <code>npm test</code> → <code>python scripts/evidence/check_evidence.py</code> →
+      đối chiếu ảnh trong <code>docs/evidence/</code> với bảng G01–G40 trong <code>docs/EVIDENCE.md</code>.
+      Toàn bộ script địa hình nằm ở <code>scripts/terrain/</code>.
+    </div>
+  </section>
+
+  <footer>
+    <div class="cols">
+      <div>
+        <h5>Hồ sơ</h5>
+        <ul>
+          <li><code>docs/EVIDENCE.md</code> — ledger 40 hạng mục G01–G40</li>
+          <li><code>docs/evidence/</code> — ảnh &amp; JSON gốc</li>
+          <li><code>docs/evidence/seamless/REPORT.md</code> — báo cáo SEAM-01</li>
+          <li><code>scripts/evidence/check_evidence.py</code> — kiểm tra ảnh khai báo</li>
+        </ul>
+      </div>
+      <div>
+        <h5>Nguồn NASA chính</h5>
+        <ul>
+          <li>LOLA 5 m South Pole DEM — PGDA product 78</li>
+          <li>South Polar PSR Map 20 m — PGDA product 90</li>
+          <li>LOLA South Pole DEMs 40/80/240 m — Barker et al. 2023</li>
+          <li>LRO LOLA GDR <code>LDEM_4</code> — PDS</li>
+          <li>VIPER rover — ngưỡng dốc 15°, tốc độ tham chiếu</li>
+          <li>LROC WAC mosaic — NASA SVS CGI Moon Kit</li>
+        </ul>
+      </div>
+      <div>
+        <h5>Mốc triển khai</h5>
+        <ul>
+          <li><code>b61f46f</code> — Task 02 địa hình</li>
+          <li><code>81acaa3</code> — ledger minh chứng</li>
+          <li><code>35b43be</code> — tuyến A*</li>
+          <li><code>647136e</code> — tối ưu hiệu năng</li>
+          <li><code>1f49297</code> — ghép liền mạch + layer NASA/Game</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sig">
+      <span>LUNARIS · Hồ sơ minh chứng cho Ban giám khảo · cập nhật 15/11/2026 (ICT)</span>
+      <span>Ảnh game là ảnh render; số liệu khoa học thuộc nguồn NASA được trích dẫn.</span>
+    </div>
+  </footer>
+</main>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh minh chứng">
+  <button class="close" id="lbClose" aria-label="Đóng">×</button>
+  <img id="lbImg" alt="">
+  <div class="cap" id="lbCap"></div>
+</div>
+
+<script>
+(function(){
+  var lb = document.getElementById('lightbox');
+  var img = document.getElementById('lbImg');
+  var cap = document.getElementById('lbCap');
+  function open(href, caption){
+    img.src = href;
+    img.alt = caption || '';
+    cap.textContent = caption || '';
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function close(){
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+    img.src = '';
+  }
+  document.querySelectorAll('figure.shot > a').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      open(a.getAttribute('href'), a.getAttribute('data-cap'));
+    });
+  });
+  document.getElementById('lbClose').addEventListener('click', close);
+  lb.addEventListener('click', function(e){ if(e.target === lb) close(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && lb.classList.contains('open')) close(); });
+
+  /* In / xuất PDF: nạp sẵn mọi ảnh (đang lazy) rồi mới gọi hộp thoại in */
+  var printBtn = document.getElementById('printBtn');
+  function preloadAll(){
+    var imgs = Array.prototype.slice.call(document.querySelectorAll('img[src]'));
+    return Promise.all(imgs.map(function(i){
+      i.loading = 'eager';
+      if (i.complete && i.naturalWidth > 0) return Promise.resolve();
+      if (i.decode) return i.decode().catch(function(){});
+      return new Promise(function(res){ i.onload = i.onerror = res; });
+    }));
+  }
+  printBtn.addEventListener('click', async function(){
+    printBtn.disabled = true;
+    printBtn.textContent = 'Đang nạp ảnh…';
+    await preloadAll();
+    printBtn.disabled = false;
+    printBtn.textContent = 'In / PDF';
+    window.print();
+  });
+  window.addEventListener('beforeprint', function(){ preloadAll(); });
+
+  /* Nạp nền các ảnh còn lại sau khi trang hiện xong: không chặn first paint, nhưng không để ảnh trống khi cuộn nhanh */
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      document.querySelectorAll('img[loading="lazy"]').forEach(function(i){ i.loading = 'eager'; });
+    }, 700);
+  });
+})();
+</script>
+</body>
+</html>

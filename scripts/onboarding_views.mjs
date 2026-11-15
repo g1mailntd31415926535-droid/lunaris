@@ -23,7 +23,7 @@ await page.waitForTimeout(4000)
 const hud = () => page.evaluate(() => [...document.querySelectorAll('[data-hud]')].map((e) => `${e.getAttribute('data-hud')}${e.classList.contains('highlight') ? '*' : ''}`).join(','))
 const log = []
 for (let i = 0; i < 40; i++) {
-  const next = page.locator('.mascot-bubble .dialogue-action, .onb-caption .dialogue-action')
+  const next = page.locator('#action-dock .dialogue-action')
   if (!(await next.count())) break
   const text = await page.locator('.mascot-bubble p, .onb-caption p').first().innerText().catch(() => '')
   log.push(`${text} | HUD: ${await hud()}`)

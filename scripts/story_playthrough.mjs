@@ -33,19 +33,19 @@ while (Date.now() - t0 < 22 * 60_000) {
   if (!s) { await page.waitForTimeout(500); continue }
   if (s.phase === 'ended') break
   // Result / consequence review: read it (screenshot the first of each kind) and press "Tiếp tục" / "Đã hiểu".
-  const panel = page.locator('.review-panel')
+  const panel = page.locator('.result-panel')
   if (await panel.count()) {
     const title = await panel.locator('h3').innerText().catch(() => '')
     const tag = s.log.find((e) => e.id === s.inbox[0])?.tag ?? 'x'
     if (!shots.has('review_' + tag)) { shots.add('review_' + tag); await page.waitForTimeout(500); await shot(`review_${tag.replace('.', '')}`) }
     if (mode === 'basic' && !checks.reviewFrozen) { const a = (await state()).clock.elapsedMinutes; await page.waitForTimeout(2500); checks.reviewFrozen = (await state()).clock.elapsedMinutes === a }
     reviews.push(`${tag}: ${title}`)
-    await click(panel.locator('.dialogue-action'))
+    await click(page.locator('#action-dock .dialogue-action'))
     await page.waitForTimeout(400)
     continue
   }
   // Research briefing: the mascot / caption explains, then BẮT ĐẦU … starts the branch.
-  const briefNext = page.locator('.mascot-bubble .dialogue-action, .onb-caption .dialogue-action')
+  const briefNext = page.locator('#action-dock .dialogue-action')
   const briefText = await briefNext.first().innerText().catch(() => '')
   if (/Tiếp tục|BẮT ĐẦU/.test(briefText)) {
     if (/BẮT ĐẦU/.test(briefText) && !shots.has('brief_' + briefText)) { shots.add('brief_' + briefText); await page.waitForTimeout(1800); await shot(`briefing_${briefText.includes('KHÁM') ? 'ice' : 'food'}`) }
@@ -61,7 +61,7 @@ while (Date.now() - t0 < 22 * 60_000) {
       checks.routeHover = await page.locator('.route-tip').innerText().catch(() => null)
       await shot('c2_route_hover')
     }
-    seen.push('C2'); await click(routeCard.locator('.dialogue-action')); await page.waitForTimeout(600); continue
+    seen.push('C2'); await click(page.locator('#action-dock .dialogue-action')); await page.waitForTimeout(600); continue
   }
   const dialog = page.locator('.story-decision')
   if (await dialog.count()) {
@@ -74,6 +74,7 @@ while (Date.now() - t0 < 22 * 60_000) {
     else if (key === 'C2') done = await click(page.locator('.story-option:not([disabled])', { hasText: 'Đi tuyến A*' }))
     else if (picks[key]) done = await click(page.locator('.story-option:not([disabled])', { hasText: picks[key] }))
     if (!done) await click(page.locator('.story-option:not([disabled])'))
+    await page.waitForTimeout(350); await click(page.locator('#action-dock .dialogue-action:not([disabled])'))   // confirm in the fixed dock
     if (key === 'A3') { await page.evaluate(() => window.__LUNARIS_TEST_SELECT__?.('solar')); await page.waitForTimeout(800); await page.keyboard.press('Escape').catch(() => null) }
     await page.waitForTimeout(600)
     continue

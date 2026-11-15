@@ -47,10 +47,9 @@ export const A1 = { surplusKwh: 12, extraRecycleL: 40, chargeEfficiency: 0.9 }
 
 /** Event timetable (minutes after Day 1 08:00). All SCENARIO. */
 export const SCHEDULE = {
-  a3At: 2 * DAY + 120,           // Day 3, 10:00: the scheduled science-equipment lander starts its approach (announced in A2)
+  a3At: 2 * DAY + 120,           // Day 3, 10:00: the base's space-weather monitor forecasts a period of more small rocks than usual (micrometeoroids)
   a3PrepMin: 30,                 // warning lead time before the hazard
-  a3HazardMin: 300,              // SCENARIO 5 h landing window (the lander may wave off and retry); not a measured dust duration
-  a3LandingMin: 90,              // the lander's own descent, shown in 3D inside that window
+  a3HazardMin: 300,              // SCENARIO 5 h forecast window: a game value, not a measured or predicted real duration
   a3RedeployMin: 60,             // stowed array needs 1 h to deploy again
   b1At: 3 * DAY + 360,           // (legacy reference) the fault now comes after the player starts the food research
   b1AfterStartMin: 90,           // irrigation fault this long after the food research begins

@@ -15,7 +15,7 @@ await page.waitForSelector('.onb-cinematic', { state: 'detached', timeout: 10000
 for (let i = 0; i < 60; i++) {
   const text = await page.locator('.mascot-bubble p').innerText().catch(() => '')
   if (text.startsWith('Và đây là đội ngũ')) break
-  await page.locator('.mascot-bubble .dialogue-action').click({ timeout: 3000 }).catch(() => null)
+  await page.locator('#action-dock .dialogue-action').click({ timeout: 3000 }).catch(() => null)
   await page.waitForTimeout(text.includes('cực Nam') ? 11500 : 600)
 }
 await page.waitForTimeout(2500)

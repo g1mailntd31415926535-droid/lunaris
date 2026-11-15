@@ -1,6 +1,7 @@
 // Onboarding script: every line the mascot (Basic) or the captions (Advanced) say, in one place.
 // Presentation only: nothing here changes the simulation. The game itself starts after the last step.
-import type { RobotMood } from '../world/textures'
+import type { Expression } from './mascotFace'
+type RobotMood = 'idle' | Expression
 
 export type HudItem = 'battery' | 'water' | 'oxygen' | 'food'
 export type CameraCue = 'base' | 'tour' | 'solar' | 'crew'
@@ -39,7 +40,7 @@ export const BASIC_TOUR: TourStep[] = [
   { id: 'links', highlight: ['battery', 'water', 'oxygen'], lines: ['Bạn thấy không? Điện, nước và oxy liên quan chặt chẽ với nhau.', 'Một quyết định hôm nay có thể ảnh hưởng đến những gì chúng ta làm được sau này.'] },
   { id: 'food', reveal: ['food'], highlight: ['food'], lines: ['Chúng ta cũng cần quản lý nguồn thực phẩm cho các phi hành gia.', 'Số này là số ngày thực phẩm mang từ Trái Đất còn đủ dùng. Khi gần hết, nhiệm vụ phải kết thúc.', 'Cây trong nhà kính là để nghiên cứu, giúp chuẩn bị cho những nhiệm vụ dài hơn sau này.'] },
   { id: 'crew', camera: 'crew', crewGreeting: true, mood: 'happy', lines: ['Tất nhiên, bạn sẽ không phải làm mọi việc một mình!', 'Và đây là đội ngũ phi hành gia, những người đồng đội sẽ cùng bạn khám phá Mặt Trăng!', 'Kai, Linh, Leo và Mia: mỗi người một chuyên môn, cùng làm nghiên cứu và vận hành căn cứ.'] },
-  { id: 'go', crewGreeting: true, mood: 'happy', lines: ['Mình sẽ ở góc dưới này và nhắc bạn khi cần.', 'Tất cả đã sẵn sàng rồi, Commander! Còn bạn thì sao?'] },
+  { id: 'go', camera: 'base', crewGreeting: true, mood: 'happy', lines: ['Mình sẽ ở góc dưới này và nhắc bạn khi cần.', 'Tất cả đã sẵn sàng rồi, Commander! Còn bạn thì sao?', 'Vậy hãy bắt đầu nhiệm vụ đầu tiên nhé. Bạn đã sẵn sàng chưa?'] },
 ]
 
 /** Advanced: short captions, no mascot, no step-by-step resource lesson. */

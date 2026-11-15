@@ -18,7 +18,7 @@ export interface Decision { id: string; key: DecisionKey; atMinute: number; opti
 export interface DecisionRecord { id: string; key: DecisionKey; choice: string; rejected: string[]; atMinute: number; deltas: ResourceDelta; causeIds: string[]; effectIds: string[] }
 
 export type EventLogKind = 'system' | 'decision' | 'stage' | 'event' | 'consequence' | 'research'
-export interface EventLogEntry { id: string; atMinute: number; kind: EventLogKind; title: string; detail?: string; deltas?: ResourceDelta; causeIds: string[]; tag?: string }
+export interface EventLogEntry { id: string; atMinute: number; kind: EventLogKind; title: string; detail?: string; deltas?: ResourceDelta; causeIds: string[]; tag?: string; /** resources right after this entry (only when it has deltas) */ after?: ResourceState }
 
 export interface PowerState {
   capacityFactor: number            // 1, or 0.9 after the A3 damage (permanent; no repair exists)

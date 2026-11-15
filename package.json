@@ -10,7 +10,9 @@
     "test": "node --test tests/game.test.mjs tests/dem.test.mjs tests/regional.test.mjs",
     "test:ui": "node tests/universe.browser.mjs",
     "test:rover": "node tests/rover.browser.mjs",
-    "test:hud": "node tests/hud-camera.browser.mjs"
+    "test:hud": "node tests/hud-camera.browser.mjs",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name lunaris --branch main",
+    "verify:prod": "node scripts/verify_production.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -29,6 +31,7 @@
     "@vitejs/plugin-react": "^6.3.0",
     "playwright": "^1.65.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.8"
+    "vite": "^8.3.8",
+    "wrangler": "^4.162.0"
   }
 }

@@ -52,7 +52,7 @@ function id(state: GameState, prefix: string): [string, GameState] { return [`${
 function log(state: GameState, entry: Omit<EventLogEntry, 'id' | 'atMinute'>, important = false): GameState {
   const [eid, next] = id(state, 'evt')
   const linked = entry.causeIds.length ? next.history.map((h) => entry.causeIds.includes(h.id) ? { ...h, effectIds: [...h.effectIds, eid] } : h) : next.history
-  const out = { ...next, history: linked, log: [...next.log, { ...entry, id: eid, atMinute: state.clock.elapsedMinutes }] }
+  const out = { ...next, history: linked, log: [...next.log, { ...entry, id: eid, atMinute: state.clock.elapsedMinutes, ...(entry.deltas ? { after: { ...state.resources } } : {}) }] }
   return important ? { ...out, inbox: [...out.inbox, eid], isPaused: out.mode === 'basic' ? true : out.isPaused } : out
 }
 /** Central pause rule for Basic: nothing time-based runs while a decision or an unread result is open. */
@@ -235,15 +235,15 @@ function events(state: GameState): GameState {
 
   // A3: physical hazard to the array (SCENARIO; not a historical NASA event). Only after the A2 tutorial.
   if (s.stage === 'A3' && now >= SCHEDULE.a3At && !eventBusy(s) && (f = fire(s, 'A3'))) {
-    s = log(f, { kind: 'event', tag: 'A3', title: 'Tàu thiết bị khoa học đang vào hướng hạ cánh', detail: 'Đúng lịch đã báo: tàu không người lái hạ xuống bãi đáp tạm phía tây, nơi bằng phẳng nhất gần căn cứ. Đường hạ cánh đi ngang phía giàn pin, nên luồng khí động cơ có thể thổi bụi regolith vào tấm pin.', causeIds: [] })
+    s = log(f, { kind: 'event', tag: 'A3', title: 'Dự báo: sắp có nhiều mảnh đá nhỏ bay qua', detail: 'Hệ thống theo dõi của căn cứ vừa dự báo một khoảng thời gian có nhiều mảnh đá không gian nhỏ đi qua khu vực Mặt Trăng hơn bình thường. Mặt Trăng gần như không có không khí để làm chúng cháy hết, nên mảnh nhỏ có thể đập thẳng vào giàn pin. (Mốc giờ trong game là giả định.)', causeIds: [] })
     s = ask(s, 'A3', ['keep', 'stow'])
   }
   if (s.a3HazardEndsAt !== null && now >= s.a3HazardEndsAt && (f = fire(s, 'A3-end'))) {
     s = f
     if (s.a3Choice === 'keep') {
       s = { ...s, power: { ...s.power, capacityFactor: 1 - POWER.a3LossFraction } }
-      s = log(s, { kind: 'consequence', tag: 'A3', title: 'Giàn pin bị hư: mất 10 % công suất vĩnh viễn', detail: 'Bụi làm trầy bề mặt pin. Không có cách sửa trong nhiệm vụ này.', causeIds: decisionId(s, 'A3') }, true)
-    } else s = log(s, { kind: 'consequence', tag: 'A3', title: 'Hết nguy hiểm, giàn pin không bị hư', detail: 'Giàn pin đang mở lại và sẽ phát đủ 100 % công suất.', causeIds: decisionId(s, 'A3') }, true)
+      s = log(s, { kind: 'consequence', tag: 'A3', title: 'Giàn pin bị hư: mất 10 % công suất vĩnh viễn', detail: 'Giàn pin vẫn mở khi các mảnh đá bay qua, bề mặt bị trầy. Không có cách sửa trong nhiệm vụ này.', causeIds: decisionId(s, 'A3') }, true)
+    } else s = log(s, { kind: 'consequence', tag: 'A3', title: 'Đợt mảnh đá đã qua, giàn pin không bị hư', detail: 'Giàn pin đã gập lại trong lúc đó. Giờ nó mở ra và sẽ phát đủ 100 % công suất.', causeIds: decisionId(s, 'A3') }, true)
     s = log({ ...s, stage: 'free', ice: { ...s.ice, stage: s.ice.stage === 'locked' ? 'idle' : s.ice.stage } }, { kind: 'stage', tag: 'FREE', title: 'Hoàn thành hướng dẫn! Bạn tự điều hành căn cứ', detail: s.mode === 'basic' ? 'Bạn đã biết cân bằng điện, nước và oxy. Tiếp theo, mình sẽ cùng bạn làm từng nghiên cứu một: trước hết là nghiên cứu thực phẩm trong nhà kính.' : 'Nghiên cứu thực phẩm (nhà kính) và khám phá băng (rover MILO) đã mở.', causeIds: [] }, true)
   }
   // B1: irrigation fault (not on the same moment as D2).
@@ -451,7 +451,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'a2/activate': {
       if (state.stage !== 'A2' || state.a2Enabled) return state
       const s = log({ ...state, a2Enabled: true, stage: 'A3' }, { kind: 'stage', tag: 'A2', title: 'Máy điện phân đã bật', detail: 'Từ giờ máy tự tạo oxy từ nước và điện khi oxy xuống dưới 90 %.', causeIds: [] }, true)
-      return log(s, { kind: 'event', tag: 'A3', title: 'Lịch nhiệm vụ: tàu thiết bị khoa học đến vào Ngày 3', detail: 'Ngày 3 khoảng 10:00, một tàu tự hành không người lái của chương trình sẽ hạ cánh ở bãi đáp tạm phía tây căn cứ để mang máy đo cho rover. Khi đó bạn sẽ cần chuẩn bị cho giàn pin mặt trời.', causeIds: [] }, true)
+      return log(s, { kind: 'event', tag: 'A3', title: 'Hãy để thời gian trôi và theo dõi căn cứ', detail: 'Hệ thống theo dõi không gian của căn cứ sẽ báo ngay nếu có điều gì đe dọa giàn pin mặt trời. Khi đó bạn sẽ được hỏi cách xử lý.', causeIds: [] }, true)
     }
     case 'food/repairNow': {
       // "Sửa sau" can still be changed: the crew starts now. Hours already without water stay counted.

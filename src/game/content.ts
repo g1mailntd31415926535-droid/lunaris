@@ -1,37 +1,47 @@
 // Player-facing text for every decision and the ending report (Vietnamese, for ages 7–12).
 // Kept apart from the engine so wording can change without touching gameplay rules.
 import type { Decision, GameState, RouteFacts, Zone } from './types.ts'
-import { A1, CAPACITY, CREW, FOOD, POWER, ROVER, SCHEDULE, SUPPLY } from './scenario.ts'
+import { A1, CAPACITY, CREW, FOOD, LIFE, POWER, ROVER, SCHEDULE, SUPPLY } from './scenario.ts'
 import { roverEnergyNeed } from './reducer.ts'
 
 export interface ZoneInfo { zone: Zone; name: string; route: RouteFacts | null; reason?: string }
 export interface WorldFacts { zones: ZoneInfo[]; detourM?: number | null; detourReason?: string }
-export interface OptionCopy { id: string; label: string; gain: string; risk: string; disabled?: boolean; reason?: string }
-export interface DecisionCopy { eyebrow: string; title: string; intro: string; options: OptionCopy[]; note?: string; building?: string }
+/** Predicted resource level (percent of capacity) right after choosing, from the real state. */
+export interface ResourcePreview { key: 'battery' | 'water' | 'oxygen' | 'food'; before: number; after: number }
+export interface OptionCopy { id: string; label: string; gain: string; risk: string; disabled?: boolean; reason?: string; desc?: string; preview?: ResourcePreview[] }
+export interface DecisionCopy { eyebrow: string; title: string; intro: string; options: OptionCopy[]; note?: string; building?: string; question?: string }
+/** Short header topic per event (EventHeader: "A1 · ĐIỆN VÀ NƯỚC"). */
+export const EVENT_TOPIC: Record<string, string> = { A1: 'ĐIỆN VÀ NƯỚC', A2: 'OXY', A3: 'GIÀN PIN MẶT TRỜI', B: 'NHÀ KÍNH', B1: 'NHÀ KÍNH', B4: 'THU HOẠCH', C1: 'CHỌN KHU KHẢO SÁT', C2: 'CHỌN TUYẾN', C31: 'SỰ CỐ TRÊN ĐƯỜNG', 'C3.1': 'SỰ CỐ TRÊN ĐƯỜNG', 'C3.2': 'KHẢO SÁT', C4: 'BÁO CÁO BĂNG', D1: 'ÁNH SÁNG GIẢM', D2: 'TIẾP TẾ', D3: 'BỨC XẠ', END: 'KẾT THÚC', FREE: 'HƯỚNG DẪN' }
+const pct = (v: number, cap: number) => Math.round(v / cap * 100)
 
 const km = (m: number) => `${(m / 1000).toFixed(1)} km`
 
 export function decisionCopy(d: Decision, _s: GameState, world: WorldFacts): DecisionCopy {
   switch (d.key) {
-    case 'A1': return {
+    case 'A1': {
+      // Same arithmetic as the reducer (A1 case), so the preview equals what will happen.
+      const r = _s.resources, litres = Math.min(A1.extraRecycleL, r.wastewater, CAPACITY.water - r.water)
+      const charge = Math.min(CAPACITY.battery - r.battery, A1.surplusKwh * A1.chargeEfficiency)
+      return {
       eyebrow: 'CHẶNG A1 · ĐIỆN VÀ NƯỚC', building: 'water',
-      title: 'Hôm nay pin mặt trời làm ra một ít điện dư',
-      intro: `Có thêm ${A1.surplusKwh} kWh điện. Nước đã dùng không biến mất: nó nằm trong bể chờ máy lọc biến lại thành nước sạch. Bạn dùng điện dư cho việc nào?`,
+      title: `Hôm nay có nắng mạnh nên lượng điện thu được vượt mức ${A1.surplusKwh} kWh`,
+      question: 'Chỉ huy sẽ dùng lượng này vào đâu?',
+      intro: '',
       options: [
-        { id: 'recycle', label: 'Lọc thêm nước', gain: `Biến tối đa ${A1.extraRecycleL} lít nước đã dùng thành nước sạch.`, risk: 'Pin dự trữ không được sạc thêm.' },
-        { id: 'battery', label: 'Sạc pin dự trữ', gain: `Cất thêm khoảng ${Math.round(A1.surplusKwh * A1.chargeEfficiency)} kWh vào pin.`, risk: 'Nước đã dùng vẫn chờ trong bể.' },
+        { id: 'recycle', label: 'Lọc thêm nước', desc: `Bể đang chứa ${Math.round(litres)} L nước đục cần được lọc thành nước sạch`, gain: '', risk: '', preview: [{ key: 'water', before: pct(r.water, CAPACITY.water), after: pct(r.water + litres * LIFE.recovery, CAPACITY.water) }, { key: 'battery', before: pct(r.battery, CAPACITY.battery), after: pct(r.battery, CAPACITY.battery) }] },
+        { id: 'battery', label: 'Sạc pin dự phòng', desc: `Sạc được thêm ${Math.round(charge)} kWh vào pin`, gain: '', risk: '', preview: [{ key: 'water', before: pct(r.water, CAPACITY.water), after: pct(r.water, CAPACITY.water) }, { key: 'battery', before: pct(r.battery, CAPACITY.battery), after: pct(r.battery + charge, CAPACITY.battery) }] },
       ],
-      note: 'Đây là bài hướng dẫn: lựa chọn nào cũng an toàn.',
+      }
     }
     case 'A3': return {
       eyebrow: 'CHẶNG A3 · GIÀN PIN MẶT TRỜI', building: 'solar',
-      title: 'Bụi có thể bắn vào giàn pin!',
-      intro: `Một tàu đổ bộ sắp hạ cánh gần căn cứ. Luồng khí của động cơ có thể hất bụi và sỏi vào giàn pin trong khoảng ${Math.round(SCHEDULE.a3HazardMin / 60)} giờ.`,
+      title: 'Sắp có nhiều mảnh đá nhỏ bay qua!',
+      intro: `Hệ thống vừa dự báo một khoảng thời gian có nhiều mảnh đá không gian nhỏ đi qua khu vực Mặt Trăng hơn bình thường. Không có không khí che chắn, mảnh nhỏ bay rất nhanh có thể làm trầy tấm pin. Khoảng thời gian trong game là ${Math.round(SCHEDULE.a3HazardMin / 60)} giờ (giả định).`,
       options: [
         { id: 'keep', label: 'Giữ giàn pin mở', gain: 'Vẫn có điện suốt lúc nguy hiểm.', risk: `Giàn pin bị trầy: mất ${POWER.a3LossFraction * 100} % công suất mãi mãi, không sửa được.` },
         { id: 'stow', label: 'Thu gọn giàn pin', gain: 'Giàn pin an toàn, sau đó chạy lại đủ 100 %.', risk: `Không có điện từ pin mặt trời khoảng ${Math.round((SCHEDULE.a3PrepMin + SCHEDULE.a3HazardMin + SCHEDULE.a3RedeployMin) / 60)} giờ; căn cứ dùng pin dự trữ.` },
       ],
-      note: 'Tình huống giả định cho trò chơi, không phải một sự kiện NASA có thật.',
+      note: 'Mảnh đá nhỏ (vi thiên thạch) có thật trên Mặt Trăng, nhưng dự báo và mốc giờ ở đây là giả định của trò chơi.',
     }
     case 'B1': return {
       eyebrow: 'NGHIÊN CỨU THỰC PHẨM · B1', building: 'greenhouse',
