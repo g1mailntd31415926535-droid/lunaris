@@ -61,6 +61,8 @@ export interface WorldHandle {
   reset: () => void
   focus: (id: BuildingId) => void
   focusCrew: (name: string) => void
+  /** Look at a point (scene x/z, metres) from `height` metres: the crew row, a route, a pad. */
+  focusArea: (x: number, z: number, height: number, mode?: CameraMode) => void
   /** Flies to a region-local point (metres) and lets the camera pan around it. */
   focusPoint: (x: number, z: number) => void
 }

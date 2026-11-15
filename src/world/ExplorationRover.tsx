@@ -8,7 +8,7 @@ import { useUniverse } from './universe-context'
 import { sampleTerrain } from './terrain-query'
 import { createRoverModel } from './models'
 import { MATERIALS as M } from './model-kit'
-import { ROVER_DEPOT, roverPresentation, surveyLegs } from './rover-plan'
+import { PolylinePath, ROVER_DEPOT, roverPresentation, surveyLegs } from './rover-plan'
 import type { RoverPhase } from './rover-plan'
 import { routeSlopeLimitDeg } from './dem'
 import type { SurveyLeg } from './rover-plan'
@@ -28,7 +28,7 @@ function groundLine(count: number, at: (t: number) => [number, number], lift: nu
 }
 
 /** Story Mode drives MILO from the game state: the chosen zone's real A* leg and the simulated progress along it. */
-export interface RoverMission { zone: string | null; phase: RoverPhase; progress: number }
+export interface RoverMission { zone: string | null; phase: RoverPhase; progress: number; /** D2 cargo trip: a short local path (depot → pad) instead of an A* leg. */ path?: [number, number][] }
 
 export function ExplorationRover({ selected, follow, mode, reducedMotion, showRoute, onSelect, onFollow, onStatus, mission }: { selected: boolean; follow: boolean; mode: CameraMode; reducedMotion: boolean; showRoute: boolean; onSelect: () => void; onFollow: () => void; onStatus: (status: RoverStatus) => void; mission?: RoverMission | null }) {
   const missionRef = useRef(mission); missionRef.current = mission
@@ -41,6 +41,7 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
   const ring = useRef<THREE.LineLoop>(null), beam = useRef<THREE.Line>(null)
   const model = useMemo(createRoverModel, [])
   const [route, setRoute] = useState<{ driven: Polyline; beyond: Polyline }>({ driven: [], beyond: [] })
+  const supplyPath = useRef<{ key: string; curve: PolylinePath } | null>(null)
   const lastRoute = useRef(''), lastStatus = useRef(-1), seekOffset = useRef(0), groundY = useRef(0)
   const scratch = useMemo(() => ({ nominal: new THREE.Vector3(ROVER_DEPOT[0], 0, ROVER_DEPOT[1]), tangent: new THREE.Vector3(0, 0, 1), normal: new THREE.Vector3(), right: new THREE.Vector3(), forward: new THREE.Vector3(), matrix: new THREE.Matrix4(), desired: new THREE.Quaternion(), dummy: new THREE.Object3D(), axle: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2), spin: new THREE.Quaternion() }), [])
   const radarGeometry = useMemo(() => new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(48 * 3), 3)), [])
@@ -60,10 +61,16 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
     if (m !== undefined) {
       // Story Mode: no autonomous touring; MILO moves only on the leg the player chose.
       const storyLeg = m?.zone ? surveyLegs().find((l) => l.site.id === m.zone) ?? null : null
-      const target = m && storyLeg ? m.progress : 0
+      const target = m && (storyLeg || m.path) ? m.progress : 0
       shown.current += (target - shown.current) * (1 - Math.exp(-4 * Math.min(delta, 0.1)))
       presentation = { leg: storyLeg, phase: m && storyLeg ? m.phase : 'docked', progress: shown.current, speed: 0, trip: 0, phaseTime: clock.current.time }
       if (!storyLeg) scratch.nominal.set(ROVER_DEPOT[0], 0, ROVER_DEPOT[1])
+      if (m?.path) {
+        const key = m.path.flat().join(',')
+        if (supplyPath.current?.key !== key) supplyPath.current = { key, curve: new PolylinePath(Float64Array.from(m.path.flat())) }
+        supplyPath.current.curve.getPointAt(shown.current, scratch.nominal); supplyPath.current.curve.getTangentAt(shown.current, scratch.tangent)
+        presentation = { ...presentation, phase: m.phase }
+      }
     }
     const { leg, phase, progress, speed, trip, phaseTime } = presentation
     const s = scratch

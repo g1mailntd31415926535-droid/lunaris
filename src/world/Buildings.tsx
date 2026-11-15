@@ -30,11 +30,13 @@ const SCREEN_PLACEMENT: Record<BuildingId, { position: [number, number, number];
  * The solar heads turn every frame to face the scene Sun (azimuth about the mast, then tilt up to its elevation).
  * The Sun direction is the game's artistic Sun (World.tsx SolarLighting), converted into the building's own frame.
  */
-function SolarTrackers({ reducedMotion }: { reducedMotion: boolean }) {
+/** Sun tracking + A3 stow: `stowed` folds both wings on their hinges (deployed → folding → folded → deploying). */
+function SolarTrackers({ reducedMotion, stowed }: { reducedMotion: boolean; stowed: boolean }) {
   const universe = useUniverse()
   const heads = useMemo(() => SOLAR_TOWERS.map(() => solarTrackerHead()), [])
   const root = useRef<THREE.Group>(null)
-  const scratch = useMemo(() => ({ q: new THREE.Quaternion(), d: new THREE.Vector3(), yaw: Number.NaN, pitch: 0 }), [])
+  const scratch = useMemo(() => ({ q: new THREE.Quaternion(), d: new THREE.Vector3(), yaw: Number.NaN, pitch: 0, fold: stowed ? 1 : 0 }), [])   // eslint-disable-line react-hooks/exhaustive-deps
+  const wings = useMemo(() => heads.flatMap((h) => h.children.filter((c) => c.name === 'solar-wing')), [heads])
   useEffect(() => () => heads.forEach((h) => h.traverse((n) => { if (n instanceof THREE.Mesh) n.geometry.dispose() })), [heads])
   useFrame((_, delta) => {
     const group = root.current
@@ -48,7 +50,13 @@ function SolarTrackers({ reducedMotion }: { reducedMotion: boolean }) {
       scratch.yaw += Math.atan2(Math.sin(yaw - scratch.yaw), Math.cos(yaw - scratch.yaw)) * k
       scratch.pitch += (pitch - scratch.pitch) * k
     }
-    for (const head of heads) head.rotation.set(scratch.pitch, scratch.yaw, 0, 'YXZ')
+    // Fold at a motor-like rate (~3 s); the head keeps tracking the Sun's azimuth and stands upright while folded.
+    const target = stowed ? 1 : 0
+    scratch.fold = reducedMotion ? target : scratch.fold + Math.sign(target - scratch.fold) * Math.min(Math.abs(target - scratch.fold), Math.min(delta, 0.1) / 3)
+    const e = scratch.fold * scratch.fold * (3 - 2 * scratch.fold)
+    for (const head of heads) head.rotation.set(scratch.pitch * (1 - e), scratch.yaw, 0, 'YXZ')
+    for (const wing of wings) wing.rotation.y = -wing.userData.side * e * Math.PI / 2
+    group.userData.fold = scratch.fold
   })
   return <group ref={root} name="solar-trackers">
     {heads.map((head, i) => <primitive key={i} object={head} position={[SOLAR_TOWERS[i][0], SOLAR_HEAD_HEIGHT, SOLAR_TOWERS[i][1]]} />)}
@@ -99,7 +107,7 @@ function buildingPickGeometry(id: BuildingId) {
   return merged
 }
 
-function Building({ data, selected, onSelect, mode, labels, demo, reducedMotion, onHover }: { data: BuildingData; selected: boolean; onSelect: (id: BuildingId) => void; mode: CameraMode; labels: boolean; demo: DemoAction | null; reducedMotion: boolean; onHover: (hover: boolean) => void }) {
+function Building({ data, selected, onSelect, mode, labels, demo, reducedMotion, onHover, solarStowed }: { data: BuildingData; selected: boolean; onSelect: (id: BuildingId) => void; mode: CameraMode; labels: boolean; demo: DemoAction | null; reducedMotion: boolean; onHover: (hover: boolean) => void; solarStowed: boolean }) {
   const [hover, setHover] = useState(false)
   const screen = useMemo(() => screenTexture(data.id, data.accent), [data.id, data.accent])
   const ring = useRef<THREE.Mesh>(null)
@@ -125,7 +133,7 @@ function Building({ data, selected, onSelect, mode, labels, demo, reducedMotion,
     <mesh geometry={pick}><meshBasicMaterial visible={false} /></mesh>
     <mesh position={screenPlacement.position}><planeGeometry args={screenPlacement.size} /><meshStandardMaterial ref={activity} map={screen} emissiveMap={screen} emissive="#ffffff" emissiveIntensity={0.85} roughness={0.5} /></mesh>
     {data.id === 'water' && <WaterActivity demo={demo} reducedMotion={reducedMotion} />}
-    {data.id === 'solar' && <SolarTrackers reducedMotion={reducedMotion} />}
+    {data.id === 'solar' && <SolarTrackers reducedMotion={reducedMotion} stowed={solarStowed} />}
     {data.id === 'greenhouse' && <mesh position={[0, 0.83, 0]}><sphereGeometry args={[2.5, 32, 18, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshPhysicalMaterial color="#a1e2dc" roughness={0.13} metalness={0.25} transparent opacity={0.17} side={THREE.DoubleSide} depthWrite={false} /></mesh>}
     {(selected || hover) && <group>
       <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.075, 0]}><ringGeometry args={[data.radius + 0.2, data.radius + 0.25, 64]} /><meshBasicMaterial color={data.accent} transparent opacity={selected ? 0.78 : 0.4} depthWrite={false} /></mesh>
@@ -175,6 +183,6 @@ function ColonyStaticBatch() {
   return <primitive object={batch} />
 }
 
-export function Buildings({ selected, onSelect, mode, labels, demo, reducedMotion, onHover }: { selected: BuildingId | null; onSelect: (id: BuildingId) => void; mode: CameraMode; labels: boolean; demo: DemoAction | null; reducedMotion: boolean; onHover: (hover: boolean) => void }) {
-  return <group name="artemis-colony"><ColonyStaticBatch />{BUILDINGS.map((data) => <Building key={data.id} data={data} selected={selected === data.id} onSelect={onSelect} mode={mode} labels={labels} demo={demo} reducedMotion={reducedMotion} onHover={onHover} />)}</group>
+export function Buildings({ selected, onSelect, mode, labels, demo, reducedMotion, onHover, solarStowed = false }: { selected: BuildingId | null; onSelect: (id: BuildingId) => void; mode: CameraMode; labels: boolean; demo: DemoAction | null; reducedMotion: boolean; onHover: (hover: boolean) => void; solarStowed?: boolean }) {
+  return <group name="artemis-colony"><ColonyStaticBatch />{BUILDINGS.map((data) => <Building key={data.id} data={data} selected={selected === data.id} onSelect={onSelect} mode={mode} labels={labels} demo={demo} reducedMotion={reducedMotion} onHover={onHover} solarStowed={solarStowed} />)}</group>
 }

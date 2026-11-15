@@ -1,7 +1,7 @@
 // Player-facing text for every decision and the ending report (Vietnamese, for ages 7–12).
 // Kept apart from the engine so wording can change without touching gameplay rules.
 import type { Decision, GameState, RouteFacts, Zone } from './types.ts'
-import { A1, CAPACITY, FOOD, POWER, ROVER, SCHEDULE, SUPPLY } from './scenario.ts'
+import { A1, CAPACITY, CREW, FOOD, POWER, ROVER, SCHEDULE, SUPPLY } from './scenario.ts'
 import { roverEnergyNeed } from './reducer.ts'
 
 export interface ZoneInfo { zone: Zone; name: string; route: RouteFacts | null; reason?: string }
@@ -81,14 +81,17 @@ export function decisionCopy(d: Decision, _s: GameState, world: WorldFacts): Dec
         { id: 'rover', label: 'Ưu tiên sạc rover', gain: 'MILO có đủ pin để đi khảo sát.', risk: 'Đèn nhà kính có thể tắt nhiều giờ, cây lớn chậm hơn.' },
       ],
     }
-    case 'D2': return {
-      eyebrow: 'SỰ KIỆN D2 · TIẾP TẾ', building: 'rover',
-      title: 'Tàu tiếp tế sẽ đến sau 24 giờ',
-      intro: `Tàu mang ${SUPPLY.food / 6} ngày thực phẩm cho cả đội và ${SUPPLY.water} lít nước. Hàng chỉ vào kho khi được chở về căn cứ. Ai sẽ nhận hàng?`,
-      options: [
-        { id: 'rover', label: 'Dùng rover vận tải', gain: 'Phi hành đoàn không phải ra ngoài.', risk: d.context.roverAway ? 'MILO đang đi khảo sát: phải quay về, đổi cấu hình rồi mới chở hàng. Khảo sát băng bị gián đoạn.' : `MILO mất khoảng ${Math.round((2 * SCHEDULE.d2RoverConfigMin) / 60 + 2 * SCHEDULE.d2PadKm / ROVER.speedKmh + 1)} giờ cho việc chở hàng.` },
-        { id: 'crew', label: 'Phi hành đoàn nhận hàng', gain: 'Rover tiếp tục việc của mình.', risk: `Đội ra ngoài khoảng ${SCHEDULE.d2CrewPickupMin / 60} giờ, dùng thêm oxy.` },
-      ],
+    case 'D2': {
+      const short = !d.context.roverAway && Number(d.context.roverBattery) < Number(d.context.tripKwh)
+      return {
+        eyebrow: 'SỰ KIỆN D2 · TIẾP TẾ', building: 'rover',
+        title: 'Tàu tiếp tế đã hạ cánh ngoài căn cứ',
+        intro: `Tàu mang ${SUPPLY.food / CREW} ngày thực phẩm cho cả đội và ${SUPPLY.water} lít nước. Hàng nặng nên phải chở bằng rover hoặc xe đẩy. Hàng chỉ vào kho khi về tới căn cứ. Ai sẽ đi lấy?`,
+        options: [
+          { id: 'rover', label: 'Dùng rover MILO', gain: 'Phi hành đoàn không phải ra ngoài.', risk: d.context.roverAway ? 'MILO đang đi khảo sát: phải quay về, đổi cấu hình rồi mới chở hàng. Khảo sát băng bị gián đoạn.' : `Đổi cấu hình, đi và về mất khoảng ${Math.round((2 * SCHEDULE.d2RoverConfigMin) / 60 + 2 * SCHEDULE.d2PadKm / ROVER.speedKmh + 1)} giờ, tốn khoảng ${d.context.tripKwh} kWh pin rover.`, disabled: short, reason: short ? `Pin MILO còn ${d.context.roverBattery} kWh, chưa đủ ${d.context.tripKwh} kWh cho chuyến đi.` : undefined },
+          { id: 'crew', label: 'Hai phi hành gia với xe đẩy', gain: 'Rover tiếp tục việc của mình.', risk: `Ra ngoài khoảng ${SCHEDULE.d2CrewPickupMin / 60} giờ, cả đội dùng thêm oxy.` },
+        ],
+      }
     }
     case 'D3': return {
       eyebrow: 'SỰ KIỆN D3 · BỨC XẠ', building: 'shelter',

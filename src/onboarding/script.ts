@@ -38,8 +38,8 @@ export const BASIC_TOUR: TourStep[] = [
   { id: 'oxygen', reveal: ['oxygen'], highlight: ['oxygen'], lines: ['Và đây là oxy!', 'Oxy giúp các phi hành gia hô hấp và duy trì sự sống trong căn cứ.', 'Chúng ta có thể tạo oxy từ nước bằng điện phân, nhưng quá trình đó cũng tiêu thụ nước và điện.'] },
   { id: 'links', highlight: ['battery', 'water', 'oxygen'], lines: ['Bạn thấy không? Điện, nước và oxy liên quan chặt chẽ với nhau.', 'Một quyết định hôm nay có thể ảnh hưởng đến những gì chúng ta làm được sau này.'] },
   { id: 'food', reveal: ['food'], highlight: ['food'], lines: ['Chúng ta cũng cần quản lý nguồn thực phẩm cho các phi hành gia.', 'Số này là số ngày thực phẩm mang từ Trái Đất còn đủ dùng. Khi gần hết, nhiệm vụ phải kết thúc.', 'Cây trong nhà kính là để nghiên cứu, giúp chuẩn bị cho những nhiệm vụ dài hơn sau này.'] },
-  { id: 'crew', camera: 'crew', crewGreeting: true, mood: 'happy', lines: ['Tất nhiên, bạn sẽ không phải làm mọi việc một mình!', 'Đây là những người đồng đội sẽ cùng bạn nghiên cứu và vận hành căn cứ.'] },
-  { id: 'go', camera: 'base', mood: 'happy', lines: ['Mình sẽ ở góc này và nhắc bạn khi cần.', 'Sẵn sàng nhận nhiệm vụ đầu tiên chưa, Commander?'] },
+  { id: 'crew', camera: 'crew', crewGreeting: true, mood: 'happy', lines: ['Tất nhiên, bạn sẽ không phải làm mọi việc một mình!', 'Và đây là đội ngũ phi hành gia, những người đồng đội sẽ cùng bạn khám phá Mặt Trăng!', 'Kai, Linh, Leo và Mia: mỗi người một chuyên môn, cùng làm nghiên cứu và vận hành căn cứ.'] },
+  { id: 'go', crewGreeting: true, mood: 'happy', lines: ['Mình sẽ ở góc dưới này và nhắc bạn khi cần.', 'Tất cả đã sẵn sàng rồi, Commander! Còn bạn thì sao?'] },
 ]
 
 /** Advanced: short captions, no mascot, no step-by-step resource lesson. */
@@ -50,3 +50,29 @@ export const ADVANCED_TOUR: TourStep[] = [
 
 /** Basic gameplay: the mascot keeps one short hint (lines come from components/Story.tsx lunaHint). */
 export const MASCOT_NAME = 'LUNA-01'
+
+/**
+ * Research briefings (shown before the branch starts; the branch's first event fires only after the button).
+ * The mascot introduces the goal and how to interact; it never hints at the "right" answer.
+ */
+export interface Briefing { id: 'food' | 'ice'; camera: ('greenhouse' | 'rover' | 'map')[]; lines: string[]; start: string; caption: string }
+export const BRIEFINGS: Record<'food' | 'ice', Briefing> = {
+  food: {
+    id: 'food', camera: ['greenhouse', 'greenhouse', 'greenhouse'], start: 'BẮT ĐẦU NGHIÊN CỨU',
+    lines: [
+      'Đây là nhà kính nghiên cứu. Các cây đã được trồng từ trước và đang lớn dần mỗi ngày.',
+      'Nhiệm vụ của bạn: theo dõi cây, giữ cho chúng đủ nước và đủ đèn, rồi cân mẫu khi cây đủ lớn.',
+      'Nếu có sự cố trong nhà kính, mình sẽ báo để bạn quyết định cách xử lý.',
+    ],
+    caption: 'Nghiên cứu thực phẩm: theo dõi cây đã trồng sẵn, xử lý sự cố, thu hoạch và báo cáo.',
+  },
+  ice: {
+    id: 'ice', camera: ['rover', 'map', 'map'], start: 'BẮT ĐẦU KHÁM PHÁ',
+    lines: [
+      'Đây là MILO, rover thám hiểm của căn cứ. MILO có máy đo để tìm dấu hiệu của băng nước.',
+      'Ở cực Nam có những hố sâu không bao giờ có nắng, gọi là vùng tối vĩnh cửu. Ở đó rất lạnh, băng có thể còn giữ được.',
+      'Bạn sẽ chọn một khu nghiên cứu trên bản đồ trước, rồi mới lên kế hoạch đường đi. Hãy xoay và phóng bản đồ để quan sát.',
+    ],
+    caption: 'Khảo sát băng: chọn khu nghiên cứu trên bản đồ NASA, rồi chọn tuyến cho rover MILO.',
+  },
+}

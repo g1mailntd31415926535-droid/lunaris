@@ -7,7 +7,7 @@ export async function onboard(page, mode = 'advanced') {
   await page.locator('.onb-skip').click({ timeout: 5000 }).catch(() => null)
   await page.waitForSelector('.onb-cinematic', { state: 'detached', timeout: 10000 })
   for (let i = 0; i < 60; i++) {
-    const next = page.locator('.mascot-next, .onb-caption .mascot-next')
+    const next = page.locator('.mascot-bubble .dialogue-action, .onb-caption .dialogue-action')
     if (await page.locator('.story-decision').count()) return
     if (!(await next.count())) { await page.waitForTimeout(400); continue }
     await next.first().click({ timeout: 3000 }).catch(() => null)

@@ -2,12 +2,13 @@
 // Everything here reads the one GameState; actions go back through the reducer.
 import type { CSSProperties, ReactNode } from 'react'
 import { motion } from 'motion/react'
-import { ArrowRight, BatteryCharging, Check, CircleAlert, Clock3, Eye, FlaskConical, Gauge, Lightbulb, Microscope, Rocket, Scale, ScrollText, Send, ShieldCheck, Sprout, TriangleAlert } from 'lucide-react'
+import { ArrowRight, BatteryCharging, BookOpen, Wrench, Check, CircleAlert, CircleHelp, Clock3, Eye, FlaskConical, Gauge, Lightbulb, Microscope, Rocket, Scale, ScrollText, Send, ShieldCheck, Sprout, TriangleAlert } from 'lucide-react'
 import { Modal } from './Common'
-import { CAPACITY, CREW, DAY, FOOD, LIFE, MISSION_START, ROVER, decisionCopy, endingReport, missionTime } from '../game'
+import { DialogueActionButton } from './Onboarding'
+import { CAPACITY, CREW, DAY, FOOD, LIFE, MISSION_START, ROVER, b1Resolved, decisionCopy, endingReport, missionTime, reviewFor, roverEnergyNeed } from '../game'
 import type { Decision, GameState, PlayMode, WorldFacts } from '../game'
 
-export type StoryAction = 'a2' | 'observe' | 'harvest' | 'report' | 'ice' | 'submit' | 'follow'
+export type StoryAction = 'a2' | 'observe' | 'harvest' | 'report' | 'ice' | 'food' | 'repair' | 'submit' | 'follow'
 
 const clock = (minute: number) => { const t = MISSION_START.minuteOfDay + Math.floor(minute); return `Ngày ${Math.floor(minute / DAY) + 1} · ${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}` }
 
@@ -53,7 +54,13 @@ export function StoryCard({ building, game, onStory }: { building: string; game:
   if (building === 'oxygen') return <div className="a1-card"><small>CHẶNG A2 · NƯỚC + ĐIỆN → OXY</small>{game.a2Enabled ? <p><Check size={13} /> Máy điện phân đang {game.power.electrolysisOn ? 'chạy' : 'chờ (oxy đã đủ hoặc thiếu điện/nước)'}. Mỗi kg oxy cần {LIFE.waterLPerKgO2} lít nước.</p> : <><p>Máy điện phân tách nước thành oxy để thở và hydro.</p><button className="building-action" disabled={game.stage !== 'A2'} onClick={() => onStory('a2')}><Sprout size={15} /><span>{game.stage === 'A2' ? 'Bật máy điện phân' : 'Mở ở chặng A2'}</span><ArrowRight size={15} /></button></>}</div>
   if (building === 'greenhouse') return <div className="a1-card"><small>NGHIÊN CỨU THỰC PHẨM · B1–B4</small>
     <p>Cây lớn {Math.round(f.growth * 100)} % · tưới: {f.irrigation === 'ok' ? 'bình thường' : f.irrigation === 'repairing' ? 'đang sửa' : 'HỎNG'} · đèn: {game.power.greenhouseOn ? 'bật' : 'TẮT'} · {f.observations.length} lần quan sát</p>
-    {f.stage === 'growing' && <><button className="building-action" disabled={!free || sheltered} onClick={() => onStory('observe')}><Microscope size={15} /><span>{sheltered ? 'Đang trú bức xạ' : 'Quan sát cây (thiết bị tự ghi)'}</span><ArrowRight size={15} /></button>
+    {!f.started && <button className="building-action" disabled={!free} onClick={() => onStory('food')}><Sprout size={15} /><span>{free ? 'Bắt đầu nghiên cứu thực phẩm' : 'Mở sau phần hướng dẫn'}</span><ArrowRight size={15} /></button>}
+    {f.started && !game.history.some((h) => h.key === 'B1') && <p className="game-muted">Đang theo dõi cây. Hãy để thời gian trôi.</p>}
+    {f.irrigation === 'fault' && f.repairStartsAt !== null && f.repairStartsAt > game.clock.elapsedMinutes && <><p className="game-warn"><TriangleAlert size={13} /> Hệ thống tưới đang hỏng. Theo kế hoạch sẽ sửa lúc {clock(f.repairStartsAt).split(' · ')[1]}.</p>
+      <button className="building-action" disabled={sheltered} onClick={() => onStory('repair')}><Wrench size={15} /><span>{sheltered ? 'Đang trú bức xạ, chưa ra sửa được' : 'Sửa ngay bây giờ'}</span><ArrowRight size={15} /></button>
+      <p className="game-muted">Một phi hành gia dừng việc đang làm khoảng 2 giờ. Số giờ cây đã thiếu nước không lấy lại được.</p></>}
+    {f.irrigation === 'repairing' && <p className="game-muted"><Wrench size={12} /> Đang sửa hệ thống tưới.</p>}
+    {f.stage === 'growing' && f.started && game.history.some((h) => h.key === 'B1') && <><button className="building-action" disabled={!free || sheltered} onClick={() => onStory('observe')}><Microscope size={15} /><span>{sheltered ? 'Đang trú bức xạ' : 'Quan sát cây (thiết bị tự ghi)'}</span><ArrowRight size={15} /></button>
       <button className="building-action" disabled={!free || f.growth < FOOD.readyIndex || sheltered} onClick={() => onStory('harvest')}><Scale size={15} /><span>{f.growth < FOOD.readyIndex ? `Thu hoạch khi cây lớn ${Math.round(FOOD.readyIndex * 100)} %` : 'Thu hoạch và cân mẫu'}</span><ArrowRight size={15} /></button></>}
     {f.stage === 'harvested' && <button className="building-action" onClick={() => onStory('report')}><ScrollText size={15} /><span>Lập báo cáo thực phẩm</span><ArrowRight size={15} /></button>}
     {f.report && <p><Check size={13} /> Báo cáo xong: {f.report.grams} g, độ tin cậy {f.report.reliability}.</p>}
@@ -61,10 +68,13 @@ export function StoryCard({ building, game, onStory }: { building: string; game:
   if (building === 'rover') return <div className="a1-card"><small>NGHIÊN CỨU BĂNG · C1–C4</small>
     <p>{iceText(game)}</p>
     <p className="game-muted"><BatteryCharging size={12} /> Pin MILO {Math.round(i.roverBattery)}/{ROVER.batteryKwh} kWh{game.power.roverChargingOn ? ' · đang sạc' : ''}</p>
-    {i.stage === 'idle' && <button className="building-action" disabled={!free || game.supply.roverPhase !== 'none'} onClick={() => onStory('ice')}><Rocket size={15} /><span>{i.report ? 'Đã hoàn thành' : 'Bắt đầu nghiên cứu băng'}</span><ArrowRight size={15} /></button>}
+    {i.stage === 'idle' && !i.report && (() => { const wait = game.mode === 'basic' && !b1Resolved(game); return <><button className="building-action" disabled={!free || game.supply.roverPhase !== 'none' || wait} onClick={() => onStory('ice')}><Rocket size={15} /><span>Bắt đầu khám phá băng</span><ArrowRight size={15} /></button>{wait && free && <p className="game-muted">Mở sau khi xử lý xong sự cố đầu tiên ở nhà kính (B1): mình hướng dẫn từng nhiệm vụ một.</p>}</> })()}
     {['outbound', 'surveying', 'returning', 'recalled', 'anomaly'].includes(i.stage) && <button className="building-action" onClick={() => onStory('follow')}><Eye size={15} /><span>Theo dõi MILO</span><ArrowRight size={15} /></button>}</div>
   if (building === 'command') return <div className="a1-card"><small>KẾT THÚC NHIỆM VỤ</small><p>Bạn có thể nộp báo cáo và đưa cả đội về Trái Đất bất cứ lúc nào sau phần hướng dẫn.</p><button className="building-action" disabled={!free || game.phase !== 'playing'} onClick={() => onStory('submit')}><Send size={15} /><span>Nộp báo cáo và trở về</span><ArrowRight size={15} /></button></div>
-  if (building === 'solar') return <div className="a1-card"><small>GIÀN PIN MẶT TRỜI</small><p>Đang phát {game.power.productionKw.toFixed(1)} kW · công suất thiết kế {Math.round(game.power.capacityFactor * 100)} %{game.power.capacityFactor < 1 ? ' (đã hư ở A3, không sửa được)' : ''}{game.power.lightFactor < 1 ? ' · ánh sáng đang giảm' : ''}.</p></div>
+  if (building === 'solar') { const stowed = game.power.stowedUntil !== null && game.clock.elapsedMinutes < game.power.stowedUntil; return <div className="a1-card"><small>GIÀN PIN MẶT TRỜI</small>
+    <p>Trạng thái: {stowed ? `đang thu gọn, mở lại lúc ${clock(game.power.stowedUntil ?? 0).split(' · ')[1]}` : game.power.capacityFactor < 1 ? 'bề mặt bị trầy, còn 90 % công suất' : 'hoạt động bình thường'}.</p>
+    <p>Đang phát {game.power.productionKw.toFixed(1)} kW{game.power.lightFactor < 1 ? ' · ánh sáng đang giảm' : ''}.</p>
+    {game.power.capacityFactor < 1 && <p className="game-muted"><Wrench size={12} /> Không bảo trì được trong nhiệm vụ này: tấm pin bị trầy phải thay tấm mới mang từ Trái Đất. Hậu quả của lựa chọn ở A3 được giữ nguyên.</p>}</div> }
   if (building === 'battery') return <div className="a1-card"><small>ĐIỆN CỦA CĂN CỨ</small><p>Phát {game.power.productionKw.toFixed(1)} kW · dùng {game.power.loadKw.toFixed(1)} kW. Điện thiết yếu luôn được giữ; đèn nhà kính và sạc rover là tải tùy chọn.</p></div>
   if (building === 'shelter' && sheltered) return <div className="a1-card"><small>BỨC XẠ</small><p><ShieldCheck size={13} /> Cả đội đang trú ẩn tới {clock(game.radiation.endsAt ?? 0)}.</p></div>
   return null
@@ -123,23 +133,43 @@ export function StoryMissions({ game, onStory, onFocus }: { game: GameState; onS
     <div className="panel-title"><div><h2>Nhiệm vụ Artemis</h2><p>{game.mode === 'basic' ? 'Chế độ Cơ bản' : game.mode === 'advanced' ? 'Chế độ Nâng cao' : ''} · {missionTime(game).label} ngày {missionTime(game).day}</p></div></div>
     <div className="story-food-days" style={{ '--days': `${Math.min(100, daysLeft / 8 * 100)}%` } as CSSProperties}><span>Thực phẩm đóng gói còn đủ cho</span><strong>{daysLeft.toFixed(1)} ngày</strong><small>trước mức dự trữ tối thiểu · quyết định độ dài nhiệm vụ</small></div>
     {list('Hướng dẫn', tutorial, game.stage === 'A2' ? { label: 'Đến trạm hỗ trợ sự sống', onClick: () => onFocus('oxygen') } : undefined)}
-    {list('Nghiên cứu thực phẩm', food, { label: 'Đến nhà kính', onClick: () => onFocus('greenhouse') })}
-    {list('Nghiên cứu băng', ice, i.stage === 'idle' && !i.report ? { label: 'Bắt đầu với MILO', onClick: () => onStory('ice'), disabled: game.stage !== 'free' } : { label: 'Đến trạm rover', onClick: () => onFocus('rover') })}
+    {list('Nghiên cứu thực phẩm', food, !f.started ? { label: 'Bắt đầu nghiên cứu', onClick: () => onStory('food'), disabled: game.stage !== 'free' } : { label: 'Đến nhà kính', onClick: () => onFocus('greenhouse') })}
+    {list('Nghiên cứu băng', ice, i.stage === 'idle' && !i.report ? { label: 'Bắt đầu khám phá', onClick: () => onStory('ice'), disabled: game.stage !== 'free' } : { label: 'Đến trạm rover', onClick: () => onFocus('rover') })}
     {list('Sự kiện chung', events)}
     <button className="primary-button story-submit" disabled={game.stage !== 'free' || game.phase !== 'playing'} onClick={() => onStory('submit')}><Send size={15} /> Nộp báo cáo và trở về Trái Đất</button>
   </>
 }
 
-// ── mission log (timeline dialog) ───────────────────────────────────────────
+// ── result review (no timeout: waits for "Tiếp tục") ────────────────────────
+export function ReviewPanel({ entryId, game, onContinue, extra }: { entryId: string; game: GameState; onContinue: () => void; extra?: ReactNode }) {
+  const entry = game.log.find((e) => e.id === entryId)
+  if (!entry) return null
+  const r = reviewFor(entry, game)
+  return <motion.section key={entryId} className={`review-panel glass tone-${r.tone}`} role="dialog" aria-label={r.title} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.25 }}>
+    <small className="review-eyebrow">{r.eyebrow} · {clock(entry.atMinute)}</small>
+    <h3>{r.title}</h3>
+    {r.chose && <p className="review-row"><b>Bạn đã chọn</b><span>{r.chose}</span></p>}
+    {r.happened.filter(Boolean).length > 0 && <div className="review-row"><b>Điều gì xảy ra?</b><span>{r.happened.filter(Boolean).map((x) => <span key={x} className="review-line">{x}</span>)}</span></div>}
+    {r.why.length > 0 && <div className="review-row why"><b><CircleHelp size={13} /> Tại sao điều này xảy ra?</b><span>{r.why.map((x) => <span key={x} className="review-line">{x}</span>)}</span></div>}
+    {r.future && <p className="review-row"><b>Ảnh hưởng sau này</b><span>{r.future}</span></p>}
+    {r.lesson && <p className="review-lesson"><Lightbulb size={14} /> {r.lesson}</p>}
+    {r.reflect && <p className="review-reflect">Thử nghĩ: {r.reflect}</p>}
+    {extra && <div className="review-actions">{extra}</div>}
+    <DialogueActionButton label={game.mode === 'basic' ? 'Tiếp tục' : 'Đã hiểu'} onClick={onContinue} />
+  </motion.section>
+}
+
+// ── mission journal (decisions, results, causes, lessons) ───────────────────
 export function MissionLogDialog({ game, onClose }: { game: GameState; onClose: () => void }) {
-  const byId = new Map(game.log.map((e) => [e.id, e]))
-  const decisionTitle = (id: string) => { const h = game.history.find((x) => x.id === id); return h ? `${h.key}: ${game.log.find((e) => e.kind === 'decision' && e.causeIds.includes(id))?.title ?? h.choice}` : id }
-  return <Modal title="Nhật ký nhân quả" eyebrow="DÒNG THỜI GIAN NHIỆM VỤ" onClose={onClose} className="game-modal timeline-modal">
-    <ol className="story-log">{[...game.log].reverse().map((e) => <li key={e.id} className={`kind-${e.kind}`}>
-      <small>{clock(e.atMinute)}{e.tag ? ` · ${e.tag}` : ''}</small><strong>{e.title}</strong>{e.detail && <p>{e.detail}</p>}
-      {e.deltas && <p className="story-muted">{Object.entries(e.deltas).map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${Math.round(v * 10) / 10}`).join(' · ')}</p>}
-      {e.kind !== 'decision' && e.causeIds.length > 0 && <p className="story-cause">Vì: {e.causeIds.map((c) => byId.get(c)?.title ?? decisionTitle(c)).join('; ')}</p>}
-    </li>)}</ol>
+  const shown = game.log.filter((e) => e.kind !== 'system')
+  return <Modal title="Nhật ký nhiệm vụ" eyebrow="QUYẾT ĐỊNH · KẾT QUẢ · BÀI HỌC" onClose={onClose} className="game-modal timeline-modal">
+    <ol className="story-log">{[...shown].reverse().map((e) => { const r = reviewFor(e, game); return <li key={e.id} className={`kind-${e.kind}`}>
+      <small>{clock(e.atMinute)}{e.tag && e.tag !== 'FREE' ? ` · ${e.tag}` : ''}</small><strong>{r.chose ? `Bạn chọn: ${r.chose}` : e.title}</strong>
+      {r.happened.filter(Boolean).map((x) => <p key={x}>{x}</p>)}
+      {r.why.length > 0 && <p className="story-cause"><b>Vì sao:</b> {r.why.join(' ')}</p>}
+      {r.future && <p className="story-cause"><b>Ảnh hưởng sau này:</b> {r.future}</p>}
+      {r.lesson && <p className="story-lesson"><BookOpen size={12} /> {r.lesson}</p>}
+    </li> })}</ol>
     <button className="primary-button" onClick={onClose}>Đóng<ArrowRight size={14} /></button>
   </Modal>
 }
@@ -173,14 +203,21 @@ export function EndingScreen({ game, onRestart }: { game: GameState; onRestart: 
 
 /** Commander Luna (Basic mode only): one hint about what to do next, from the state. */
 export function lunaHint(g: GameState): string {
+  if (g.inbox.length) return 'Đọc kết quả bên cạnh rồi bấm “Tiếp tục” nhé. Thời gian đang dừng chờ bạn.'
+  if (g.decisions[0]?.key === 'C2') return 'Đây là tuyến đường MILO dự kiến đi tới khu nghiên cứu. Bạn có thể đưa chuột lên đường đi để xem thông tin trước khi quyết định.'
   if (g.decisions.length) return 'Có một quyết định đang chờ bạn. Đọc kỹ điều được và điều mất nhé!'
   if (g.stage === 'A2') return 'Máy điện phân biến nước thành oxy. Hãy chạm vào trạm hỗ trợ sự sống và bật máy!'
   if (g.stage === 'A3') return 'Mọi thứ đang chạy tự động. Hãy cho thời gian trôi (▶) và theo dõi điện, nước, oxy nhé.'
   if (g.radiation.active) return 'Bão bức xạ! Cả đội ở trong nhà trú ẩn cho an toàn. Rover thì không cần trú.'
+  if (g.food.irrigation === 'fault' && g.food.repairStartsAt !== null && g.food.repairStartsAt > g.clock.elapsedMinutes) return 'Commander, hệ thống tưới vẫn đang hỏng. Hãy chạm vào nhà kính để kiểm tra nhé!'
   if (g.food.irrigation !== 'ok') return 'Cây đang thiếu nước. Thời gian thiếu nước càng dài, cây càng yếu.'
-  if (g.food.stage === 'growing' && !g.food.observations.some((o) => o.day === Math.floor(g.clock.elapsedMinutes / DAY) + 1)) return 'Hôm nay chưa ai quan sát cây. Vào nhà kính và bấm “Quan sát cây” nhé.'
+  if (g.stage === 'free' && !g.food.started && g.ice.stage === 'idle' && !g.ice.report) return 'Chọn một nghiên cứu để bắt đầu: nhà kính (thực phẩm) hoặc rover MILO (băng nước).'
+  if (g.food.started && !g.history.some((h) => h.key === 'B1')) return 'Cây đang được theo dõi. Hãy để thời gian trôi (▶) và xem điều gì xảy ra trong nhà kính.'
+  if (g.supply.stage === 'pickup') return g.supply.method === 'crew' ? 'Hai phi hành gia đang đẩy xe ra bãi đáp lấy hàng.' : 'MILO đang chở hàng tiếp tế. Hàng chỉ vào kho khi về tới căn cứ.'
+  if (g.food.stage === 'growing' && g.food.started && !g.food.observations.some((o) => o.day === Math.floor(g.clock.elapsedMinutes / DAY) + 1)) return 'Hôm nay chưa ai quan sát cây. Vào nhà kính và bấm “Quan sát cây” nhé.'
   if (g.food.stage === 'harvested') return 'Đã thu hoạch! Lập báo cáo thực phẩm ở nhà kính.'
-  if (g.ice.stage === 'idle' && !g.ice.report) return 'MILO đang chờ. Vào trạm rover để chọn khu nghiên cứu băng.'
+  if (g.ice.stage === 'idle' && !g.ice.report) return 'MILO đang chờ. Vào trạm rover và bấm “Bắt đầu khám phá băng”.'
+  if (!g.food.started) return 'Nhà kính vẫn chờ bạn: bấm vào nhà kính để bắt đầu nghiên cứu thực phẩm.'
   if (g.food.report && g.ice.report) return 'Cả hai nghiên cứu đã xong! Bạn có thể nộp báo cáo ở trung tâm chỉ huy.'
   return `Kho thực phẩm còn đủ khoảng ${Math.max(0, (g.resources.food - LIFE.foodReserveCrewDays) / CREW).toFixed(1)} ngày. Hãy hoàn thành nghiên cứu trước khi phải về.`
 }
@@ -190,3 +227,30 @@ export const resourcePercent = (g: GameState) => ({
   oxygen: Math.round(g.resources.oxygen / CAPACITY.oxygen * 100),
   foodDays: Math.max(0, g.resources.food / CREW),
 })
+
+// ── C2 on the map: the real A* route is drawn in 3D; this card separates measured data from estimates ──
+export function RouteCard({ decision, world, game, onChoose }: { decision: Decision; world: WorldFacts; game: GameState; onChoose: (choice: string) => void }) {
+  const zone = world.zones.find((z) => z.zone === decision.context.zone), r = zone?.route
+  const need = r ? roverEnergyNeed(r.lengthM) : 0, tooMuch = need > ROVER.batteryKwh
+  return <motion.section className="route-card glass" role="dialog" aria-label={`Tuyến tới khu ${decision.context.zone}`} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+    <small className="review-eyebrow">NGHIÊN CỨU BĂNG · C2 · CHỌN TUYẾN</small>
+    <h3>Tuyến tới khu {decision.context.zone}{zone ? ` · ${zone.name}` : ''}</h3>
+    {r ? <>
+      <p className="route-note">Đường vàng trên bản đồ là tuyến A* thật, đi từ MILO tới khu đã chọn. Di chuột lên đường để xem từng đoạn.</p>
+      <div className="review-row"><b>Đo từ dữ liệu NASA (bản đồ độ dốc 5 m)</b><span>
+        <span className="review-line">Dài {(r.lengthM / 1000).toFixed(1)} km một chiều.</span>
+        <span className="review-line">Độ dốc danh nghĩa: lớn nhất {r.maxSlopeDeg.toFixed(1)}°, trung bình {r.meanSlopeDeg.toFixed(1)}° (ngưỡng {15}°).</span>
+        <span className="review-line">Nếu tính cả sai số đo độ dốc, khoảng {r.uncertainPercent.toFixed(0)} % quãng đường có thể vượt 15°.</span>
+        <span className="review-line">Đích {r.inPsr ? 'nằm trong' : 'không nằm trong'} vùng tối vĩnh cửu.</span></span></div>
+      <div className="review-row"><b>Ước tính theo mô hình rover của game</b><span>
+        <span className="review-line">Cần khoảng {Math.round(need)} / {ROVER.batteryKwh} kWh pin cho cả đi, khảo sát và về.</span>
+        <span className="review-line">Khoảng {Math.round(r.lengthM / 1000 / ROVER.speedKmh * 2)} giờ lái đi và về.</span></span></div>
+      <p className="review-row why"><b>Chưa được xét</b><span>Ánh sáng, nhiệt độ, liên lạc và đá nhỏ hơn ô 5 m. Vì vậy đây là tuyến khả thi về độ dốc, chưa phải tuyến được đảm bảo an toàn.</span></p>
+      <p className="game-muted">Thuật toán chỉ tìm được một tuyến tới khu này, nên không có tuyến thứ hai để so sánh.</p>
+    </> : <p>Không có tuyến khả thi tới khu này.</p>}
+    <div className="review-actions"><button className="secondary-action" onClick={() => onChoose('back')}>Chọn khu khác</button></div>
+    {r && <DialogueActionButton label="Xác nhận tuyến" disabled={tooMuch} onClick={() => onChoose('go')} />}
+    {tooMuch && <p className="game-warn">Pin rover không đủ cho cả đi và về.</p>}
+    <span className="screen-reader-only">{game.mode}</span>
+  </motion.section>
+}

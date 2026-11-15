@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import * as THREE from 'three'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { CarFront, Check, Sparkles, TriangleAlert, X } from 'lucide-react'
 import type { BuildingId, CameraMode, CameraRequest, DemoAction, DemoKind, DemoPhase, Notification, Preferences, RoverStatus, Section, WorldHandle } from './types'
@@ -7,20 +8,23 @@ import type { RoverMission } from './world/ExplorationRover'
 import { demReady, roverRoutes, scienceZones } from './world/dem'
 import { checkDetour } from './world/detour'
 import { CameraToolbar } from './components/HUD'
-import { ResourceHud, SettingsMenu, TopRight } from './components/MinimalHud'
+import { ObjectiveChip, ResourceHud, SettingsMenu, TopRight } from './components/MinimalHud'
 import { Caption, IntroCinematic, Mascot, ModeSelect, WelcomeScreen } from './components/Onboarding'
-import { ADVANCED_TOUR, BASIC_TOUR } from './onboarding/script'
+import { ADVANCED_TOUR, BASIC_TOUR, BRIEFINGS } from './onboarding/script'
 import type { HudItem } from './onboarding/script'
-import { CAPACITY } from './game/scenario'
-import { CREW as CREW_PLAN } from './world/actor-plan'
+import { CAPACITY, SCHEDULE } from './game/scenario'
+import { SUPPLY_PAD, SUPPLY_ROVER_PATH, tripPhase } from './world/SupplyOps'
+import type { SupplyView } from './world/SupplyOps'
+import { LINEUP_CENTRE } from './world/actor-plan'
+import { surveyLegs } from './world/rover-plan'
 import { ContextPanel } from './components/Panels'
 import { ActivityDialog, CrewDialog, HelpDialog, SettingsDialog } from './components/Dialogs'
 import { RestartDialog, SubmitDialog } from './components/GameDialogs'
-import { DecisionDialog, EndingScreen, MissionLogDialog, ReturnCinematic, lunaHint, resourcePercent } from './components/Story'
+import { DecisionDialog, EndingScreen, MissionLogDialog, ReturnCinematic, ReviewPanel, RouteCard, lunaHint, resourcePercent } from './components/Story'
 import type { StoryAction } from './components/Story'
 import { playUiTone } from './audio'
 import { useHudBounds } from './hooks/useHudBounds'
-import { SIM_MINUTES_PER_REAL_SECOND, browserStorage, clearSave, createInitialState, decisionCopy, endingReport, gameReducer, loadGame, missionTime, saveGame } from './game'
+import { SIM_MINUTES_PER_REAL_SECOND, b1Resolved, currentObjective, browserStorage, clearSave, createInitialState, decisionCopy, endingReport, gameReducer, loadGame, missionTime, saveGame } from './game'
 import type { GameAction, GameState, RouteFacts, WorldFacts, Zone, ZoneInfo } from './game'
 
 function initialGame(): { state: GameState; status: string } {
@@ -48,9 +52,10 @@ function zoneFacts(): ZoneInfo[] {
 const DEMO_FOR: Record<string, DemoKind> = { 'A1:recycle': 'water', 'A1:battery': 'battery', 'A3:stow': 'solar', 'B1:now': 'greenhouse', a2: 'oxygen', observe: 'greenhouse', harvest: 'greenhouse' }
 
 function Toast({ notification, onDismiss }: { notification: Notification; onDismiss: (id: number) => void }) {
-  useEffect(() => { const timer = setTimeout(() => onDismiss(notification.id), notification.tone === 'warning' ? 6500 : 4800); return () => clearTimeout(timer) }, [notification.id, notification.tone, onDismiss])
+  // Ambient only (small confirmations). Anything the player must know goes to the review panel and the journal.
+  useEffect(() => { const timer = setTimeout(() => onDismiss(notification.id), 3200); return () => clearTimeout(timer) }, [notification.id, onDismiss])
   return <motion.div className={`toast glass toast-${notification.tone}`} initial={{ opacity: 0, y: -10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 18 }} layout role={notification.tone === 'warning' ? 'alert' : 'status'}>
-    <span className="toast-symbol">{notification.tone === 'success' ? <Check size={18} /> : notification.tone === 'warning' ? <TriangleAlert size={18} /> : <Sparkles size={18} />}</span><div><strong>{notification.title}</strong>{notification.detail && <p>{notification.detail}</p>}</div><button aria-label="Đóng thông báo" onClick={() => onDismiss(notification.id)}><X size={14} /></button><i className="toast-timer" /></motion.div>
+    <span className="toast-symbol">{notification.tone === 'success' ? <Check size={18} /> : notification.tone === 'warning' ? <TriangleAlert size={18} /> : <Sparkles size={18} />}</span><div><strong>{notification.title}</strong>{notification.detail && <p>{notification.detail}</p>}</div><button aria-label="Đóng thông báo" onClick={() => onDismiss(notification.id)}><X size={14} /></button></motion.div>
 }
 
 export default function App() {
@@ -130,8 +135,7 @@ export default function App() {
     dispatch({ type: 'decide', decisionId: d.id, choice, route, detourM: d.key === 'C31' && choice === 'detour' ? facts.detourM ?? undefined : undefined })
     playDemo(DEMO_FOR[`${d.key}:${choice}`])
     if (['C31', 'D3'].includes(d.key)) setFollowRover(choice !== 'return')
-    // Basic mode stopped time for the question; it continues once nothing else is waiting.
-    if (g.mode === 'basic' && g.decisions.length === 1) dispatch({ type: 'clock/setPaused', paused: false })
+    // Basic: time stays stopped; the result review's "Tiếp tục" (notice/ack) resumes it.
   }, [dispatch, facts, playDemo])
 
   // When a question appears, show the real place in the base it is about.
@@ -142,6 +146,7 @@ export default function App() {
     setHiddenDecision(null)
     const building = decisionCopy(decision, game, facts).building as BuildingId | undefined
     if (['C31', 'D3'].includes(decision.key)) setFollowRover(true)
+    else if (['C1', 'C2'].includes(decision.key)) setSelected('rover')   // keep the map view from the briefing
     else if (building && mode !== 'orbit') { setSelected(building); world.current?.focus(building) }
   }, [decision, ready, game, facts, mode])
 
@@ -149,19 +154,22 @@ export default function App() {
     const g = gameRef.current
     if (action === 'submit') { setModal('submit'); return }
     if (action === 'follow') { setSelected('rover'); setFollowRover(true); return }
-    const type = { a2: 'a2/activate', observe: 'food/observe', harvest: 'food/harvest', report: 'food/report', ice: 'ice/start' }[action] as GameAction['type']
+    if (action === 'repair') { dispatch({ type: 'food/repairNow' }); playDemo('greenhouse'); return }
+    if (action === 'food' || action === 'ice') { if (new URLSearchParams(location.search).has('debug')) console.info('[brief]', action); openBriefing(action); return }
+    const type = { a2: 'a2/activate', observe: 'food/observe', harvest: 'food/harvest', report: 'food/report' }[action] as GameAction['type']
     dispatch({ type } as GameAction)
     playDemo(DEMO_FOR[action])
-    if (action === 'ice' && g.mode === 'advanced') setSelected('rover')
-  }, [dispatch, playDemo])
+    void g
+  }, [dispatch, playDemo])   // eslint-disable-line react-hooks/exhaustive-deps
 
   // New log entries become short toasts (the full cause chain stays in the mission log).
   const seenLog = useRef(game.log.length)
   useEffect(() => {
     const fresh = game.log.slice(seenLog.current)
     seenLog.current = game.log.length
-    for (const e of fresh.slice(-2)) if (e.kind !== 'decision') notify(e.title, e.detail, e.kind === 'event' ? 'warning' : e.kind === 'consequence' || e.kind === 'research' ? 'success' : 'info')
-  }, [game.log, notify])
+    // Important entries wait in the review panel (game.inbox); only small ambient confirmations become a short toast.
+    for (const e of fresh.slice(-2)) if (e.kind === 'research' && !game.inbox.includes(e.id) && e.tag !== 'B2') notify(e.title, undefined, 'success')
+  }, [game.log, notify])   // eslint-disable-line react-hooks/exhaustive-deps
   // D3: the crew really moves into the shelter while the event lasts.
   useEffect(() => { if (game.radiation.active) playDemo('radiation') }, [game.radiation.active, playDemo])
 
@@ -189,7 +197,7 @@ export default function App() {
     if (current.reveal) setRevealed((r) => new Set([...r, ...current.reveal!]))
     if (current.camera === 'base') fly('base')
     else if (current.camera === 'solar') world.current?.focus('solar')
-    else if (current.camera === 'crew') world.current?.focusCrew(CREW_PLAN[0].name)
+    else if (current.camera === 'crew') world.current?.focusArea(LINEUP_CENTRE[0], LINEUP_CENTRE[1], 13)
   }, [step, onb])   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!current?.highlight || current.highlight.length < 2) return; const t = setInterval(() => setCycle((c) => c + 1), 900); return () => clearInterval(t) }, [current])
   const tourTimers = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -215,6 +223,69 @@ export default function App() {
   }, [current, line, runTour, nextStep])
   const hudHighlight: HudItem | null = current?.highlight ? current.highlight[cycle % current.highlight.length] : null
   const hudVisible = onb === 'done' ? new Set<HudItem>(['battery', 'water', 'oxygen', 'food']) : revealed
+  // ── Research briefings (B and C): the mascot (Basic) or a caption (Advanced) introduces the branch;
+  // its first event can only start from the button at the end. Basic stops the clock while it is read.
+  const [brief, setBrief] = useState<{ id: 'food' | 'ice'; line: number } | null>(null)
+  const openBriefing = useCallback((id: 'food' | 'ice', fromReview = false) => {
+    const g = gameRef.current
+    if (g.stage !== 'free' || g.phase !== 'playing' || (id === 'food' && g.food.started) || (id === 'ice' && (g.ice.stage !== 'idle' || !!g.ice.report || g.supply.roverPhase !== 'none' || g.supply.stage === 'pickup')) || g.decisions.length > 0 || g.inbox.length > (fromReview ? 1 : 0)) return
+    setPanelOpen(false); setBrief({ id, line: 0 })
+    if (g.mode === 'basic') dispatch({ type: 'clock/setPaused', paused: true })
+  }, [dispatch])
+  useEffect(() => {
+    if (!brief) return
+    const cue = BRIEFINGS[brief.id].camera[brief.line]
+    if (cue === 'map') fly('region', 14_000)
+    else { setFollowRover(false); setSelected(cue); world.current?.focus(cue) }
+  }, [brief, fly])
+  const startResearch = useCallback(() => {
+    if (!brief) return
+    const g = gameRef.current
+    setBrief(null)
+    if (brief.id === 'food') { dispatch({ type: 'food/begin' }); if (g.mode === 'basic') dispatch({ type: 'clock/setPaused', paused: false }) }
+    else dispatch({ type: 'ice/start' })
+  }, [brief, dispatch])
+  const nextBriefLine = useCallback(() => { if (brief) { if (brief.line + 1 < BRIEFINGS[brief.id].lines.length) setBrief({ ...brief, line: brief.line + 1 }); else startResearch() } }, [brief, startResearch])
+  // Advanced: time keeps running, so an open decision is shown before unread results (they wait in the panel queue).
+  const review = game.phase === 'playing' && onb === 'done' && !brief && !(game.mode === 'advanced' && game.decisions.length > 0) ? game.inbox[0] ?? null : null
+  const ack = useCallback(() => { const id = gameRef.current.inbox[0]; if (id) dispatch({ type: 'notice/ack', id }) }, [dispatch])
+  const reviewEntry = review ? game.log.find((e) => e.id === review) : null
+  // Basic: the mascot leads one branch at a time — food first (after the tutorial), ice after B1 is resolved.
+  const offered = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    const g = game
+    if (g.mode !== 'basic' || g.phase !== 'playing' || onb !== 'done' || brief || g.inbox.length || g.decisions.length || g.stage !== 'free' || modal) return
+    if (!g.food.started && !offered.current.has('food')) { offered.current.add('food'); openBriefing('food') }
+    else if (g.ice.stage === 'idle' && !g.ice.report && b1Resolved(g) && !offered.current.has('ice')) { offered.current.add('ice'); openBriefing('ice') }
+  }, [game, onb, brief, modal, openBriefing])
+  const objective = onb === 'done' && !brief && !review ? currentObjective(game) : null
+  const look = useCallback((b: string) => { setFollowRover(false); selectBuilding(b as BuildingId); world.current?.focus(b as BuildingId) }, [selectBuilding])
+  const skip = useCallback(() => dispatch({ type: 'clock/skip', maxMinutes: 3 * 1440 }), [dispatch])
+  // Enter / Space press the single dialogue action on screen (never a choice button or a menu item).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' && e.code !== 'Space') return
+      const target = e.target as HTMLElement
+      if (target.closest('input, textarea, select, .story-option, [role="menuitem"], .story-decision')) return
+      const actions = [...document.querySelectorAll<HTMLButtonElement>('[data-dialogue-action]')].filter((b) => !b.disabled && b.offsetParent !== null)
+      if (actions.length !== 1 || document.querySelector('.story-decision')) return
+      if (target.tagName === 'BUTTON' && target !== actions[0]) return
+      e.preventDefault(); e.stopPropagation(); actions[0].click()
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [])
+  // C2: look at the whole real route before deciding.
+  const c2Seen = useRef<string | null>(null)
+  useEffect(() => {
+    if (!decision || decision.key !== 'C2' || c2Seen.current === decision.id || !ready) return
+    c2Seen.current = decision.id
+    const leg = surveyLegs().find((l) => l.site.id === decision.context.zone)
+    if (!leg) return
+    const v = leg.curve.getPointAt(0.5, new THREE.Vector3())
+    setFollowRover(false); world.current?.focusArea(v.x, v.z, Math.max(1600, leg.length * 0.95), 'region')
+  }, [decision, ready])
+
   // Return home: fly out to the whole Moon, then show the results.
   useEffect(() => {
     if (game.phase !== 'returning') return
@@ -236,7 +307,7 @@ export default function App() {
     dispatch({ type: 'game/restart' })
     setDemo(null); setCompleted(new Set()); setModal(null); setFollowRover(false); opened.current = false
     setSelected('command'); seenLog.current = 1
-    setOnb('welcome'); setStep(0); setLine(0); setRevealed(new Set()); setPanelOpen(false); opened.current = false
+    setOnb('welcome'); setStep(0); setLine(0); setRevealed(new Set()); setPanelOpen(false); opened.current = false; setBrief(null); offered.current = new Set()
   }, [dispatch])
   const updatePreferences = useCallback((next: Preferences) => { if (next.sound && !preferences.sound) playUiTone('success'); setPreferences(next) }, [preferences.sound])
   const toggleSound = useCallback(() => { setPreferences((current) => ({ ...current, sound: !current.sound })); if (!preferences.sound) playUiTone('success') }, [preferences.sound])
@@ -248,12 +319,13 @@ export default function App() {
   const setPaused = useCallback((next: boolean) => dispatch({ type: 'clock/setPaused', paused: next }), [dispatch])
 
   // Mission clock: only `clock/tick` moves time. Never while paused, during the opening/ending, or with a menu open.
-  const decisionBlocks = game.mode === 'basic' && game.decisions.length > 0
+  const decisionBlocks = game.mode === 'basic' && (game.decisions.length > 0 || game.inbox.length > 0 || !!brief)
   useEffect(() => {
     if (paused || !ready || modal !== null || game.phase !== 'playing' || decisionBlocks) return
     const timer = setInterval(() => dispatch({ type: 'clock/tick', minutes: SIM_MINUTES_PER_REAL_SECOND * speed / 4 }), 250)
     return () => clearInterval(timer)
   }, [paused, ready, speed, modal, game.phase, decisionBlocks, dispatch])
+  // Advanced: the D2 lander still needs a decision after landing; nothing else changes here.
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement
@@ -286,21 +358,36 @@ export default function App() {
   const roverMission: RoverMission | null = ice.zone && ['outbound', 'anomaly', 'surveying', 'returning', 'recalled'].includes(ice.stage)
     ? { zone: ice.zone, phase: ice.stage === 'surveying' ? 'scanning' : ice.stage === 'returning' || ice.stage === 'recalled' ? 'returning' : 'outbound', progress: ice.stage === 'surveying' ? 1 : ice.distanceM / total }
     : null
+  // D2 in the 3D world: real progress from the game state (landing, the carrier's trip, delivery once).
+  const sup = game.supply, nowMin = game.clock.elapsedMinutes
+  const jobT = sup.stage === 'pickup' && sup.phaseStartedAt !== null && sup.jobDoneAt !== null && sup.jobDoneAt > sup.phaseStartedAt ? Math.min(1, Math.max(0, (nowMin - sup.phaseStartedAt) / (sup.jobDoneAt - sup.phaseStartedAt))) : 0
+  const carrier = sup.stage === 'pickup' ? (sup.method === 'crew' ? 'crew' : sup.roverPhase === 'trip' ? 'rover' : null) : null
+  const supplyView: SupplyView | null = ['landing', 'waiting', 'pickup', 'delivered'].includes(sup.stage) ? {
+    landing: sup.stage === 'landing' && sup.landingEndsAt !== null ? Math.min(1, Math.max(0, 1 - (sup.landingEndsAt - nowMin) / SCHEDULE.d2LandingMin)) : 1,
+    carrier, progress: carrier ? jobT : 0, delivered: sup.stage === 'delivered',
+  } : null
+  const supplyTrip = carrier === 'rover' ? tripPhase(jobT) : null
+  const roverForStory: RoverMission | null = supplyTrip ? { zone: null, phase: supplyTrip.leg === 'back' ? 'returning' : 'outbound', progress: supplyTrip.along, path: SUPPLY_ROVER_PATH } : roverMission
+  void SUPPLY_PAD
+  const solarStowed = game.power.stowedUntil !== null && nowMin < game.power.stowedUntil
   const onSceneReady = useCallback(() => setReady(true), [])
   const onRoverStatus = useCallback((status: RoverStatus) => setRoverStatus(status), [])
   const onCameraTravel = useCallback((moving: boolean, destination: CameraMode) => setCameraMoving(moving ? destination : null), [])
   const onPanelOpen = useCallback((open: boolean) => { setPanelOpen(open); if (open && window.innerWidth < 1000) setCommanderCollapsed(true) }, [])
-  const showDecision = decision && hiddenDecision !== decision.id && modal === null && game.phase === 'playing' && onb === 'done'
+  const showDecision = decision && hiddenDecision !== decision.id && modal === null && game.phase === 'playing' && onb === 'done' && !review && !brief
   return <MotionConfig reducedMotion={preferences.reducedMotion ? 'always' : 'user'}><main ref={root} className={`lunaris-app ${preferences.reducedMotion ? 'reduced-motion' : ''} ${radiation ? 'radiation-active' : ''} ${panelOpen ? 'panel-open' : ''} story-${game.phase}`}>
-    <World ref={world} mode={mode} cameraRequest={cameraRequest} onDistanceMode={setMode} selected={selected} onSelect={selectBuilding} onMode={changeMode} onCrew={() => setModal('crew')} paused={(paused && !(demo && demo.phase !== 'complete')) || !!modal} speed={speed} forecastHour={section === 'forecast' ? hour : 0} demo={demo} onPhase={onPhase} preferences={preferences} onReady={onSceneReady} followRover={followRover} onFollowRover={setFollowRover} onRoverStatus={onRoverStatus} onCameraTravel={onCameraTravel} roverMission={roverMission} sheltered={radiation} />
-    <ResourceHud values={hudValues} visible={hudVisible} highlight={hudHighlight} />
+    <World ref={world} mode={mode} cameraRequest={cameraRequest} onDistanceMode={setMode} selected={selected} onSelect={selectBuilding} onMode={changeMode} onCrew={() => setModal('crew')} paused={(paused && !(demo && demo.phase !== 'complete')) || !!modal} speed={speed} forecastHour={section === 'forecast' ? hour : 0} demo={demo} onPhase={onPhase} preferences={preferences} onReady={onSceneReady} followRover={followRover} onFollowRover={setFollowRover} onRoverStatus={onRoverStatus} onCameraTravel={onCameraTravel} roverMission={roverForStory} sheltered={radiation} solarStowed={solarStowed} supply={supplyView} crewGreeting={!!current?.crewGreeting} routeZone={decision?.key === 'C2' && showDecision ? String(decision.context.zone) : null} />
+    <ResourceHud values={hudValues} visible={hudVisible} highlight={hudHighlight} live={ready && onb === 'done' && game.phase === 'playing'} />
     <TopRight values={hudValues} visible={hudVisible} highlight={hudHighlight} paused={paused} onPause={() => setPaused(!paused)} speed={speed} onSpeed={() => setSpeed((s) => s === 8 ? 1 : s * 2)} time={onb === 'done' && game.phase === 'playing' ? `Ngày ${clock.day} · ${clock.label}` : null}
       menu={<>{decision && !showDecision && game.phase === 'playing' && onb === 'done' && <button className="hud-alert" aria-label="Mở lại quyết định đang chờ" onClick={() => setHiddenDecision(null)}><TriangleAlert size={16} /></button>}<SettingsMenu onDisplay={() => setModal('settings')} onMissions={() => changeSection('missions')} onTimeline={() => setModal('timeline')} onCrew={() => setModal('crew')} onActivity={() => setModal('activity')} onSound={toggleSound} sound={preferences.sound} onFullscreen={() => void fullscreen()} onHelp={() => setModal('help')} onCamera={changeMode} /></>} />
     {panelOpen && <ContextPanel section={section} selected={selected} onSelect={selectBuilding} onAction={(kind) => playDemo(kind)} onFocus={focusBuilding} game={game} demo={demo} completed={completed} hour={hour} onHour={setHour} open={panelOpen} onOpen={onPanelOpen} onMission={() => undefined} onNotify={(title, detail) => notify(title, detail, 'success')} roverStatus={roverStatus} followRover={followRover} onFollowRover={setFollowRover} onStory={story} />}
+    <ObjectiveChip objective={objective} onLook={look} onSkip={skip} />
     <div ref={footer} className="bottom-hud">
-      {current && tourMode === 'basic' && <Mascot text={current.lines[line]} mood={current.mood} onNext={touring ? skipTourCamera : advance} nextLabel={touring ? 'Bỏ qua' : step + 1 === tour.length && line + 1 === current.lines.length ? 'Sẵn sàng!' : 'Tiếp tục'} />}
+      {current && tourMode === 'basic' && <Mascot text={current.lines[line]} mood={current.mood} onNext={touring ? skipTourCamera : advance} nextLabel={touring ? 'Bỏ qua' : step + 1 === tour.length && line + 1 === current.lines.length ? (tourMode === 'basic' ? 'Bắt đầu nhiệm vụ' : 'Bắt đầu') : 'Tiếp tục'} />}
       {current && tourMode === 'advanced' && <Caption text={current.lines[line]} onNext={touring ? skipTourCamera : advance} />}
-      {onb === 'done' && game.mode === 'basic' && game.phase === 'playing' && <Mascot compact={!mascotOpen} onToggle={() => setMascotOpen(!mascotOpen)} text={lunaHint(game)} mood={radiation || decision ? 'warning' : 'idle'} onNext={decision && !showDecision ? () => setHiddenDecision(null) : undefined} nextLabel="Mở quyết định" />}
+      {brief && game.mode === 'basic' && <Mascot text={BRIEFINGS[brief.id].lines[brief.line]} mood="happy" onNext={nextBriefLine} nextLabel={brief.line + 1 < BRIEFINGS[brief.id].lines.length ? 'Tiếp tục' : BRIEFINGS[brief.id].start} />}
+      {brief && game.mode === 'advanced' && <Caption text={BRIEFINGS[brief.id].caption} onNext={startResearch} label={BRIEFINGS[brief.id].start} />}
+      {!brief && onb === 'done' && game.mode === 'basic' && game.phase === 'playing' && <Mascot compact={!mascotOpen || !!review} onToggle={() => setMascotOpen(!mascotOpen)} text={lunaHint(game)} mood={radiation || decision ? 'warning' : 'idle'} onNext={decision && !showDecision ? () => setHiddenDecision(null) : undefined} nextLabel="Mở quyết định" />}
       <div className="camera-status-stack">
         {followRover && <div className="follow-rover-bar glass"><CarFront size={17} /><div><strong>ĐANG THEO DÕI MILO</strong><span>{roverStatus.site}</span></div><button aria-label="Dừng theo dõi rover" onClick={() => setFollowRover(false)}><X size={15} /></button></div>}
       </div>
@@ -312,7 +399,9 @@ export default function App() {
       {ready && onb === 'welcome' && <WelcomeScreen key="welcome" onNext={() => setOnb('mode')} />}
       {onb === 'mode' && <ModeSelect key="mode" onReady={(m) => { setTourMode(m); setOnb('cinematic') }} />}
       {onb === 'cinematic' && <IntroCinematic key="cinematic" reducedMotion={preferences.reducedMotion} onDone={() => { setOnb('tour'); setStep(0); setLine(0); fly('base') }} />}
-      {showDecision && <DecisionDialog key={decision.id} decision={decision} game={game} world={facts} onChoose={choose} onInspect={() => setHiddenDecision(decision.id)} />}
+      {reviewEntry && <ReviewPanel key={reviewEntry.id} entryId={reviewEntry.id} game={game} onContinue={ack} />}
+      {showDecision && decision.key === 'C2' && <RouteCard key={decision.id} decision={decision} world={facts} game={game} onChoose={choose} />}
+      {showDecision && decision.key !== 'C2' && <DecisionDialog key={decision.id} decision={decision} game={game} world={facts} onChoose={choose} onInspect={() => setHiddenDecision(decision.id)} />}
       {game.phase === 'returning' && <ReturnCinematic key="return" reason={endingReport(game).reason} />}
       {game.phase === 'ended' && <EndingScreen key="ending" game={game} onRestart={restartGame} />}
       {modal === 'timeline' && <MissionLogDialog game={game} onClose={() => setModal(null)} />}

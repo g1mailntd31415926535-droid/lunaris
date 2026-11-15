@@ -216,6 +216,7 @@ export const PlanetCameraRig = forwardRef<WorldHandle, { request: CameraRequest;
       focusPoint('base', 21, [position[0], position[2]])
     },
     focusPoint(x: number, z: number) { focusPoint('region', 420, [x, z]) },
+    focusArea(x: number, z: number, height: number, mode: CameraMode = 'base') { focusPoint(mode, height, [x, z]) },
     focusCrew(name: string) {
       const actor = window.__LUNARIS__?.actors.find((a) => a.name === 'astronaut:' + name)
       if (actor) focusPoint('base', 18, [actor.position[0], actor.position[2]])

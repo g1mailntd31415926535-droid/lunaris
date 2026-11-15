@@ -62,7 +62,7 @@ function BasePanel({ selected, onSelect, onFocus, demo, completed, roverStatus, 
   return <>
     <div className="base-title"><div><h2>Artemis <span>01</span></h2><p>Ngôi nhà nhỏ trên Mặt Trăng</p></div><span className="nominal-badge"><StatusDot /> Ổn định</span></div>
     <MiniMap selected={building.id} onSelect={onSelect} />
-    <div className="colony-stats"><div><strong>08</strong><span>Công trình</span></div><div><strong>06</strong><span>Phi hành gia</span></div><div><ShieldCheck size={19} /><span>An toàn</span></div></div>
+    <div className="colony-stats"><div><strong>08</strong><span>Công trình</span></div><div><strong>04</strong><span>Phi hành gia</span></div><div><ShieldCheck size={19} /><span>An toàn</span></div></div>
     <div className="panel-divider" />
     <AnimatePresence mode="wait" initial={false}><motion.section className="building-detail" key={building.id} initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.16 }} style={{ '--building-accent': building.accent } as CSSProperties}>
       <div className="building-category"><span>{building.category}</span><small>{building.code}</small></div>

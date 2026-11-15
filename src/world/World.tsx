@@ -15,6 +15,9 @@ import type { CoverageClass } from './dem'
 import { Buildings } from './Buildings'
 import { Actors } from './Actors'
 import { ExplorationRover } from './ExplorationRover'
+import { SUPPLY_CREW, SupplyOps } from './SupplyOps'
+import { RoutePreview } from './RoutePreview'
+import type { SupplyView } from './SupplyOps'
 import type { RoverMission } from './ExplorationRover'
 import { ArtemisMarker, Earth, MoonGlobe, Starfield, Sun } from './Planet'
 import { PlanetCameraRig } from './PlanetCameraRig'
@@ -46,6 +49,12 @@ interface WorldProps {
   roverMission?: RoverMission | null
   /** Story Mode: the crew is in the shelter (D3). */
   sheltered?: boolean
+  /** Story Mode: A3 stow folds the solar wings. */
+  solarStowed?: boolean
+  /** Story Mode: D2 lander, cargo and carriers. */
+  supply?: SupplyView | null
+  /** C2: the chosen zone's real A* route drawn on the terrain (preview only). */
+  routeZone?: string | null
   /** Onboarding: the crew greets the player. */
   crewGreeting?: boolean
   onCameraTravel: (moving: boolean, destination: CameraMode) => void
@@ -147,10 +156,12 @@ function SouthPoleRegion({ props, clock, onCoverage, onFocusPoint }: { props: Wo
     <RegionalTerrain quality={props.preferences.quality} layer={props.preferences.terrainLayer} />
     <ScienceZoneMarkers onFocus={onFocusPoint} />
     <ExplorationRover selected={props.selected === 'rover'} follow={props.followRover} mode={props.mode} reducedMotion={props.preferences.reducedMotion} showRoute={props.preferences.showRoutes} onSelect={() => props.onSelect('rover')} onFollow={() => props.onFollowRover(true)} onStatus={props.onRoverStatus} mission={props.roverMission} />
+    <RoutePreview zone={props.routeZone ?? null} />
+    <SupplyOps view={props.supply ?? null} reducedMotion={props.preferences.reducedMotion} />
     <group ref={settlement} name="artemis-base" position={[0, frame.c, 0]} quaternion={frame.quaternion}>
       <ColonyDecorations />
-      <Buildings selected={props.selected} onSelect={props.onSelect} mode={props.mode} labels={props.preferences.showLabels} demo={props.demo} reducedMotion={props.preferences.reducedMotion} onHover={propsHover} />
-      <Actors demo={props.demo} reducedMotion={props.preferences.reducedMotion} onCrew={props.onCrew} greet={props.crewGreeting} />
+      <Buildings selected={props.selected} onSelect={props.onSelect} mode={props.mode} labels={props.preferences.showLabels} demo={props.demo} reducedMotion={props.preferences.reducedMotion} onHover={propsHover} solarStowed={props.solarStowed} />
+      <Actors demo={props.demo} reducedMotion={props.preferences.reducedMotion} onCrew={props.onCrew} greet={props.crewGreeting} away={props.supply?.carrier === 'crew' && !props.supply.delivered ? SUPPLY_CREW : undefined} />
       <ActionEffects demo={props.demo} clock={clock} reducedMotion={props.preferences.reducedMotion} />
     </group>
   </group>
@@ -214,7 +225,7 @@ export const World = forwardRef<WorldHandle, WorldProps>(function World(props, r
   const clock = useRef<VisualTime>({ time: 0, delta: 0, actionId: 0, actionStart: 0 })
   const universe = useRef(initialUniverseState()), rig = useRef<WorldHandle>(null), ready = useRef(false)
   const onReady = useCallback(() => { if (!ready.current) { ready.current = true; setCanvasReady(true); props.onReady() } }, [props.onReady])
-  useImperativeHandle(ref, () => ({ zoom: (d) => rig.current?.zoom(d), reset: () => rig.current?.reset(), focus: (id) => rig.current?.focus(id), focusCrew: (name) => rig.current?.focusCrew(name), focusPoint: (x, z) => rig.current?.focusPoint(x, z) }), [])
+  useImperativeHandle(ref, () => ({ zoom: (d) => rig.current?.zoom(d), reset: () => rig.current?.reset(), focus: (id) => rig.current?.focus(id), focusCrew: (name) => rig.current?.focusCrew(name), focusPoint: (x, z) => rig.current?.focusPoint(x, z), focusArea: (x, z, h, m) => rig.current?.focusArea(x, z, h, m) }), [])
   return <div className="world" data-camera-mode={props.mode} data-unified-scene="true" data-ready={canvasReady} data-terrain-layer={props.preferences.terrainLayer}>
     <SceneErrorBoundary>
       <Canvas shadows="percentage" dpr={[1, props.preferences.quality === 'high' ? 1.5 : 1]} camera={{ position: [0.0232, 0.027, 0.0295], fov: 40, near: 0.00002, far: SPACE_FAR_KM }} gl={{ antialias: true, alpha: false, logarithmicDepthBuffer: true, powerPreference: 'high-performance' }} onCreated={({ gl, camera, raycaster }) => { gl.toneMapping = THREE.ACESFilmicToneMapping; gl.toneMappingExposure = 1.08; gl.outputColorSpace = THREE.SRGBColorSpace; camera.layers.enable(1); raycaster.layers.enable(1) }}>

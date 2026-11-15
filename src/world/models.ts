@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import type { BuildingId } from '../types'
 import { ModelKit, MATERIALS as M, addFoundation, addDoor, addBeacon, panelSurface } from './model-kit'
 import { addCommunicationAntenna, addRecyclerPipe } from './equipment-details'
@@ -79,17 +80,31 @@ function solar() {
   return kit.build()
 }
 
-/** One Sun-tracking head: cross beam and two tall panels either side of the mast. Panel faces point along local +z. */
+/**
+ * One Sun-tracking head: cross beam and two tall panels either side of the mast. Panel faces point along local +z.
+ * Each panel hangs on a vertical hinge (group "solar-wing", userData.side = ±1) so it can fold forward,
+ * cells facing each other, without scaling or passing through the hub, beam or mast (A3 "stow").
+ */
+export const SOLAR_HINGE: [number, number] = [0.12, 0.14]   // |x| and z of each hinge in the head frame
 export function solarTrackerHead() {
-  const kit = new ModelKit()
-  kit.part('cylinder', [0.24, 0.3, 0.24], [0, 0, 0], M.trim)                                   // slewing hub on the mast
-  kit.part('box', [2.18, 0.1, 0.12], [0, 0, 0.02], M.trim)                                     // cross beam
+  const head = new THREE.Group()
+  const core = new ModelKit()
+  core.part('cylinder', [0.24, 0.3, 0.24], [0, 0, 0], M.trim)                                   // slewing hub on the mast
+  core.part('box', [2.18, 0.1, 0.12], [0, 0, 0.02], M.trim)                                     // cross beam
+  head.add(core.build())
   for (const side of [-1, 1]) {
-    kit.part('box', [1.0, 2.72, 0.07], [side * 0.6, 0, 0.1], M.white)                          // light frame
-    kit.part('box', [0.9, 2.6, 0.05], [side * 0.6, 0, 0.135], panelSurface())                  // cells
-    kit.part('box', [0.035, 2.6, 0.06], [side * 0.6, 0, 0.14], M.trim)                         // centre rail
+    const kit = new ModelKit(), cx = side * 0.48                                                // panel centre from the hinge
+    kit.part('box', [1.0, 2.72, 0.07], [cx, 0, -0.04], M.white)                                 // light frame
+    kit.part('box', [0.9, 2.6, 0.05], [cx, 0, -0.005], panelSurface())                         // cells
+    kit.part('box', [0.035, 2.6, 0.06], [cx, 0, 0], M.trim)                                     // centre rail
+    for (const y of [-0.8, 0.8]) kit.part('cylinder', [0.07, 0.42, 0.07], [0, y, -0.04], M.trim) // hinge knuckles
+    const wing = new THREE.Group()
+    wing.name = 'solar-wing'; wing.userData.side = side
+    wing.position.set(side * SOLAR_HINGE[0], 0, SOLAR_HINGE[1])
+    wing.add(kit.build())
+    head.add(wing)
   }
-  return kit.build()
+  return head
 }
 
 function water() {

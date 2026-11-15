@@ -111,10 +111,12 @@ export function screenTexture(kind: string, accent: string) {
   return texture
 }
 
-function pixelAstronaut(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number, frame: number, back: boolean, accent: string) {
+export type AstronautPose = 'walk' | 'waveA' | 'waveB' | 'cheer'
+function pixelAstronaut(ctx: CanvasRenderingContext2D, offsetX: number, offsetY: number, frame: number, back: boolean, accent: string, pose: AstronautPose = 'walk') {
   const r = (x: number, y: number, w: number, h: number, color: string) => { ctx.fillStyle = color; ctx.fillRect(offsetX + x, offsetY + y, w, h) }
   const dark = '#272b45', white = '#f4f2fa', shade = '#bbc0db', light = '#ffffff'
-  const step = [0, 1, 0, -1][frame]
+  const step = pose === 'walk' ? [0, 1, 0, -1][frame] : 0
+  const raised = pose !== 'walk'
   // Backpack, leg joints, and an oversized stepped helmet are identity anchors.
   r(6, 22, 5, 10, dark); r(6, 23, 4, 7, shade); r(6, 25, 2, 3, accent)
   r(10, 27, 13, 6, dark); r(11, 28, 11, 4, shade)
@@ -124,8 +126,8 @@ function pixelAstronaut(ctx: CanvasRenderingContext2D, offsetX: number, offsetY:
   r(9 - step, 36 + step, 6, 2, accent); r(18 + step, 36 - step, 6, 2, accent)
   r(9, 21, 15, 11, dark); r(10, 21, 13, 9, white); r(20, 23, 3, 7, shade)
   r(12, 24, 7, 4, '#7586a9'); r(13, 24, 5, 2, light); r(14, 25, 2, 2, accent)
-  r(7, 23 + step, 4, 7, dark); r(8, 23 + step, 3, 5, white); r(7, 28 + step, 4, 2, accent)
-  r(23, 22 - step, 4, 8, dark); r(23, 23 - step, 3, 5, white); r(23, 28 - step, 4, 2, accent)
+  if (pose !== 'cheer') { r(7, 23 + step, 4, 7, dark); r(8, 23 + step, 3, 5, white); r(7, 28 + step, 4, 2, accent) }
+  if (!raised) { r(23, 22 - step, 4, 8, dark); r(23, 23 - step, 3, 5, white); r(23, 28 - step, 4, 2, accent) }
   r(9, 3, 13, 2, dark); r(6, 5, 19, 3, dark); r(4, 8, 23, 11, dark); r(6, 19, 19, 2, dark); r(9, 21, 13, 1, dark)
   r(9, 4, 13, 2, white); r(6, 6, 19, 3, white); r(5, 9, 21, 9, white); r(7, 18, 17, 2, shade); r(10, 20, 11, 1, shade)
   r(4, 10, 4, 8, dark); r(5, 11, 3, 6, shade); r(5, 12, 2, 3, accent)
@@ -140,16 +142,27 @@ function pixelAstronaut(ctx: CanvasRenderingContext2D, offsetX: number, offsetY:
     r(14, 16, 4, 1, '#be705f'); r(11, 15, 2, 1, '#f8998d'); r(20, 15, 1, 1, '#f8998d')
     r(9, 9, 2, 2, '#8abfff'); r(10, 9, 3, 1, '#b2d8ff')
   }
+  // Raised arms are drawn last, outside the helmet: a hand that waves left/right (A/B) and a two-arm cheer.
+  if (raised) {
+    r(26, 13, 4, 10, dark); r(27, 14, 2, 8, white)
+    if (pose === 'waveB') { r(27, 7, 5, 6, dark); r(28, 8, 3, 4, accent) } else { r(25, 8, 5, 6, dark); r(26, 9, 3, 4, accent) }
+  }
+  if (pose === 'cheer') { r(2, 13, 4, 10, dark); r(3, 14, 2, 8, white); r(2, 8, 5, 6, dark); r(3, 9, 3, 4, accent) }
 }
 
+/** Atlas rows (4 frames each): 0 = walk front, 1 = walk back, 2 = greeting poses. UV offset.y of a row (flipY). */
+export const ATLAS_ROWS = 3
+export const atlasRow = (row: 0 | 1 | 2) => (ATLAS_ROWS - 1 - row) / ATLAS_ROWS
 export function astronautAtlas(accent: string) {
   const key = `astronaut-${accent}`
   if (textureCache.has(key)) return textureCache.get(key)!
-  const { canvas: c, ctx } = canvas(128, 80)
+  const { canvas: c, ctx } = canvas(128, 120)
   for (let frame = 0; frame < 4; frame++) {
     pixelAstronaut(ctx, frame * 32, 0, frame, false, accent)
     pixelAstronaut(ctx, frame * 32, 40, frame, true, accent)
   }
+  // Third row: greeting poses (front view): wave A, wave B, cheer, wave A.
+  ;(['waveA', 'waveB', 'cheer', 'waveA'] as const).forEach((pose, i) => pixelAstronaut(ctx, i * 32, 80, 0, false, accent, pose))
   const texture = finish(c, true)
   textureCache.set(key, texture)
   return texture

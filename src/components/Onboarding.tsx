@@ -1,18 +1,28 @@
 // Opening flow and the robot mascot. Presentation only; the game starts when the tour ends.
 import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, ChevronRight, Gauge, Lightbulb, Rocket, X } from 'lucide-react'
+import { ArrowRight, Gauge, Lightbulb, Rocket, X } from 'lucide-react'
 import { MODES, WELCOME } from '../onboarding/script'
 import type { TourStep } from '../onboarding/script'
 import { robotPortraitUrl } from '../world/textures'
 import type { RobotMood } from '../world/textures'
+
+/**
+ * The one primary action of a guidance / result dialog. Always drawn at the dialog's bottom-right corner
+ * (same size and margin everywhere, see .dialogue-action in styles.css). Enter / Space press it when it is the
+ * only dialogue action on screen and focus is not on a choice (see useDialogueKeys in App).
+ */
+export function DialogueActionButton({ label, onClick, disabled, icon }: { label: string; onClick: () => void; disabled?: boolean; icon?: ReactNode }) {
+  return <button className="dialogue-action" data-dialogue-action="" disabled={disabled} onClick={onClick}>{icon}{label}{!icon && <ArrowRight size={14} />}</button>
+}
 
 export function WelcomeScreen({ onNext }: { onNext: () => void }) {
   return <motion.div className="onb-screen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
     <motion.div className="onb-card" initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.7 }}>
       <h1 className="onb-logo">{WELCOME.title}</h1>
       {WELCOME.lines.map((l) => <p key={l}>{l}</p>)}
-      <button className="primary-button" onClick={onNext}>Tiếp tục<ChevronRight size={15} /></button>
+      <DialogueActionButton label="Tiếp tục" onClick={onNext} />
     </motion.div>
   </motion.div>
 }
@@ -23,7 +33,7 @@ export function ModeSelect({ onReady }: { onReady: (mode: 'basic' | 'advanced') 
     <motion.div className="onb-card wide" initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
       <span className="eyebrow">CHỌN CHẾ ĐỘ CHƠI</span>
       <div className="story-modes">{(['basic', 'advanced'] as const).map((m) => <button key={m} className={mode === m ? 'chosen' : ''} aria-pressed={mode === m} onClick={() => setMode(m)}>{m === 'basic' ? <Lightbulb size={20} /> : <Gauge size={20} />}<strong>{MODES[m].title}</strong>{MODES[m].lines.map((l) => <span key={l}>{l}</span>)}</button>)}</div>
-      <button className="primary-button onb-ready" disabled={!mode} onClick={() => mode && onReady(mode)}><Rocket size={16} />SẴN SÀNG</button>
+      <DialogueActionButton label="SẴN SÀNG" icon={<Rocket size={15} />} disabled={!mode} onClick={() => mode && onReady(mode)} />
     </motion.div>
   </motion.div>
 }
@@ -58,14 +68,14 @@ export function Mascot({ text, mood = 'idle', onNext, nextLabel = 'Tiếp tục'
     <button className="mascot-robot" aria-label={compact ? 'Mở lời nhắn của robot trợ lý' : 'Thu gọn lời nhắn'} onClick={onToggle} tabIndex={onToggle ? 0 : -1}><img src={robotPortraitUrl(face)} alt="Robot trợ lý LUNA-01" /></button>
     <AnimatePresence mode="wait">{!compact && <motion.div key={text} className="mascot-bubble glass" initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} aria-live="polite">
       <p>{text}</p>
-      {onNext && <button className="mascot-next" onClick={onNext}>{nextLabel}<ArrowRight size={13} /></button>}
+      {onNext && <DialogueActionButton label={nextLabel} onClick={onNext} />}
     </motion.div>}</AnimatePresence>
   </div>
 }
 
 /** Advanced mode: a short caption instead of the mascot. */
-export function Caption({ text, onNext }: { text: string; onNext?: () => void }) {
-  return <motion.div className="onb-caption glass" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}><p>{text}</p>{onNext && <button className="mascot-next" onClick={onNext}>Tiếp tục<ArrowRight size={13} /></button>}</motion.div>
+export function Caption({ text, onNext, label = 'Tiếp tục' }: { text: string; onNext?: () => void; label?: string }) {
+  return <motion.div className="onb-caption glass" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}><p>{text}</p>{onNext && <DialogueActionButton label={label} onClick={onNext} />}</motion.div>
 }
 
 export type { TourStep }

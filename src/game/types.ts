@@ -34,6 +34,8 @@ export interface PowerState {
 
 export interface Observation { atMinute: number; day: number; irrigationOk: boolean; lightPercent: number; growthPercent: number; heightCm: number }
 export interface FoodState {
+  started: boolean                  // the player began the research after the briefing (B1 is gated on it)
+  startedAt: number | null
   stage: 'growing' | 'harvested' | 'reported'
   irrigation: 'ok' | 'fault' | 'repairing'
   repairStartsAt: number | null
@@ -65,7 +67,15 @@ export interface IceState {
   report: { validNeutron: number; invalidNeutron: number; meanIndex: number; confidence: 'cao' | 'trung bình' | 'thấp'; reasons: string[] } | null
 }
 
-export interface SupplyState { stage: 'none' | 'announced' | 'waiting' | 'pickup' | 'delivered'; method: 'rover' | 'crew' | null; jobDoneAt: number | null; roverPhase: 'none' | 'toBase' | 'config' | 'trip' | 'unconfig' }
+export interface SupplyState {
+  stage: 'none' | 'announced' | 'landing' | 'waiting' | 'pickup' | 'delivered'
+  method: 'rover' | 'crew' | null
+  jobDoneAt: number | null
+  roverPhase: 'none' | 'toBase' | 'config' | 'trip' | 'unconfig'
+  landingEndsAt: number | null
+  /** Start of the current carrying job (crew EVA or rover trip), so the 3D world can show real progress. */
+  phaseStartedAt: number | null
+}
 export interface RadiationState { active: boolean; endsAt: number | null; roverChoice: 'wait' | 'return' | null }
 
 export interface GameState {
@@ -89,6 +99,8 @@ export interface GameState {
   decisions: Decision[]
   history: DecisionRecord[]
   log: EventLogEntry[]
+  /** Log entries the player must read and confirm (results, consequences, events). Basic: time waits for them. */
+  inbox: string[]
   foodWarned: boolean
   ending: { reason: 'submitted' | 'food'; atMinute: number } | null
   nextId: number
@@ -100,6 +112,10 @@ export type GameAction =
   | { type: 'clock/tick'; minutes: number }
   | { type: 'decide'; decisionId: string; choice: string; route?: RouteFacts; detourM?: number }
   | { type: 'a2/activate' }
+  | { type: 'notice/ack'; id?: string }
+  | { type: 'food/begin' }
+  | { type: 'food/repairNow' }
+  | { type: 'clock/skip'; maxMinutes: number }
   | { type: 'food/observe' }
   | { type: 'food/harvest' }
   | { type: 'food/report' }

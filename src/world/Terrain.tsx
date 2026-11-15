@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { screenTexture } from './textures'
 import { BIG_ROCKS, SMALL_ROCKS } from './rock-plan'
 import { heightAt } from './terrain-field'
 import { ModelKit, MATERIALS as M } from './model-kit'
@@ -43,7 +42,7 @@ function Rocks() {
   </group>
 }
 
-/** Paths, lamps, cargo and the landing pad. Returned as a model so it can be merged with the buildings by material. */
+/** Paths, lamps and cargo. Returned as a model so it can be merged with the buildings by material. */
 export function createSettlementDetailsModel() {
     const kit = new ModelKit()
     // Short, pressurized connectors use a single material compiler.
@@ -72,7 +71,7 @@ export function createSettlementDetailsModel() {
       }
     }
     lamp.traverse((node) => { if (node instanceof THREE.Mesh) node.geometry.dispose() })
-    // Cargo stacks and a small landing pad supply scale and lived-in detail.
+    // Cargo stacks supply scale and lived-in detail. (The old round landing pad was removed at the user's request.)
     for (const [x, z, count] of [[-5.8, -4.7, 3], [11.1, 7.0, 4], [-10.2, 1.4, 2], [4.6, -7.0, 2]]) {
       for (let i = 0; i < count; i++) {
         const xx = x + (i % 2) * 0.59, yy = 0.32 + Math.floor(i / 2) * 0.57
@@ -80,18 +79,11 @@ export function createSettlementDetailsModel() {
         kit.part('box', [0.43, 0.055, 0.025], [xx, yy + 0.08, z + 0.29], M.shell)
       }
     }
-    kit.part('cylinder', [4.1, 0.045, 4.1], [-11.7, 0.034, 7.8], M.dark)
-    kit.ring(1.95, 0.036, [-11.7, 0.07, 7.8], M.yellow)
-    kit.ring(1.58, 0.025, [-11.7, 0.07, 7.8], M.trim)
-    kit.part('box', [0.9, 0.014, 0.14], [-11.7, 0.08, 8.0], M.shell)
-    kit.part('box', [0.15, 0.014, 0.9], [-12.075, 0.08, 7.68], M.shell)
     return kit.build()
 }
 
 export function ColonyDecorations() {
-  const badge = useMemo(() => screenTexture('command', '#cfb9ff'), [])
   return <group name="colony-decoration">
     <Rocks />
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-11.7, 0.081, 7.8]}><planeGeometry args={[1.15, 1.15]} /><meshBasicMaterial map={badge} transparent opacity={0.65} /></mesh>
   </group>
 }

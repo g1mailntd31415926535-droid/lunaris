@@ -28,7 +28,7 @@ export function saveGame(state: GameState, storage: KeyValueStorage | null): boo
 
 function isGameState(value: unknown): value is GameState {
   const s = value as GameState
-  return !!s && typeof s === 'object' && s.version === SAVE_SCHEMA_VERSION && typeof s.stage === 'string' && !!s.resources && !!s.clock && typeof s.clock.elapsedMinutes === 'number' && !!s.food && !!s.ice && Array.isArray(s.decisions) && Array.isArray(s.history) && Array.isArray(s.log)
+  return !!s && typeof s === 'object' && s.version === SAVE_SCHEMA_VERSION && typeof s.stage === 'string' && !!s.resources && !!s.clock && typeof s.clock.elapsedMinutes === 'number' && !!s.food && !!s.ice && Array.isArray(s.decisions) && Array.isArray(s.history) && Array.isArray(s.log) && Array.isArray(s.inbox)
 }
 
 export function loadGame(storage: KeyValueStorage | null): LoadResult {
