@@ -1,22 +1,59 @@
 # LUNARIS
 
-A Vietnamese, interactive lunar-colony **UI prototype** built with React, TypeScript, Vite, React Three Fiber, Drei, Three.js and Motion. Opens directly into the colony, with no introduction or loading-screen overlay.
+**Play now (no login, no install): https://lunaris-cpd.pages.dev**  ·  Best in Chrome or Edge (WebGL).
 
-## Run
+LUNARIS is a free browser game for children aged 7–12. You are the Commander of a small research base at the Moon's south pole. You keep power, water and oxygen in balance, react to incidents, run a greenhouse research branch, and send the rover **MILO** across **real NASA lunar terrain** to survey four candidate water-ice zones. Every decision has a measured, explained consequence, so children learn *why* a trade-off matters, not just which answer is "right".
+
+*(Tiếng Việt: trò chơi giáo dục STEM cho trẻ 7–12 tuổi, giao diện tiếng Việt, địa hình là dữ liệu NASA thật.)*
+
+## What you can do in the game
+
+- **Guided start.** Welcome → intro film → a robot assistant introduces the base, power, water, oxygen and food, then the crew greets you.
+- **Basic mode.** The robot guides one branch at a time and the clock stops whenever a decision or result is waiting. (Advanced mode, with no assistant and no auto-pause, exists in the code but is locked in the public build; open the page with `?debug=1` to try it.)
+- **Tutorial A1–A3.** Spend surplus power (filter water or charge the battery), switch on oxygen electrolysis, and protect the solar array when a forecast of more small space rocks than usual arrives.
+- **Food research B1–B4.** Observe the greenhouse, fix an irrigation fault, harvest and report.
+- **Ice exploration C1–C4.** Pick a zone on the map, check the real A* route drawn on the terrain (hover it for slope, energy and time), confirm, and follow MILO, including a roadblock decision on the way.
+- **Events D1–D3.** Low light, a resupply landing (crew or rover brings the cargo in) and a solar particle event.
+- **Cause-and-effect ending.** After the report, the ending traces your choices through the mission (for example *keep the array open → 90 % capacity → low-light shortfall → lamps off → slower plants*) using only consequences the simulation actually measured. Risks that did not happen and events that never occurred are labelled as such, never invented.
+
+## NASA data and what is not NASA data
+
+| Real NASA data | Game assumptions (labelled in the game) |
+| --- | --- |
+| LRO **LOLA 5 m south-pole DEM** (Connecting Ridge, Shackleton rim) and coarser regional LOLA grids, [PGDA product 78](https://pgda.gsfc.nasa.gov/products/78) / [90](https://pgda.gsfc.nasa.gov/products/90), LDEM_4 from [PDS](https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/) | Power, water, oxygen and food quantities, event timings and the rover's "measurements" |
+| Mapped permanently shadowed regions; zones A–D at published coordinates | Which zone "shows" more hydrogen in the simulation |
+| A* rover routes computed on the native 5 m slope layer (≤ 15°, NASA VIPER's nominal slope) | Rover speed, battery use and survey length |
+| Moon colour map from [NASA SVS CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) | Buildings, crew, small rocks, lighting (artistic) |
+
+**Ice is not confirmed anywhere in this game.** The four zones are candidates awaiting rover verification. Every source, formula and caveat is in [`docs/EVIDENCE.md`](docs/EVIDENCE.md); screenshots are in [`docs/evidence/`](docs/evidence) and [`docs/EVIDENCE_GALLERY.html`](docs/EVIDENCE_GALLERY.html).
+
+## Run, test, deploy
 
 Requires Node.js **24+** (the tests use Node's TypeScript type stripping).
 
 ```powershell
 npm install
-npm run dev
+npm run dev        # http://localhost:5173
+npm test           # engine, terrain and regional tests
+npm run build      # production build (dist/, ~42 MB, no file above 25 MB)
+npm run deploy     # build + Cloudflare Pages (needs `npx wrangler login` once)
 ```
 
-Open **http://localhost:5173**. The development server uses a fixed port. For a production check:
+Browser checks (dev server running): `node scripts/terrain/smoke_check.mjs`, `node scripts/ui_consistency_check.mjs`, `node scripts/ux_round3_check.mjs`, `node scripts/intro_video_check.mjs`, and `node scripts/story_playthrough.mjs basic both` (a full game, played through the on-screen buttons). `node scripts/verify_production.mjs https://lunaris-cpd.pages.dev` checks the public site like a first-time visitor (HTTPS, no login, deep links, terrain data, film, save/restart, load time).
 
-```powershell
-npm run build
-npm run preview
-```
+Progress is saved only in the player's browser (`localStorage`); there are no accounts and no server. Restart clears it.
+
+## How it is built
+
+React 19, TypeScript, Vite, Three.js with React Three Fiber / Drei, and Motion. The game is one pure reducer (`src/game/`): clock, resources, scheduled events, decisions, measured consequences (`EffectRecord`) and the ending analysis (`src/game/causal.ts`) all read the same state, and the 3D world only displays it. The terrain pipeline (Python, rasterio) lives in `scripts/terrain/`.
+
+## Use of AI tools (disclosure)
+
+Game and event design were developed with ChatGPT; the code was written with Claude Code (and Codex for early work); the intro film's narration is an AI voice generated with ElevenLabs; text was written and edited with AI assistance. The NASA data processing is scripted and validated in `scripts/terrain/` and `reports/`.
+
+## Credits and licences
+
+NASA LOLA / PGDA / PDS / SVS data as cited above. Manrope font (SIL Open Font License, `public/fonts/OFL.txt`). Three.js, React, React Three Fiber, Drei, Motion, lucide-react and Vite are open source (MIT/ISC). The pixel crew, robot mascot and colony models are original LUNARIS art. This is an independent educational project; it is not affiliated with or endorsed by NASA.
 
 ## Task 02 · real NASA terrain (LOLA 5 m)
 
