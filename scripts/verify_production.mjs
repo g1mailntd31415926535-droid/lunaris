@@ -70,7 +70,7 @@ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('lunaris
 check('progress is saved locally (localStorage only)', saved >= 1, `history ${saved}`)
 await page.locator('.hud-gear').click(); await page.getByRole('menuitem', { name: /Display/ }).click()
 await page.getByRole('button', { name: /Restart|Play again/i }).first().click().catch(() => null)
-await page.getByRole('button', { name: /Restart|Play again|Confirm/i }).last().click().catch(() => null)
+await page.locator('.game-modal .primary-button.danger').click({ timeout: 5000 }).catch(() => null)   // the confirm button of the restart dialog
 await page.waitForTimeout(1500)
 const afterRestart = await page.evaluate(() => localStorage.getItem('lunaris.story.save'))
 check('after Restart no progress is stored', afterRestart === null, String(afterRestart)?.slice(0, 60))
