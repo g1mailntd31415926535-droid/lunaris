@@ -54,7 +54,7 @@ export interface FoodState {
   observations: Observation[]
   lightLog: { atMinute: number; on: boolean; reason: string }[]
   harvestGrams: number | null
-  report: { grams: number; expected: number; growthPercent: number; reliability: 'cao' | 'trung bình' | 'thấp'; reasons: string[] } | null
+  report: { grams: number; expected: number; growthPercent: number; reliability: 'high' | 'medium' | 'low'; reasons: string[] } | null
 }
 
 export interface Sample { atMinute: number; instrument: 'neutron' | 'nir' | 'thermal'; value: number; valid: boolean; flag?: string }
@@ -72,7 +72,7 @@ export interface IceState {
   samples: Sample[]
   roverBattery: number
   waitingRadiation: boolean
-  report: { validNeutron: number; invalidNeutron: number; meanIndex: number; confidence: 'cao' | 'trung bình' | 'thấp'; reasons: string[] } | null
+  report: { validNeutron: number; invalidNeutron: number; meanIndex: number; confidence: 'high' | 'medium' | 'low'; reasons: string[] } | null
   chargeStartedAt: number | null    // when MILO began charging for the chosen route (departure wait is measured from here)
 }
 

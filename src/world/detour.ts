@@ -9,7 +9,7 @@ const HALF = 40   // the boulder patch is bypassed over 80 m of the route
 
 export function checkDetour(zone: string, fraction: number): { detourM: number | null; reason?: string } {
   const leg = surveyLegs().find((l) => l.site.id === zone)
-  if (!leg) return { detourM: null, reason: 'Không có tuyến cho khu này.' }
+  if (!leg) return { detourM: null, reason: 'There is no route for this zone.' }
   const centre = leg.curve.getPointAt(Math.min(1, Math.max(0, fraction)), new THREE.Vector3())
   const tangent = leg.curve.getTangentAt(Math.min(1, Math.max(0, fraction)), new THREE.Vector3()).setY(0).normalize()
   const normal = new THREE.Vector3(-tangent.z, 0, tangent.x)
@@ -29,5 +29,5 @@ export function checkDetour(zone: string, fraction: number): { detourM: number |
     }
     if (ok) return { detourM: Math.max(1, Math.round(length - 2 * HALF)) }
   }
-  return { detourM: null, reason: coarse ? 'Dữ liệu 5 m quanh rover chưa tải xong, chưa kiểm tra được đường vòng.' : `Mọi đường vòng thử (lệch 15–35 m) đều có chỗ dốc hơn ${limit}° hoặc thiếu dữ liệu NASA.` }
+  return { detourM: null, reason: coarse ? 'The 5 m data around the rover has not finished loading, so a detour could not be checked.' : `Every detour tried (15–35 m off the route) has a spot steeper than ${limit}° or without NASA data.` }
 }

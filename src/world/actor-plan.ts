@@ -8,10 +8,10 @@ export type RoutePoint = [number, number]
  * `lineup` is the slot in the greeting row in front of the command centre (Nam — Nữ — Nam — Nữ).
  */
 export const CREW = [
-  { name: 'Linh', gender: 'nữ', role: 'Kỹ sư hệ thống', color: '#ffbb69', lineup: 1, route: [[-0.8, 2.4], [-0.8, 2.4]] as RoutePoint[], duration: 32 },
-  { name: 'Kai', gender: 'nam', role: 'Kỹ sư năng lượng', color: '#ffd75e', lineup: 0, route: [[-10.5, -1.3], [-9, -1.7], [-7.0, -1.45], [-9, -1.7], [-10.5, -1.3]] as RoutePoint[], duration: 29 },
-  { name: 'Mia', gender: 'nữ', role: 'Nhà thực vật học', color: '#92e09b', lineup: 3, route: [[6.2, 3.5], [7.8, 3.6], [10.9, 2.2], [7.8, 3.6], [6.2, 3.5]] as RoutePoint[], duration: 38 },
-  { name: 'Leo', gender: 'nam', role: 'Nhà địa chất, phụ trách rover', color: '#9cc7ff', lineup: 2, route: [[3.9, 9.7], [2.0, 10.1], [0.0, 10.5], [2.0, 10.1], [3.9, 9.7]] as RoutePoint[], duration: 31 },
+  { name: 'Linh', gender: 'female', role: 'Systems engineer', color: '#ffbb69', lineup: 1, route: [[-0.8, 2.4], [-0.8, 2.4]] as RoutePoint[], duration: 32 },
+  { name: 'Kai', gender: 'male', role: 'Power engineer', color: '#ffd75e', lineup: 0, route: [[-10.5, -1.3], [-9, -1.7], [-7.0, -1.45], [-9, -1.7], [-10.5, -1.3]] as RoutePoint[], duration: 29 },
+  { name: 'Mia', gender: 'female', role: 'Botanist', color: '#92e09b', lineup: 3, route: [[6.2, 3.5], [7.8, 3.6], [10.9, 2.2], [7.8, 3.6], [6.2, 3.5]] as RoutePoint[], duration: 38 },
+  { name: 'Leo', gender: 'male', role: 'Geologist, rover lead', color: '#9cc7ff', lineup: 2, route: [[3.9, 9.7], [2.0, 10.1], [0.0, 10.5], [2.0, 10.1], [3.9, 9.7]] as RoutePoint[], duration: 31 },
 ] as const
 /** Greeting row: evenly spaced 1.4 m apart on level ground in front of the command centre, clear of its door path. */
 export const LINEUP: RoutePoint[] = [[-6.2, 4.4], [-4.8, 4.4], [-3.4, 4.4], [-2.0, 4.4]]

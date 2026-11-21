@@ -85,8 +85,8 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
     root.current.quaternion.slerp(s.desired, 1 - Math.exp(-12 * Math.min(delta, 0.1)))
     root.current.position.fromArray(sample.point).addScaledVector(s.normal, -0.0835)
     u.roverPosition.fromArray(sample.point); u.roverNominal.copy(s.nominal); u.roverNormal.copy(s.normal)
-    const note = !leg ? `Chưa có tuyến nào đạt ngưỡng dốc ${routeSlopeLimitDeg()}°` : `Tuyến A* ${(leg.route.route_length_m / 1000).toFixed(1)} km · mọi ô 5 m dốc ≤ ${routeSlopeLimitDeg()}° (ngưỡng danh định NASA VIPER) · chưa xét chiếu sáng, nhiệt, liên lạc`
-    u.roverStatus = { phase, site: phase === 'docked' || !leg ? 'Căn cứ Artemis' : `Hướng tới ${leg.site.id} · ${leg.site.name}`, siteId: leg?.site.id ?? 'base', trip, distance: Math.hypot(sample.point[0], sample.point[2]), speed, note }
+    const note = !leg ? `No route meets the ${routeSlopeLimitDeg()}° slope limit yet` : `A* route ${(leg.route.route_length_m / 1000).toFixed(1)} km · every 5 m cell has slope ≤ ${routeSlopeLimitDeg()}° (NASA VIPER nominal limit) · lighting, temperature and communications not checked`
+    u.roverStatus = { phase, site: phase === 'docked' || !leg ? 'Artemis Base' : `Heading to ${leg.site.id} · ${leg.site.name}`, siteId: leg?.site.id ?? 'base', trip, distance: Math.hypot(sample.point[0], sample.point[2]), speed, note }
     if (Math.floor(clock.current.time * 2) !== lastStatus.current) { lastStatus.current = Math.floor(clock.current.time * 2); onStatus(u.roverStatus) }
 
     const length = leg?.length ?? 0
@@ -150,7 +150,7 @@ export function ExplorationRover({ selected, follow, mode, reducedMotion, showRo
       <instancedMesh ref={hubs} args={[undefined, undefined, 6]}><cylinderGeometry args={[0.19, 0.19, 0.03, 10]} /><primitive object={M.trim} attach="material" /></instancedMesh>
       <instancedMesh ref={centres} args={[undefined, undefined, 6]}><cylinderGeometry args={[0.095, 0.095, 0.035, 8]} /><primitive object={M.yellow} attach="material" /></instancedMesh>
       <group ref={scanner} position={[0.1, 2.24, -0.37]}><mesh position={[0.33, 0, 0]}><boxGeometry args={[0.07, 0.13, 0.22]} /><meshStandardMaterial color="#a2f6ce" emissive="#57dba8" emissiveIntensity={1.4} /></mesh></group>
-      {(selected || follow || mode === 'region') && <Html center position={markerPosition} zIndexRange={[24, 10]} style={{ pointerEvents: 'none' }}><button ref={marker} type="button" className={`rover-world-marker ${follow ? 'following' : ''}`} aria-label="Chọn MILO. Nhấp đúp để theo dõi" onClick={onSelect} onDoubleClick={onFollow}><span />MILO{follow && <small>THEO DÕI</small>}</button></Html>}
+      {(selected || follow || mode === 'region') && <Html center position={markerPosition} zIndexRange={[24, 10]} style={{ pointerEvents: 'none' }}><button ref={marker} type="button" className={`rover-world-marker ${follow ? 'following' : ''}`} aria-label="Select MILO. Double-click to follow" onClick={onSelect} onDoubleClick={onFollow}><span />MILO{follow && <small>FOLLOWING</small>}</button></Html>}
     </group>
   </group>
 }

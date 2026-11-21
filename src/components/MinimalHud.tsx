@@ -11,9 +11,9 @@ export interface HudValues { battery: number; water: number; oxygen: number; foo
 
 const O2 = () => <span className="o2-icon" aria-hidden="true">O<sub>2</sub></span>
 const ITEMS: Record<Exclude<HudItem, 'food'>, { color: string; label: string; icon: ReactNode }> = {
-  battery: { color: '#ffd75e', label: 'Điện dự trữ', icon: <BatteryCharging size={17} strokeWidth={2} /> },
-  water: { color: '#59c9ff', label: 'Nước sạch', icon: <Droplets size={17} strokeWidth={2} /> },
-  oxygen: { color: '#46dc8a', label: 'Oxy', icon: <O2 /> },
+  battery: { color: '#ffd75e', label: 'Stored power', icon: <BatteryCharging size={17} strokeWidth={2} /> },
+  water: { color: '#59c9ff', label: 'Clean water', icon: <Droplets size={17} strokeWidth={2} /> },
+  oxygen: { color: '#46dc8a', label: 'Oxygen', icon: <O2 /> },
 }
 
 export interface Float { id: number; key: string; value: number }
@@ -55,15 +55,15 @@ function useDeltas(values: HudValues, live: boolean) {
 
 export function ResourceHud({ values, visible, highlight, live = false }: { values: HudValues; visible: Set<HudItem>; highlight: HudItem | null; live?: boolean }) {
   const { floats, done } = useDeltas(values, live)
-  return <div className="hud-resources" aria-label="Tài nguyên căn cứ (số giả định của trò chơi)">
+  return <div className="hud-resources" aria-label="Base resources (assumed game numbers)">
     <AnimatePresence>{KEYS.filter((k) => visible.has(k)).map((k) => <Chip key={k} id={k} value={String(values[k])} unit="%" fraction={values[k] / 100} highlight={highlight === k} floats={floats.filter((f) => f.key === k)} onFloatDone={done} {...ITEMS[k]} />)}</AnimatePresence>
   </div>
 }
 
 export function TopRight({ values, visible, highlight, paused, onPause, speed, onSpeed, time, menu }: { values: HudValues; visible: Set<HudItem>; highlight: HudItem | null; paused: boolean; onPause: () => void; speed: number; onSpeed: () => void; time: string | null; menu: ReactNode }) {
   return <div className="hud-right">
-    {time && <div className="hud-time"><Clock3 size={13} /><span>{time}</span><button aria-label={paused ? 'Tiếp tục thời gian' : 'Tạm dừng thời gian'} onClick={onPause}>{paused ? <Play size={13} fill="currentColor" /> : <Pause size={13} fill="currentColor" />}</button><button aria-label={`Tốc độ ${speed} lần. Đổi tốc độ`} className="speed-button" onClick={onSpeed}>{speed}×</button></div>}
-    <AnimatePresence>{visible.has('food') && <Chip key="food" id="food" value={values.foodDays.toFixed(values.foodDays < 10 ? 1 : 0)} unit=" ngày" fraction={values.foodFraction} color="#ff6e5a" label="Thực phẩm đóng gói còn đủ (ngày)" icon={<Package size={17} strokeWidth={2} />} highlight={highlight === 'food'} />}</AnimatePresence>
+    {time && <div className="hud-time"><Clock3 size={13} /><span>{time}</span><button aria-label={paused ? 'Resume time' : 'Pause time'} onClick={onPause}>{paused ? <Play size={13} fill="currentColor" /> : <Pause size={13} fill="currentColor" />}</button><button aria-label={`Speed ${speed}×. Change speed`} className="speed-button" onClick={onSpeed}>{speed}×</button></div>}
+    <AnimatePresence>{visible.has('food') && <Chip key="food" id="food" value={values.foodDays.toFixed(values.foodDays < 10 ? 1 : 0)} unit=" days" fraction={values.foodFraction} color="#ff6e5a" label="Packaged food left (days)" icon={<Package size={17} strokeWidth={2} />} highlight={highlight === 'food'} />}</AnimatePresence>
     {menu}
   </div>
 }
@@ -81,17 +81,17 @@ export function SettingsMenu(a: MenuActions) {
   }, [open])
   const item = (icon: ReactNode, title: string, hint: string, run: () => void) => <button role="menuitem" onClick={() => { setOpen(false); run() }}>{icon}<span><b>{title}</b><small>{hint}</small></span></button>
   return <div className="hud-menu" ref={root}>
-    <button className="hud-gear" aria-label="Cài đặt và công cụ" aria-expanded={open} onClick={() => setOpen(!open)}><Settings size={19} /></button>
+    <button className="hud-gear" aria-label="Settings and tools" aria-expanded={open} onClick={() => setOpen(!open)}><Settings size={19} /></button>
     <AnimatePresence>{open && <motion.div className="hud-menu-list glass" role="menu" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15 }}>
-      {item(<Flag size={16} />, 'Nhiệm vụ', 'Tiến độ hướng dẫn, nghiên cứu và sự kiện', a.onMissions)}
-      {item(<History size={16} />, 'Nhật ký nhân quả', 'Mỗi quyết định đã dẫn tới điều gì', a.onTimeline)}
-      {item(<UsersRound size={16} />, 'Đội phi hành gia', 'Gặp và tìm từng người trong căn cứ', a.onCrew)}
-      {item(<Radio size={16} />, 'Tín hiệu', 'Các thông báo gần đây', a.onActivity)}
-      <div className="hud-menu-cams" role="group" aria-label="Góc nhìn">{(['orbit', 'region', 'base'] as const).map((m) => <button key={m} onClick={() => { setOpen(false); a.onCamera(m) }}><Moon size={13} />{m === 'orbit' ? 'Mặt Trăng' : m === 'region' ? 'Khu vực' : 'Căn cứ'}</button>)}</div>
-      {item(<Settings2 size={16} />, 'Hiển thị', 'Chất lượng, lớp NASA/Game, nhãn, chơi lại', a.onDisplay)}
-      {item(a.sound ? <Volume2 size={16} /> : <VolumeX size={16} />, a.sound ? 'Tắt âm thanh' : 'Bật âm thanh', 'Tiếng bấm nút và thông báo', a.onSound)}
-      {item(<Expand size={16} />, 'Toàn màn hình', 'Mở rộng khung chơi', a.onFullscreen)}
-      {item(<HelpCircle size={16} />, 'Trợ giúp', 'Cách xoay, phóng và phím tắt', a.onHelp)}
+      {item(<Flag size={16} />, 'Missions', 'Tutorial, research and event progress', a.onMissions)}
+      {item(<History size={16} />, 'Cause-and-effect log', 'What each decision led to', a.onTimeline)}
+      {item(<UsersRound size={16} />, 'Astronaut crew', 'Meet and find each crew member', a.onCrew)}
+      {item(<Radio size={16} />, 'Signals', 'Recent notifications', a.onActivity)}
+      <div className="hud-menu-cams" role="group" aria-label="Camera view">{(['orbit', 'region', 'base'] as const).map((m) => <button key={m} onClick={() => { setOpen(false); a.onCamera(m) }}><Moon size={13} />{m === 'orbit' ? 'Moon' : m === 'region' ? 'Region' : 'Base'}</button>)}</div>
+      {item(<Settings2 size={16} />, 'Display', 'Quality, NASA/Game layer, labels, restart', a.onDisplay)}
+      {item(a.sound ? <Volume2 size={16} /> : <VolumeX size={16} />, a.sound ? 'Mute sound' : 'Turn sound on', 'Button and notification sounds', a.onSound)}
+      {item(<Expand size={16} />, 'Full screen', 'Expand the game view', a.onFullscreen)}
+      {item(<HelpCircle size={16} />, 'Help', 'How to rotate, zoom, and shortcuts', a.onHelp)}
     </motion.div>}</AnimatePresence>
   </div>
 }
@@ -101,13 +101,13 @@ export function ObjectiveChip({ objective, onLook, onSkip }: { objective: { titl
   const [open, setOpen] = useState(true)
   if (!objective) return null
   return <div className={`objective-chip glass ${open ? '' : 'closed'}`} role="status" aria-live="polite">
-    <button className="objective-head" onClick={() => setOpen(!open)} aria-expanded={open}><Flag size={13} /><span><small>MỤC TIÊU HIỆN TẠI</small><b>{objective.title}</b></span></button>
+    <button className="objective-head" onClick={() => setOpen(!open)} aria-expanded={open}><Flag size={13} /><span><small>CURRENT GOAL</small><b>{objective.title}</b></span></button>
     {open && <>
       {objective.detail && <p>{objective.detail}</p>}
       {objective.progress !== undefined && <i className="objective-bar"><b style={{ width: `${Math.round(Math.min(1, Math.max(0, objective.progress)) * 100)}%` }} /><em>{Math.round(Math.min(1, Math.max(0, objective.progress)) * 100)} %</em></i>}
       <div className="objective-actions">
-        {objective.building && <button onClick={() => onLook(objective.building!)}>Xem nơi này</button>}
-        {objective.canSkip && <button onClick={onSkip} title="Cho thời gian trôi nhanh tới lúc cần bạn">Tua tới lúc cần bạn ⏩</button>}
+        {objective.building && <button onClick={() => onLook(objective.building!)}>Show me</button>}
+        {objective.canSkip && <button onClick={onSkip} title="Fast-forward time until you are needed">Skip ahead until needed ⏩</button>}
       </div>
     </>}
   </div>

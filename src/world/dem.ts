@@ -48,7 +48,7 @@ export type ChunkStatus = 'ready' | 'pending' | 'absent'
 type Fetcher = (path: string) => Promise<ArrayBuffer>
 let fetcher: Fetcher = async (path) => {
   const response = await fetch(`/lunar/task02/${path}`)
-  if (!response.ok) throw new Error(`Không tải được dữ liệu địa hình: ${path} (${response.status})`)
+  if (!response.ok) throw new Error(`Could not load terrain data: ${path} (${response.status})`)
   return response.arrayBuffer()
 }
 /** Tests (and any future offline bundle) can supply their own loader. */
@@ -77,7 +77,7 @@ const key = (level: number, cx: number, cy: number) => `${level}/${cx}_${cy}`
 
 function decodeChunk(buffer: ArrayBuffer, baseHeight: number): DemChunk {
   const view = new DataView(buffer)
-  if (String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3)) !== 'LDEM') throw new Error('Tệp địa hình không đúng định dạng LDEM')
+  if (String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3)) !== 'LDEM') throw new Error('Terrain file is not in LDEM format')
   const level = view.getUint16(6, true), cx = view.getUint16(8, true), cy = view.getUint16(10, true), n1 = view.getUint16(12, true)
   const min = view.getFloat64(14, true), step = view.getFloat64(22, true)
   const count = n1 * n1, cells = n1 - 1

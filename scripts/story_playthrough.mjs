@@ -24,7 +24,7 @@ await onboard(page, mode)
 await shot('00_after_onboarding')
 await page.waitForTimeout(2500)
 
-const picks = { A1: 'Lọc thêm nước', A3: 'Thu gọn', B1: 'Sửa ngay', D1: 'nhà kính', D2: plan === 'ice' ? 'Hai phi hành gia' : 'rover', D3: 'Chờ', C31: 'Đi tiếp chậm' }
+const picks = { A1: 'Recycle more water', A3: 'Fold the array', B1: 'Fix it now', D1: 'greenhouse', D2: plan === 'ice' ? 'Two astronauts' : 'rover', D3: 'Wait', C31: 'Drive on slowly' }
 const seen = [], shots = new Set(), reviews = [], checks = {}
 const t0 = Date.now()
 let lastDay = 0
@@ -47,9 +47,9 @@ while (Date.now() - t0 < 22 * 60_000) {
   // Research briefing: the mascot / caption explains, then BẮT ĐẦU … starts the branch.
   const briefNext = page.locator('#action-dock .dialogue-action')
   const briefText = await briefNext.first().innerText().catch(() => '')
-  if (/Tiếp tục|BẮT ĐẦU/.test(briefText)) {
-    if (/BẮT ĐẦU/.test(briefText) && !shots.has('brief_' + briefText)) { shots.add('brief_' + briefText); await page.waitForTimeout(1800); await shot(`briefing_${briefText.includes('KHÁM') ? 'ice' : 'food'}`) }
-    if (mode === 'basic' && /BẮT ĐẦU NGHIÊN/.test(briefText)) checks.b1BeforeStart = (await state()).fired.includes('B1')
+  if (/Continue|START/.test(briefText)) {
+    if (/START/.test(briefText) && !shots.has('brief_' + briefText)) { shots.add('brief_' + briefText); await page.waitForTimeout(1800); await shot(`briefing_${briefText.includes('EXPLORING') ? 'ice' : 'food'}`) }
+    if (mode === 'basic' && /START RESEARCH/.test(briefText)) checks.b1BeforeStart = (await state()).fired.includes('B1')
     await click(briefNext); await page.waitForTimeout(500); continue
   }
   // C2: the real route is drawn on the map; hover it to read a segment, then confirm on the card.
@@ -71,7 +71,7 @@ while (Date.now() - t0 < 22 * 60_000) {
     seen.push(key)
     let done = false
     if (key === 'C1') done = await click(page.locator('.story-option:not([disabled])', { hasText: plan === 'ice' || plan === 'both' ? 'Khu A' : 'Khu C' }))
-    else if (key === 'C2') done = await click(page.locator('.story-option:not([disabled])', { hasText: 'Đi tuyến A*' }))
+    else if (key === 'C2') done = await click(page.locator('.story-option:not([disabled])', { hasText: 'Take the A* route' }))
     else if (picks[key]) done = await click(page.locator('.story-option:not([disabled])', { hasText: picks[key] }))
     if (!done) await click(page.locator('.story-option:not([disabled])'))
     await page.waitForTimeout(350); await click(page.locator('#action-dock .dialogue-action:not([disabled])'))   // confirm in the fixed dock
@@ -79,9 +79,9 @@ while (Date.now() - t0 < 22 * 60_000) {
     await page.waitForTimeout(600)
     continue
   }
-  if (await page.locator('.hud-time').count() && !(await page.locator(`.speed-button[aria-label^="Tốc độ ${process.env.SPEED ?? 8}"]`).count())) { await click(page.locator('.hud-time .speed-button')); continue }   // ×8
+  if (await page.locator('.hud-time').count() && !(await page.locator(`.speed-button[aria-label^="Speed ${process.env.SPEED ?? 8}"]`).count())) { await click(page.locator('.hud-time .speed-button')); continue }   // ×8
   if (await page.locator('.hud-alert').count()) { await click(page.locator('.hud-alert')); continue }
-  if (s.isPaused && s.phase === 'playing' && !s.decisions.length && !s.inbox.length) await click(page.locator('.hud-time button[aria-label^="Tiếp tục"]'))
+  if (s.isPaused && s.phase === 'playing' && !s.decisions.length && !s.inbox.length) await click(page.locator('.hud-time button[aria-label^="Resume"]'))
   // 3D evidence: solar wings folded, lander descending, carrier on the way, cargo coming back.
   const now = s.clock.elapsedMinutes
   if (s.power.stowedUntil && now < s.power.stowedUntil && !shots.has('solar_folded')) { shots.add('solar_folded'); await page.evaluate(() => window.__LUNARIS_TEST_SELECT__?.('solar')); await page.waitForTimeout(3500); await shot('3d_solar_folded') }
@@ -97,19 +97,19 @@ while (Date.now() - t0 < 22 * 60_000) {
     await page.waitForTimeout(150)
     return click(page.locator('.building-action:not([disabled])', { hasText: text }))
   }
-  if (s.stage === 'A2') { await act('oxygen', 'Bật máy điện phân'); await page.waitForTimeout(500); continue }
+  if (s.stage === 'A2') { await act('oxygen', 'Turn on the electrolyser'); await page.waitForTimeout(500); continue }
   if (s.stage === 'free') {
     const day = Math.floor(s.clock.elapsedMinutes / 1440) + 1
-    if (plan !== 'ice' && !s.food.started && (plan !== 'both' || s.ice.stage !== 'idle' || s.ice.report)) await act('greenhouse', 'Bắt đầu nghiên cứu thực phẩm')
-    if (plan !== 'ice' && s.food.stage === 'growing' && day !== lastDay) { if (await act('greenhouse', 'Quan sát cây')) lastDay = day }
-    if (plan !== 'ice' && s.food.stage === 'growing' && s.food.growth >= 0.85) await act('greenhouse', 'Thu hoạch')
-    if (plan !== 'ice' && s.food.stage === 'harvested') await act('greenhouse', 'Lập báo cáo')
-    if (plan !== 'food' && s.ice.stage === 'idle' && !s.ice.report) await act('rover', 'Bắt đầu khám phá băng')
+    if (plan !== 'ice' && !s.food.started && (plan !== 'both' || s.ice.stage !== 'idle' || s.ice.report)) await act('greenhouse', 'Start food research')
+    if (plan !== 'ice' && s.food.stage === 'growing' && day !== lastDay) { if (await act('greenhouse', 'Observe plants')) lastDay = day }
+    if (plan !== 'ice' && s.food.stage === 'growing' && s.food.growth >= 0.85) await act('greenhouse', 'Harvest and weigh')
+    if (plan !== 'ice' && s.food.stage === 'harvested') await act('greenhouse', 'Write the food report')
+    if (plan !== 'food' && s.ice.stage === 'idle' && !s.ice.report) await act('rover', 'Start the ice search')
     if (s.ice.stage === 'outbound' && !shots.has('rover')) { shots.add('rover'); await shot('rover_outbound') }
     const doneBoth = (plan === 'food' ? true : !!s.ice.report) && (plan === 'ice' ? true : !!s.food.report)
     if ((plan === 'early') || (plan === 'both' && doneBoth)) {
-      await act('command', 'Nộp báo cáo')
-      await click(page.locator('.modal .primary-button', { hasText: 'Nộp và trở về' }))
+      await act('command', 'Submit reports')
+      await click(page.locator('.modal .primary-button', { hasText: 'Submit and return' }))
     }
   }
   await page.waitForTimeout(700)
@@ -119,6 +119,6 @@ await page.waitForTimeout(1500)
 await shot('99_ending')
 const s = await state()
 const ending = await page.locator('.story-ending').innerText().catch(() => '')
-console.log(JSON.stringify({ mode, plan, phase: s?.phase, reason: s?.ending?.reason, day: Math.floor((s?.clock.elapsedMinutes ?? 0) / 1440) + 1, food: s?.food.report, ice: s?.ice.report, decisions: seen, checks, reviews: reviews.slice(0, 40), debug: { decisions: s?.decisions, inbox: s?.inbox, ice: s?.ice.stage, supply: s?.supply, food: s?.food.stage, growth: s?.food.growth }, supplyDeliveries: s?.log.filter((e) => e.title === 'Hàng tiếp tế đã vào kho').length, errors }, null, 1))
+console.log(JSON.stringify({ mode, plan, phase: s?.phase, reason: s?.ending?.reason, day: Math.floor((s?.clock.elapsedMinutes ?? 0) / 1440) + 1, food: s?.food.report, ice: s?.ice.report, decisions: seen, checks, reviews: reviews.slice(0, 40), debug: { decisions: s?.decisions, inbox: s?.inbox, ice: s?.ice.stage, supply: s?.supply, food: s?.food.stage, growth: s?.food.growth }, supplyDeliveries: s?.log.filter((e) => e.title === 'The supplies are in the store').length, errors }, null, 1))
 console.log(ending.slice(0, 1500))
 await browser.close()

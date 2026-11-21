@@ -44,7 +44,7 @@ function zoneFacts(): ZoneInfo[] {
       nearLimitPercent: Number(r.percent_route_within_1deg_of_threshold ?? 0), uncertainPercent: Number(r.percent_route_where_slope_plus_slperr_exceeds_threshold ?? 0),
       inPsr: (z as unknown as { in_mapped_psr_pixel?: boolean }).in_mapped_psr_pixel === true, heightM: z.height_m, slopeDeg: z.slope_deg,
     } : null
-    return { zone: z.id as Zone, name: z.name, route, reason: ok ? undefined : `Không có tuyến dốc ≤ 15° tới đúng điểm này (${String(r?.no_route_reason ?? 'chưa tính')}).` }
+    return { zone: z.id as Zone, name: z.name, route, reason: ok ? undefined : `No route with slope ≤ 15° reaches this exact point (${String(r?.no_route_reason ?? 'not computed')}).` }
   })
 }
 
@@ -55,7 +55,7 @@ function Toast({ notification, onDismiss }: { notification: Notification; onDism
   // Ambient only (small confirmations). Anything the player must know goes to the review panel and the journal.
   useEffect(() => { const timer = setTimeout(() => onDismiss(notification.id), 3200); return () => clearTimeout(timer) }, [notification.id, onDismiss])
   return <motion.div className={`toast glass toast-${notification.tone}`} initial={{ opacity: 0, y: -10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, x: 18 }} layout role={notification.tone === 'warning' ? 'alert' : 'status'}>
-    <span className="toast-symbol">{notification.tone === 'success' ? <Check size={18} /> : notification.tone === 'warning' ? <TriangleAlert size={18} /> : <Sparkles size={18} />}</span><div><strong>{notification.title}</strong>{notification.detail && <p>{notification.detail}</p>}</div><button aria-label="Đóng thông báo" onClick={() => onDismiss(notification.id)}><X size={14} /></button></motion.div>
+    <span className="toast-symbol">{notification.tone === 'success' ? <Check size={18} /> : notification.tone === 'warning' ? <TriangleAlert size={18} /> : <Sparkles size={18} />}</span><div><strong>{notification.title}</strong>{notification.detail && <p>{notification.detail}</p>}</div><button aria-label="Close notification" onClick={() => onDismiss(notification.id)}><X size={14} /></button></motion.div>
 }
 
 export default function App() {
@@ -63,7 +63,7 @@ export default function App() {
   const [cameraRequest, setCameraRequest] = useState<CameraRequest>({ id: 0, mode: 'base' })
   const [followRover, setFollowRover] = useState(false)
   const [, setCameraMoving] = useState<CameraMode | null>(null)
-  const [roverStatus, setRoverStatus] = useState<RoverStatus>({ phase: 'docked', site: 'Căn cứ Artemis', siteId: 'base', trip: 0, distance: 0, speed: 0 })
+  const [roverStatus, setRoverStatus] = useState<RoverStatus>({ phase: 'docked', site: 'Artemis Base', siteId: 'base', trip: 0, distance: 0, speed: 0 })
   const [section, setSection] = useState<Section>('missions')
   const [selected, setSelected] = useState<BuildingId | null>('command')
   const [boot] = useState(initialGame)
@@ -323,8 +323,8 @@ export default function App() {
   useEffect(() => {
     if (bootNotified.current) return
     bootNotified.current = true
-    if (boot.status === 'loaded' && boot.state.phase !== 'opening') notify('Đã mở lại chuyến đi đã lưu.', 'Tiến trình được lưu ngay trên máy này.')
-    else if (boot.status === 'incompatible' || boot.status === 'corrupt') notify('Bản lưu cũ không dùng được.', 'Một chuyến đi mới đã bắt đầu.', 'warning')
+    if (boot.status === 'loaded' && boot.state.phase !== 'opening') notify('Your saved mission is back.', 'Progress is saved right on this device.')
+    else if (boot.status === 'incompatible' || boot.status === 'corrupt') notify('The old save could not be used.', 'A new mission has started.', 'warning')
   }, [boot, notify])
   const restartGame = useCallback(() => {
     clearSave(browserStorage())
@@ -337,7 +337,7 @@ export default function App() {
   const toggleSound = useCallback(() => { setPreferences((current) => ({ ...current, sound: !current.sound })); if (!preferences.sound) playUiTone('success') }, [preferences.sound])
   const fullscreen = useCallback(async () => {
     try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen() }
-    catch { notify('Góc nhìn rộng vẫn ở đây!', 'Trình duyệt hiện tại không cho phép toàn màn hình.') }
+    catch { notify('The wide view is still here!', 'This browser does not allow full screen.') }
   }, [notify])
   const paused = game.isPaused
   const setPaused = useCallback((next: boolean) => dispatch({ type: 'clock/setPaused', paused: next }), [dispatch])
@@ -402,22 +402,22 @@ export default function App() {
   return <MotionConfig reducedMotion={preferences.reducedMotion ? 'always' : 'user'}><main ref={root} className={`lunaris-app ${preferences.reducedMotion ? 'reduced-motion' : ''} ${radiation ? 'radiation-active' : ''} ${panelOpen ? 'panel-open' : ''} story-${game.phase}`}>
     <World ref={world} mode={mode} cameraRequest={cameraRequest} onDistanceMode={setMode} selected={selected} onSelect={selectBuilding} onMode={changeMode} onCrew={() => setModal('crew')} paused={(paused && !(demo && demo.phase !== 'complete')) || !!modal} speed={speed} forecastHour={section === 'forecast' ? hour : 0} demo={demo} onPhase={onPhase} preferences={preferences} onReady={onSceneReady} followRover={followRover} onFollowRover={setFollowRover} onRoverStatus={onRoverStatus} onCameraTravel={onCameraTravel} roverMission={roverForStory} sheltered={radiation} solarStowed={solarStowed} supply={supplyView} crewGreeting={!!current?.crewGreeting} routeZone={decision?.key === 'C2' && showDecision ? String(decision.context.zone) : null} />
     <ResourceHud values={hudValues} visible={hudVisible} highlight={hudHighlight} live={ready && onb === 'done' && game.phase === 'playing'} />
-    <TopRight values={hudValues} visible={hudVisible} highlight={hudHighlight} paused={paused} onPause={() => setPaused(!paused)} speed={speed} onSpeed={() => setSpeed((s) => s === 8 ? 1 : s * 2)} time={onb === 'done' && game.phase === 'playing' ? `Ngày ${clock.day} · ${clock.label}` : null}
-      menu={<>{decision && !showDecision && game.phase === 'playing' && onb === 'done' && <button className="hud-alert" aria-label="Mở lại quyết định đang chờ" onClick={() => setHiddenDecision(null)}><TriangleAlert size={16} /></button>}<SettingsMenu onDisplay={() => setModal('settings')} onMissions={() => changeSection('missions')} onTimeline={() => setModal('timeline')} onCrew={() => setModal('crew')} onActivity={() => setModal('activity')} onSound={toggleSound} sound={preferences.sound} onFullscreen={() => void fullscreen()} onHelp={() => setModal('help')} onCamera={changeMode} /></>} />
+    <TopRight values={hudValues} visible={hudVisible} highlight={hudHighlight} paused={paused} onPause={() => setPaused(!paused)} speed={speed} onSpeed={() => setSpeed((s) => s === 8 ? 1 : s * 2)} time={onb === 'done' && game.phase === 'playing' ? `Day ${clock.day} · ${clock.label}` : null}
+      menu={<>{decision && !showDecision && game.phase === 'playing' && onb === 'done' && <button className="hud-alert" aria-label="Reopen the pending decision" onClick={() => setHiddenDecision(null)}><TriangleAlert size={16} /></button>}<SettingsMenu onDisplay={() => setModal('settings')} onMissions={() => changeSection('missions')} onTimeline={() => setModal('timeline')} onCrew={() => setModal('crew')} onActivity={() => setModal('activity')} onSound={toggleSound} sound={preferences.sound} onFullscreen={() => void fullscreen()} onHelp={() => setModal('help')} onCamera={changeMode} /></>} />
     {panelOpen && !demoBusy && <ContextPanel section={section} selected={selected} onSelect={selectBuilding} onAction={(kind) => playDemo(kind)} onFocus={focusBuilding} game={game} demo={demo} completed={completed} hour={hour} onHour={setHour} open={panelOpen} onOpen={onPanelOpen} onMission={() => undefined} onNotify={(title, detail) => notify(title, detail, 'success')} roverStatus={roverStatus} followRover={followRover} onFollowRover={setFollowRover} onStory={story} />}
     <ObjectiveChip objective={objective} onLook={look} onSkip={skip} />
     {/* Fixed action dock: every primary dialogue button (Tiếp tục, Xác nhận, Bắt đầu…) is portalled here. */}
     <div id="action-dock" className="action-dock" />
     <div ref={footer} className="bottom-hud">
       {current && tourMode === 'basic' && (current.id === 'go' && line === current.lines.length - 1
-        ? <ReadyFrame text={current.lines[line]} onNext={advance} label="Bắt đầu nhiệm vụ" />
-        : <Mascot text={current.lines[line]} mood={current.mood} onNext={touring ? skipTourCamera : advance} nextLabel={touring ? 'Bỏ qua' : 'Tiếp tục'} />)}
+        ? <ReadyFrame text={current.lines[line]} onNext={advance} label="Start the mission" />
+        : <Mascot text={current.lines[line]} mood={current.mood} onNext={touring ? skipTourCamera : advance} nextLabel={touring ? 'Skip' : 'Continue'} />)}
       {current && tourMode === 'advanced' && <Caption text={current.lines[line]} onNext={touring ? skipTourCamera : advance} />}
-      {brief && game.mode === 'basic' && <Mascot text={BRIEFINGS[brief.id].lines[brief.line]} mood="happy" onNext={nextBriefLine} nextLabel={brief.line + 1 < BRIEFINGS[brief.id].lines.length ? 'Tiếp tục' : BRIEFINGS[brief.id].start} />}
+      {brief && game.mode === 'basic' && <Mascot text={BRIEFINGS[brief.id].lines[brief.line]} mood="happy" onNext={nextBriefLine} nextLabel={brief.line + 1 < BRIEFINGS[brief.id].lines.length ? 'Continue' : BRIEFINGS[brief.id].start} />}
       {brief && game.mode === 'advanced' && <Caption text={BRIEFINGS[brief.id].caption} onNext={startResearch} label={BRIEFINGS[brief.id].start} />}
-      {!brief && !demoBusy && onb === 'done' && game.mode === 'basic' && game.phase === 'playing' && <Mascot compact={!mascotOpen || !!review} onToggle={() => setMascotOpen(!mascotOpen)} text={lunaHint(game)} mood={radiation || decision ? 'warning' : 'idle'} onNext={decision && !showDecision ? () => setHiddenDecision(null) : undefined} nextLabel="Mở quyết định" />}
+      {!brief && !demoBusy && onb === 'done' && game.mode === 'basic' && game.phase === 'playing' && <Mascot compact={!mascotOpen || !!review} onToggle={() => setMascotOpen(!mascotOpen)} text={lunaHint(game)} mood={radiation || decision ? 'warning' : 'idle'} onNext={decision && !showDecision ? () => setHiddenDecision(null) : undefined} nextLabel="Open the decision" />}
       <div className="camera-status-stack">
-        {followRover && <div className="follow-rover-bar glass"><CarFront size={17} /><div><strong>ĐANG THEO DÕI MILO</strong><span>{roverStatus.site}</span></div><button aria-label="Dừng theo dõi rover" onClick={() => setFollowRover(false)}><X size={15} /></button></div>}
+        {followRover && <div className="follow-rover-bar glass"><CarFront size={17} /><div><strong>FOLLOWING MILO</strong><span>{roverStatus.site}</span></div><button aria-label="Stop following the rover" onClick={() => setFollowRover(false)}><X size={15} /></button></div>}
       </div>
     </div>
     <CameraToolbar mode={mode} handle={world.current} onHelp={() => setModal('help')} selected={selected} />
@@ -436,8 +436,8 @@ export default function App() {
       {modal === 'restart' && <RestartDialog onConfirm={restartGame} onClose={() => setModal('settings')} />}
       {modal === 'submit' && <SubmitDialog foodDone={!!game.food.report} iceDone={!!game.ice.report} onConfirm={() => { setModal(null); dispatch({ type: 'mission/submit' }) }} onClose={() => setModal(null)} />}
     </AnimatePresence>
-    <AnimatePresence>{modal === 'settings' && <SettingsDialog preferences={preferences} onChange={updatePreferences} onClose={() => setModal(null)} onRestart={() => setModal('restart')} />}{modal === 'crew' && <CrewDialog onClose={() => setModal(null)} onLocate={(name) => { setModal(null); setFollowRover(false); world.current?.focusCrew(name) }} />}{modal === 'help' && <HelpDialog onClose={() => setModal(null)} />}{modal === 'activity' && <ActivityDialog notifications={history} onClose={() => setModal(null)} onRadiation={() => { setModal(null); notify('Bức xạ chỉ xảy ra theo kịch bản nhiệm vụ.', 'Theo dõi Nhật ký nhân quả để xem khi nào.') }} />}</AnimatePresence>
-    <span className="screen-reader-only">Story Mode, chặng {game.stage}. Điện, nước, oxy, thực phẩm là số giả định của trò chơi, không phải số liệu NASA.</span>
+    <AnimatePresence>{modal === 'settings' && <SettingsDialog preferences={preferences} onChange={updatePreferences} onClose={() => setModal(null)} onRestart={() => setModal('restart')} />}{modal === 'crew' && <CrewDialog onClose={() => setModal(null)} onLocate={(name) => { setModal(null); setFollowRover(false); world.current?.focusCrew(name) }} />}{modal === 'help' && <HelpDialog onClose={() => setModal(null)} />}{modal === 'activity' && <ActivityDialog notifications={history} onClose={() => setModal(null)} onRadiation={() => { setModal(null); notify('Radiation only happens as part of the mission story.', 'Check the cause-and-effect log to see when.') }} />}</AnimatePresence>
+    <span className="screen-reader-only">Story Mode, stage {game.stage}. Power, water, oxygen and food are assumed game numbers, not NASA data.</span>
   </main></MotionConfig>
 }
 

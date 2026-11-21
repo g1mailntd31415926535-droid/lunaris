@@ -3,7 +3,7 @@ import type { BuildingId } from '../types'
 
 export function MiniMap({ selected, onSelect, hour = 0, variant = 'base' }: { selected?: BuildingId; onSelect?: (id: BuildingId) => void; hour?: number; variant?: 'base' | 'forecast' }) {
   const id = `map-${variant}`
-  return <div className={`mini-map mini-map-${variant}`} aria-label="Bản đồ minh họa căn cứ Artemis">
+  return <div className={`mini-map mini-map-${variant}`} aria-label="Illustrative map of Artemis Base">
     <svg viewBox="0 0 280 153" fill="none" aria-hidden="true">
       <defs>
         <radialGradient id={`${id}-ground`}><stop stopColor="#9290a7" /><stop offset=".68" stopColor="#68677f" /><stop offset="1" stopColor="#45485e" /></radialGradient>
@@ -29,13 +29,13 @@ export function MiniMap({ selected, onSelect, hour = 0, variant = 'base' }: { se
       </g>
       <path d="m254 13 0 14m-4-10 4-4 4 4" stroke="#a9b4d3" strokeWidth="1" /><text x="254" y="37" textAnchor="middle" fill="#9ca9cc" fontSize="7" fontFamily="sans-serif">N</text>
       <circle cx="132" cy="76" r="38" stroke="#97b3db" opacity=".25" strokeWidth=".7" strokeDasharray="3 4" />
-      <path d="M13 140h26m-26-3v6m26-6v6" stroke="#a1aecb" strokeWidth="1" /><text x="44" y="143" fill="#96a3c3" fontSize="7" fontFamily="sans-serif">50 m · minh họa</text>
+      <path d="M13 140h26m-26-3v6m26-6v6" stroke="#a1aecb" strokeWidth="1" /><text x="44" y="143" fill="#96a3c3" fontSize="7" fontFamily="sans-serif">50 m · illustrative</text>
     </svg>
     {onSelect && BUILDINGS.map((building) => {
       const positions = { command: [47, 45], solar: [34, 42], water: [50, 76], oxygen: [62, 40], battery: [36, 64], shelter: [41, 84], greenhouse: [69, 59], rover: [73, 79] }
       const [x, y] = positions[building.id]
-      return <button key={building.id} className={`map-dot ${selected === building.id ? 'selected' : ''}`} style={{ left: `${x}%`, top: `${y}%`, color: building.accent }} aria-label={`Chọn ${building.name}`} data-tooltip={building.shortName} onClick={() => onSelect(building.id)}><span /></button>
+      return <button key={building.id} className={`map-dot ${selected === building.id ? 'selected' : ''}`} style={{ left: `${x}%`, top: `${y}%`, color: building.accent }} aria-label={`Select ${building.name}`} data-tooltip={building.shortName} onClick={() => onSelect(building.id)}><span /></button>
     })}
-    {variant === 'forecast' && <span className="map-preview-tag">XEM TRƯỚC · +{hour}H</span>}
+    {variant === 'forecast' && <span className="map-preview-tag">PREVIEW · +{hour}H</span>}
   </div>
 }

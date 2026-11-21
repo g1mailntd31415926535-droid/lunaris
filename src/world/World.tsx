@@ -209,7 +209,7 @@ function Diagnostics() {
 class SceneErrorBoundary extends Component<{ children: ReactNode }, { error: boolean }> {
   state = { error: false }
   static getDerivedStateFromError() { return { error: true } }
-  render() { return this.state.error ? <div className="webgl-fallback glass"><Globe2 size={44} /><h2>Cùng trở lại Mặt Trăng</h2><p>Hãy bật tăng tốc phần cứng và thử lại trong Chrome hoặc Edge để mở vũ trụ 3D.</p><button className="primary-button" onClick={() => location.reload()}><RefreshCw size={16} /> Thử lại</button></div> : this.props.children }
+  render() { return this.state.error ? <div className="webgl-fallback glass"><Globe2 size={44} /><h2>Let’s get back to the Moon</h2><p>Turn on hardware acceleration and try again in Chrome or Edge to open the 3D universe.</p><button className="primary-button" onClick={() => location.reload()}><RefreshCw size={16} /> Try again</button></div> : this.props.children }
 }
 
 export const World = forwardRef<WorldHandle, WorldProps>(function World(props, ref) {
@@ -247,7 +247,7 @@ export const World = forwardRef<WorldHandle, WorldProps>(function World(props, r
       </Canvas>
     </SceneErrorBoundary>
     <div className="world-vignette" />
-    {!canvasReady && <div className="terrain-loading" role="status">Đang tải địa hình NASA LOLA…</div>}
-    {canvasReady && coverage < 2 && props.mode !== 'orbit' && <div className="nodata-chip glass" role="status"><b>Ngoài vùng DEM 5 m</b><span>{coverage === 1 ? 'Chưa có DEM LOLA 5 m ở đây. Đang hiện LOLA 40 m (thô hơn); rover không đi vào.' : 'Ngoài vùng DEM 5 m. Địa hình là NASA LOLA 40–480 m, thô hơn; rover không đi vào.'}</span></div>}
+    {!canvasReady && <div className="terrain-loading" role="status">Loading NASA LOLA terrain…</div>}
+    {canvasReady && coverage < 2 && props.mode !== 'orbit' && <div className="nodata-chip glass" role="status"><b>Outside the 5 m DEM</b><span>{coverage === 1 ? 'No 5 m LOLA DEM here. Showing NASA LOLA 40 m (coarser); the rover does not drive here.' : 'Outside the 5 m DEM. The terrain is coarser NASA LOLA 40–480 m; the rover does not drive here.'}</span></div>}
   </div>
 })

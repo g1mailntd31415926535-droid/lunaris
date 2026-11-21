@@ -18,7 +18,7 @@ await page.waitForSelector('.result-panel', { timeout: 5000 }).catch(() => null)
 await page.locator('#action-dock .dialogue-action').click({ timeout: 5000 }).catch(() => null)   // read the A1 result
 await page.locator('.objective-head').click({ timeout: 3000 }).catch(() => null)   // collapse the objective chip so it does not cover scene clicks
 await page.waitForTimeout(800)
-if (await page.locator('.hud-time button[aria-label^="Tạm dừng"]').count()) await page.locator('.hud-time button[aria-label^="Tạm dừng"]').click()
+if (await page.locator('.hud-time button[aria-label^="Pause"]').count()) await page.locator('.hud-time button[aria-label^="Pause"]').click()
 await page.keyboard.press('3'); await page.keyboard.press('b'); await page.waitForTimeout(10000)   // A1 astronaut walk finishes; default base view and the base panel after the A1 focus
 // Mission time stays paused: the checks below are about the camera, terrain and clicks, not the simulation.
 const results = []
@@ -42,7 +42,7 @@ let d = await diag()
 check('terrain source is the NASA DEM', d.terrain.source.includes('NASA LOLA'), d.terrain.source)
 check('base view draws 5 m tiles', d.terrain.finestLevel === 0, `levels ${d.terrain.levels}`)
 check('rover stands on the DEM at the depot', d.rover.groundError < 0.02, `error ${d.rover.groundError.toFixed(4)} m`)
-const artemis = page.getByRole('button', { name: 'Về căn cứ Artemis' })
+const artemis = page.getByRole('button', { name: 'Back to Artemis Base' })
 check('Artemis pin stays hidden when the base is visible', !(await artemis.isVisible()))
 
 {
@@ -62,7 +62,7 @@ check('Artemis pin stays hidden when the base is visible', !(await artemis.isVis
     return { id: geometry.uuid, heights: [...baseHeights.entries()].sort() }
   })
   const before = await terrainGeometry()
-  await page.locator('.hud-gear').click(); await page.getByRole('menuitem', { name: /Hiển thị/ }).click()
+  await page.locator('.hud-gear').click(); await page.getByRole('menuitem', { name: /Display/ }).click()
   const nasa = page.getByRole('button', { name: /^NASA Layer/ })
   const game = page.getByRole('button', { name: /^Game Layer/ })
   await nasa.click()
@@ -71,7 +71,7 @@ check('Artemis pin stays hidden when the base is visible', !(await artemis.isVis
   await game.click()
   check('Game Layer is selected exclusively in the same scene', await game.getAttribute('aria-pressed') === 'true' && await nasa.getAttribute('aria-pressed') === 'false' && await world.getAttribute('data-terrain-layer') === 'game' && await page.evaluate(() => window.__LUNARIS__.sceneId) === sceneId)
   check('changing layers keeps the same NASA terrain geometry and elevations', before.heights.length > 0 && JSON.stringify(before) === JSON.stringify(nasaGeometry) && JSON.stringify(nasaGeometry) === JSON.stringify(await terrainGeometry()))
-  await page.getByRole('button', { name: 'Đóng cửa sổ' }).click(); await page.waitForTimeout(700)   // let the dialog fade out
+  await page.getByRole('button', { name: 'Close window' }).click(); await page.waitForTimeout(700)   // let the dialog fade out
 }
 
 // Buildings are drawn by the merged colony batch; clicks must still reach each building's pick volume.
@@ -124,8 +124,8 @@ check('rover stays on the DEM', d.rover.groundError < 0.05, `error ${d.rover.gro
 await page.evaluate(() => window.__LUNARIS_CONTROLS__.altitude(3000)); await page.waitForTimeout(6000)
 const zones = await page.$$eval('.zone-marker', (nodes) => nodes.map((n) => n.textContent))
 check('four science zone markers exist', zones.length === 4, zones.map((z) => z.slice(0, 1)).join(''))
-check('markers report the A* result per zone (A, B, C route; D none)', ['A', 'B', 'C'].every((id) => /có tuyến dốc ≤ 15°/.test(zones.find((z) => z.startsWith(id)) ?? '')) && /không có tuyến dốc ≤ 15°/.test(zones.find((z) => z.startsWith('D')) ?? ''))
-check('markers say ice is unconfirmed and await the rover', zones.every((z) => /chưa xác nhận/.test(z) && /chờ rover xác minh/.test(z)))
+check('markers report the A* result per zone (A, B, C route; D none)', ['A', 'B', 'C'].every((id) => /route with slope ≤ 15°/.test(zones.find((z) => z.startsWith(id)) ?? '')) && /no route with slope ≤ 15°/.test(zones.find((z) => z.startsWith('D')) ?? ''))
+check('markers say ice is unconfirmed and await the rover', zones.every((z) => /not confirmed|no confirmed/.test(z) && /awaiting rover verification/.test(z)))
 
 // Zoom preserves the observed point from regional range into orbit.
 {
@@ -180,7 +180,7 @@ check('no "outside NASA data" label over D', (await page.$('.nodata-chip')) === 
 await page.evaluate(() => window.__LUNARIS__ && document.querySelector('.zone-marker'))
 await page.evaluate(() => { const w = window.__LUNARIS_TEST_FOCUS__; if (w) w(-7000, -9000) }); await page.waitForTimeout(7000)
 const chip = await page.$eval('.nodata-chip', (n) => n.textContent).catch(() => null)
-check('NoData area is labelled as outside the 5 m DEM and shown with coarser NASA LOLA', !!chip && /Ngoài vùng DEM 5 m/i.test(chip) && /LOLA 40/.test(chip), chip ?? 'no chip')
+check('NoData area is labelled as outside the 5 m DEM and shown with coarser NASA LOLA', !!chip && /Outside the 5 m DEM/i.test(chip) && /LOLA 40/.test(chip), chip ?? 'no chip')
 
 {
   await page.evaluate(() => window.__LUNARIS_CONTROLS__.altitude(3e6))

@@ -7,10 +7,10 @@ import { motion } from 'motion/react'
 import { X } from 'lucide-react'
 
 export const RESOURCE_STYLE = {
-  water: { label: 'NƯỚC', color: '#59c9ff', soft: '#bfe9ff' },
-  battery: { label: 'PIN', color: '#f4c76b', soft: '#ffe7b0' },
+  water: { label: 'WATER', color: '#59c9ff', soft: '#bfe9ff' },
+  battery: { label: 'POWER', color: '#f4c76b', soft: '#ffe7b0' },
   oxygen: { label: 'O₂', color: '#46dc8a', soft: '#b5f3cf' },
-  food: { label: 'THỰC PHẨM', color: '#ff8a6e', soft: '#ffc9b9' },
+  food: { label: 'FOOD', color: '#ff8a6e', soft: '#ffc9b9' },
 } as const
 export type ResourceKey = keyof typeof RESOURCE_STYLE
 
@@ -18,7 +18,7 @@ export function EventHeader({ code, topic, time, accent = '#f4c76b', onClose }: 
   return <header className="gp-header">
     <span className="gp-tag"><i style={{ background: accent }} />{code}{topic ? ` · ${topic}` : ''}</span>
     <span className="gp-time">{time}</span>
-    {onClose && <button className="gp-close" aria-label="Đóng, xem căn cứ" onClick={onClose}><X size={16} /></button>}
+    {onClose && <button className="gp-close" aria-label="Close and view the base" onClick={onClose}><X size={16} /></button>}
   </header>
 }
 

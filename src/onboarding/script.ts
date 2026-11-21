@@ -22,31 +22,31 @@ export interface TourStep {
 
 export const WELCOME = {
   title: 'LUNARIS',
-  lines: ['Chào mừng đến với hành trình khám phá Mặt Trăng.', 'Bạn sẽ trở thành người chỉ huy một căn cứ nghiên cứu tại cực Nam Mặt Trăng.', 'Những quyết định của bạn sẽ ảnh hưởng đến tương lai của cả nhiệm vụ.'],
+  lines: ['Welcome to your journey of lunar discovery.', 'You will become the commander of a research base at the Moon’s South Pole.', 'Your decisions will shape the future of the whole mission.'],
 }
 
 export const MODES = {
-  basic: { title: 'Cơ bản', lines: ['Dành cho người mới.', 'Robot trợ lý hướng dẫn từng bước.', 'Thời gian tự dừng khi cần quyết định.'] },
-  advanced: { title: 'Nâng cao', lines: ['Tự điều hành, không có trợ lý đi kèm.', 'Thời gian không tự dừng.', 'Vẫn có giải thích rủi ro và kết quả ở mỗi quyết định.'] },
+  basic: { title: 'Basic', lines: ['For new players.', 'A robot assistant guides you step by step.', 'Time pauses whenever a decision is needed.'] },
+  advanced: { title: 'Advanced', lines: ['Run the base yourself, with no assistant.', 'Time does not pause on its own.', 'Every decision still explains its risks and results.'] },
 }
 
 export const BASIC_TOUR: TourStep[] = [
-  { id: 'hello', mood: 'happy', camera: 'base', lines: ['Xin chào, Commander!', 'Chào mừng đến với căn cứ Artemis!', 'Đây sẽ là ngôi nhà và nơi làm việc của chúng ta trên Mặt Trăng.'] },
-  { id: 'place', camera: 'tour', lines: ['Chúng ta đang ở khu vực cực Nam của Mặt Trăng.', 'Từ đây, chúng ta sẽ điều hành căn cứ, nghiên cứu và khám phá những vùng đất mới.'] },
-  { id: 'explore', explore: true, lines: ['Bạn có thể thử xoay và phóng to để quan sát căn cứ của chúng ta.'] },
-  { id: 'power', camera: 'solar', reveal: ['battery'], highlight: ['battery'], lines: ['Đầu tiên là điện năng!', 'Điện giúp duy trì các hệ thống trong căn cứ, từ xử lý nước đến sản xuất oxy.', 'Năng lượng không phải là vô hạn, nên chúng ta phải sử dụng thật hợp lý!'] },
-  { id: 'water', camera: 'base', reveal: ['water'], highlight: ['water'], lines: ['Tiếp theo là nước!', 'Nước rất quan trọng cho sinh hoạt, nghiên cứu và nhiều hệ thống hỗ trợ sự sống.', 'Chúng ta có thể tái chế nước, nhưng quá trình này cần năng lượng và thiết bị hoạt động.'] },
-  { id: 'oxygen', reveal: ['oxygen'], highlight: ['oxygen'], lines: ['Và đây là oxy!', 'Oxy giúp các phi hành gia hô hấp và duy trì sự sống trong căn cứ.', 'Chúng ta có thể tạo oxy từ nước bằng điện phân, nhưng quá trình đó cũng tiêu thụ nước và điện.'] },
-  { id: 'links', highlight: ['battery', 'water', 'oxygen'], lines: ['Bạn thấy không? Điện, nước và oxy liên quan chặt chẽ với nhau.', 'Một quyết định hôm nay có thể ảnh hưởng đến những gì chúng ta làm được sau này.'] },
-  { id: 'food', reveal: ['food'], highlight: ['food'], lines: ['Chúng ta cũng cần quản lý nguồn thực phẩm cho các phi hành gia.', 'Số này là số ngày thực phẩm mang từ Trái Đất còn đủ dùng. Khi gần hết, nhiệm vụ phải kết thúc.', 'Cây trong nhà kính là để nghiên cứu, giúp chuẩn bị cho những nhiệm vụ dài hơn sau này.'] },
-  { id: 'crew', camera: 'crew', crewGreeting: true, mood: 'happy', lines: ['Tất nhiên, bạn sẽ không phải làm mọi việc một mình!', 'Và đây là đội ngũ phi hành gia, những người đồng đội sẽ cùng bạn khám phá Mặt Trăng!', 'Kai, Linh, Leo và Mia: mỗi người một chuyên môn, cùng làm nghiên cứu và vận hành căn cứ.'] },
-  { id: 'go', camera: 'base', crewGreeting: true, mood: 'happy', lines: ['Mình sẽ ở góc dưới này và nhắc bạn khi cần.', 'Tất cả đã sẵn sàng rồi, Commander! Còn bạn thì sao?', 'Vậy hãy bắt đầu nhiệm vụ đầu tiên nhé. Bạn đã sẵn sàng chưa?'] },
+  { id: 'hello', mood: 'happy', camera: 'base', lines: ['Hello, Commander!', 'Welcome to Artemis Base!', 'This will be our home and workplace on the Moon.'] },
+  { id: 'place', camera: 'tour', lines: ['We are at the South Pole of the Moon.', 'From here we will run the base, do research and explore new lands.'] },
+  { id: 'explore', explore: true, lines: ['Try rotating and zooming to take a look around our base.'] },
+  { id: 'power', camera: 'solar', reveal: ['battery'], highlight: ['battery'], lines: ['First, power!', 'Electricity keeps the base systems running, from cleaning water to making oxygen.', 'Energy is not unlimited, so we must use it wisely!'] },
+  { id: 'water', camera: 'base', reveal: ['water'], highlight: ['water'], lines: ['Next, water!', 'Water matters for daily life, for research and for many life support systems.', 'We can recycle water, but that takes energy and working equipment.'] },
+  { id: 'oxygen', reveal: ['oxygen'], highlight: ['oxygen'], lines: ['And this is oxygen!', 'Oxygen lets the astronauts breathe and keeps everyone alive in the base.', 'We can make oxygen from water by electrolysis, but that uses both water and power.'] },
+  { id: 'links', highlight: ['battery', 'water', 'oxygen'], lines: ['See? Power, water and oxygen are closely linked.', 'A decision today can change what we are able to do later.'] },
+  { id: 'food', reveal: ['food'], highlight: ['food'], lines: ['We also need to manage the astronauts’ food.', 'This number is how many days the food brought from Earth will last. When it runs low, the mission must end.', 'The greenhouse plants are for research, to prepare for longer missions in the future.'] },
+  { id: 'crew', camera: 'crew', crewGreeting: true, mood: 'happy', lines: ['Of course, you will not have to do everything alone!', 'Meet the astronaut crew, the teammates who will explore the Moon with you!', 'Kai, Linh, Leo and Mia: each has a specialty, and together they do research and run the base.'] },
+  { id: 'go', camera: 'base', crewGreeting: true, mood: 'happy', lines: ['I will be down here in the corner and remind you when needed.', 'Everyone is ready, Commander! How about you?', 'Then let’s begin the first mission. Are you ready?'] },
 ]
 
 /** Advanced: short captions, no mascot, no step-by-step resource lesson. */
 export const ADVANCED_TOUR: TourStep[] = [
-  { id: 'arrive', camera: 'tour', lines: ['Căn cứ Artemis · cực Nam Mặt Trăng · địa hình NASA LOLA'] },
-  { id: 'hud', reveal: ['battery', 'water', 'oxygen', 'food'], highlight: ['battery', 'water', 'oxygen', 'food'], lines: ['Điện · nước · oxy (%) và số ngày thực phẩm từ Trái Đất. Mọi quyết định đều có hệ quả.'] },
+  { id: 'arrive', camera: 'tour', lines: ['Artemis Base · lunar South Pole · NASA LOLA terrain'] },
+  { id: 'hud', reveal: ['battery', 'water', 'oxygen', 'food'], highlight: ['battery', 'water', 'oxygen', 'food'], lines: ['Power · water · oxygen (%) and days of food from Earth. Every decision has consequences.'] },
 ]
 
 /** Basic gameplay: the mascot keeps one short hint (lines come from components/Story.tsx lunaHint). */
@@ -59,21 +59,21 @@ export const MASCOT_NAME = 'LUNA-01'
 export interface Briefing { id: 'food' | 'ice'; camera: ('greenhouse' | 'rover' | 'map')[]; lines: string[]; start: string; caption: string }
 export const BRIEFINGS: Record<'food' | 'ice', Briefing> = {
   food: {
-    id: 'food', camera: ['greenhouse', 'greenhouse', 'greenhouse'], start: 'BẮT ĐẦU NGHIÊN CỨU',
+    id: 'food', camera: ['greenhouse', 'greenhouse', 'greenhouse'], start: 'START RESEARCH',
     lines: [
-      'Đây là nhà kính nghiên cứu. Các cây đã được trồng từ trước và đang lớn dần mỗi ngày.',
-      'Nhiệm vụ của bạn: theo dõi cây, giữ cho chúng đủ nước và đủ đèn, rồi cân mẫu khi cây đủ lớn.',
-      'Nếu có sự cố trong nhà kính, mình sẽ báo để bạn quyết định cách xử lý.',
+      'This is the research greenhouse. The plants were planted earlier and grow a little every day.',
+      'Your job: watch the plants, keep them watered and lit, then weigh a sample when they are big enough.',
+      'If something goes wrong in the greenhouse, I will tell you so you can decide what to do.',
     ],
-    caption: 'Nghiên cứu thực phẩm: theo dõi cây đã trồng sẵn, xử lý sự cố, thu hoạch và báo cáo.',
+    caption: 'Food research: watch the plants, handle problems, harvest and report.',
   },
   ice: {
-    id: 'ice', camera: ['rover', 'map', 'map'], start: 'BẮT ĐẦU KHÁM PHÁ',
+    id: 'ice', camera: ['rover', 'map', 'map'], start: 'START EXPLORING',
     lines: [
-      'Đây là MILO, rover thám hiểm của căn cứ. MILO có máy đo để tìm dấu hiệu của băng nước.',
-      'Ở cực Nam có những hố sâu không bao giờ có nắng, gọi là vùng tối vĩnh cửu. Ở đó rất lạnh, băng có thể còn giữ được.',
-      'Bạn sẽ chọn một khu nghiên cứu trên bản đồ trước, rồi mới lên kế hoạch đường đi. Hãy xoay và phóng bản đồ để quan sát.',
+      'This is MILO, the base’s exploration rover. MILO carries instruments to look for signs of water ice.',
+      'At the South Pole there are deep craters that never see sunlight, called permanently shadowed regions. They are so cold that ice may survive there.',
+      'First you will choose a research zone on the map, then plan the route. Rotate and zoom the map to look around.',
     ],
-    caption: 'Khảo sát băng: chọn khu nghiên cứu trên bản đồ NASA, rồi chọn tuyến cho rover MILO.',
+    caption: 'Ice survey: choose a research zone on the NASA map, then a route for MILO the rover.',
   },
 }

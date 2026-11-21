@@ -142,7 +142,7 @@ function Building({ data, selected, onSelect, mode, labels, demo, reducedMotion,
     </group>}
     {mode === 'base' && (selected || hover || labels) && <Html center position={[0, data.id === 'command' ? 5.35 : data.id === 'solar' ? 4.3 : data.id === 'rover' ? 4.05 : 3.85, 0]} distanceFactor={47 * METRE} zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
       <button className={`world-label ${selected ? 'selected' : ''}`} style={{ color: data.accent, pointerEvents: 'auto' }} onClick={(e) => { e.stopPropagation(); onSelect(data.id) }} aria-label={`Xem ${data.name}`}><BuildingIcon id={data.id} size={13} /><span>{data.shortName}</span><i /></button>
-      {operating && <span className="world-working">Đang hoạt động<span>···</span></span>}
+      {operating && <span className="world-working">Working<span>···</span></span>}
     </Html>}
     {/* (A hard-coded 'H₂O 72 % · +16 minh họa' meter used to float here during the water demo. Removed: it showed numbers that were not the game's.) */}
   </group>

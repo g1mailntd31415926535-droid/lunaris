@@ -149,9 +149,9 @@ def main() -> int:
         'rule': f'Toàn vùng chồng lấn dùng Site0{preferred} vì toterr trung bình thấp hơn (Site01 {mean_t1:.4f} m, Site04 {mean_t4:.4f} m); '
                 f'trong dải {EDGE_BAND_PX * PX:g} m sát mép của chính Site0{preferred} thì dùng nguồn còn lại; ở hai góc 50 m nằm trong dải mép của cả hai tile, mẫu nào xa mép tile của nó hơn thì được chọn. Không blend, không làm mượt, không sửa cao độ.',
         'alternatives_measured': {'corner_keeps_preferred_source_max_step_m': 6.24, 'edge_band_100m_max_step_m': 2.25,
-                                  'single_source_edge_bands': 'Ở nơi chỉ có một nguồn, dải mép của nguồn đó vẫn được dùng (không có dữ liệu thay thế, không bịa).'},
-        'why_not_per_pixel': 'Chọn theo toterr từng pixel tạo ~4.400 km đường nối vụn (16,7 % cặp pixel kề nhau đổi nguồn), tức thêm nhám giả ~0,3 m; chọn theo khối 160 m cho bậc lớn nhất 6,24 m. Quy tắc cấp vùng cho đường nối ngắn nhất và bậc lớn nhất nhỏ nhất.',
-        'step_definition': 'Bậc tại một cặp pixel kề nhau khác nguồn = max(|z04 − z01|) tại hai pixel đó (cả hai nguồn đều có số liệu tại đường nối).',
+                                  'single_source_edge_bands': 'Where only one source exists, its edge band is still used (no alternative data; nothing invented).'},
+        'why_not_per_pixel': 'Choosing by per-pixel toterr creates ~4,400 km of fragmented seams (16.7 % of neighbouring pixel pairs switch source), i.e. ~0.3 m of fake roughness; choosing by 160 m blocks gives a 6.24 m maximum step. The region-level rule gives the shortest seam and the smallest maximum step.',
+        'step_definition': 'Step at a neighbouring pixel pair with different sources = max(|z04 − z01|) at those two pixels (both sources have data along the seam).',
         'seam_pairs': int(steps.size), 'seam_length_km': round(steps.size * PX / 1000, 3),
         'max_step_m': float(steps.max()), 'mean_step_m': float(steps.mean()), 'median_step_m': float(np.median(steps)),
         'p95_step_m': float(np.percentile(steps, 95)), 'p99_step_m': float(np.percentile(steps, 99)),
@@ -161,7 +161,7 @@ def main() -> int:
         'overlap_share_site04_percent': round(100 * float((src[both & store] == 4).mean()), 3),
         'status': 'REPORTED',
         'blocked_by_seam': False,
-        'note': 'Đường nối là gián đoạn thật giữa hai sản phẩm NASA, được giữ nguyên và báo cáo; mọi tuyến rover cắt qua đường nối phải ghi nhận bậc tại điểm cắt.',
+        'note': 'The seam is a real discontinuity between two NASA products; it is kept as is and reported. Every rover route crossing it must record the step at the crossing.',
     }
     (rep / 'task02_seam_after_merge.json').write_text(json.dumps(seam, ensure_ascii=False, indent=2), encoding='utf-8')
     print(f"seam: {seam['seam_length_km']} km, max step {seam['max_step_m']:.2f} m, mean {seam['mean_step_m']:.3f} m, p95 {seam['p95_step_m']:.3f} m")
@@ -390,7 +390,7 @@ def main() -> int:
     route_report = {'generated_utc': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
                     'slope_limit_deg': ROUTE_NOMINAL_SLOPE_LIMIT_DEG,
                     'slope_limit_provenance': SLOPE_PROVENANCE,
-                    'note': 'Chưa có giới hạn phương tiện thật, lớp chiếu sáng, nhiệt, liên lạc: KHÔNG tuyến nào được gắn SAFE_ROUTE. Trạng thái tốt nhất có thể là UNVERIFIED.',
+                    'note': 'Chưa có giới hạn phương tiện thật, lớp chiếu sáng, temperature, communications: KHÔNG tuyến nào được gắn SAFE_ROUTE. Trạng thái tốt nhất có thể là UNVERIFIED.',
                     'routes': routes}
     (rep / 'task02_route_slope.json').write_text(json.dumps(route_report, ensure_ascii=False, indent=2), encoding='utf-8')
     rmd = ['# Task 02 — kiểm tra độ dốc dọc đường thẳng BASE → A/B/C/D', '',
@@ -450,19 +450,19 @@ def main() -> int:
             'position_provenance': 'MEASURED' if is_psr else 'PUBLISHED_REFERENCE',
             'in_mapped_psr_pixel': (psr_at[a['id']] == 1.0) if a['id'] in psr_at else None,
             'ice_status': 'CANDIDATE_UNVERIFIED',
-            'verification_needed': 'chờ rover xác minh',
-            'UI_label': 'PSR đã lập bản đồ — băng chưa xác nhận' if is_psr else 'Vùng nghiên cứu đã công bố — chưa xác nhận điểm băng',
-            'scientific_evidence': [dict(ledger['lola5m'], coverage='điểm nằm trên DEM hợp lệ'),
-                                    dict(ledger['psr'], coverage='pixel PSR 20 m chứa điểm', status=('VERIFIED_FROM_RASTER' if psr_at.get(a['id']) == 1.0 else 'NOT_IN_PSR_PIXEL' if a['id'] in psr_at else 'PENDING_FILE'), raster_value=psr_at.get(a['id'])) if is_psr
-                                    else dict(ledger['sathyan'], coverage='điểm tham chiếu vùng nghiên cứu, không phải pixel băng hay tâm PSR')],
-            'data_layers_missing': ['Diviner', 'M3', 'LAMP'], 'data_layers_note': 'CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU',
+            'verification_needed': 'awaiting rover verification',
+            'UI_label': 'Mapped PSR — ice not confirmed' if is_psr else 'Published research area — no confirmed ice spot',
+            'scientific_evidence': [dict(ledger['lola5m'], coverage='point lies on valid DEM'),
+                                    dict(ledger['psr'], coverage='20 m PSR pixel containing the point', status=('VERIFIED_FROM_RASTER' if psr_at.get(a['id']) == 1.0 else 'NOT_IN_PSR_PIXEL' if a['id'] in psr_at else 'PENDING_FILE'), raster_value=psr_at.get(a['id'])) if is_psr
+                                    else dict(ledger['sathyan'], coverage='reference point of the research area, not an ice pixel or PSR centre')],
+            'data_layers_missing': ['Diviner', 'M3', 'LAMP'], 'data_layers_note': 'NO GEOREFERENCED DATA LAYER YET',
             'straight_line_from_base_m': routes[a['id']]['straight_line_length_m'],
             'route_status': routes[a['id']]['route_status'],
             'route_check': dict({key: routes[a['id']][key] for key in ('route_nominal_slope_limit_deg', 'max_slope_deg', 'percent_over_limit', 'segments_over_limit_count', 'crosses_nodata')},
                                 first_block_at_m=(routes[a['id']]['segments_over_limit'][0]['from_m'] if routes[a['id']]['segments_over_limit'] else None),
                                 segments_over_limit=[[s_['from_m'], s_['to_m'], s_['max_slope_deg']] for s_ in routes[a['id']]['segments_over_limit']]),
         })
-    zones_doc = {'note': 'Bốn điểm giữ nguyên tọa độ nguồn. PSR, nhiệt độ thấp, hydro hay phản xạ cao KHÔNG tương đương xác nhận có băng. LCROSS (Cabeus) nằm ngoài bản đồ: REFERENCE_ONLY, không có marker.',
+    zones_doc = {'note': 'The four points keep their source coordinates. A PSR, low temperature, hydrogen or high reflectance is NOT the same as confirmed ice. LCROSS (Cabeus) lies outside the map: REFERENCE_ONLY, no marker.',
                  'route_nominal_slope_limit_deg': ROUTE_NOMINAL_SLOPE_LIMIT_DEG, 'slope_limit_provenance': SLOPE_PROVENANCE, 'zones': zones}
     (pub / 'science_zones.json').write_text(json.dumps(zones_doc, ensure_ascii=False, indent=2), encoding='utf-8')
 
@@ -472,22 +472,22 @@ def main() -> int:
     lat_b, lon_b = closed_form_latlon(base['xy'][0], base['xy'][1], 1737400.0)
     meta = {
         'format': 'lunaris-ldem', 'version': 1, 'generated_utc': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
-        'provenance': 'MEASURED — NASA LOLA 5 m DEM (Site01 Connecting Ridge, Site04 Shackleton Rim). Không LDEM 80 m, không 87S, không địa hình thủ tục.',
+        'provenance': 'MEASURED — NASA LOLA 5 m DEM (Site01 Connecting Ridge, Site04 Shackleton Rim). No LDEM 80 m, no 87S, no procedural terrain.',
         'crs': {'projection': 'Polar Stereographic (south), lat_0 = −90°, lon_0 = 0°, true scale at pole', 'sphere_radius_m': 1737400.0, 'units': 'm', 'epsg': None},
-        'height': {'unit': 'm', 'datum': 'so với mặt cầu bán kính 1737,4 km (theo mô tả PGDA)', 'vertical_scale': 1.0, 'smoothing': 'none'},
-        'grid': {'x_min': FRAME['x_min'], 'y_max': FRAME['y_max'], 'pixel_m': PX, 'size_px': N, 'registration': 'vertex i ↔ tâm pixel: X = x_min + (i + 0.5)·5, Y = y_max − (j + 0.5)·5'},
+        'height': {'unit': 'm', 'datum': 'relative to a sphere of radius 1737.4 km (per the PGDA description)', 'vertical_scale': 1.0, 'smoothing': 'none'},
+        'grid': {'x_min': FRAME['x_min'], 'y_max': FRAME['y_max'], 'pixel_m': PX, 'size_px': N, 'registration': 'vertex i ↔ pixel centre: X = x_min + (i + 0.5)·5, Y = y_max − (j + 0.5)·5'},
         'circle': {'center_xy_m': list(CIRCLE_CENTER), 'radius_m': CIRCLE_RADIUS, 'store_margin_m': STORE_MARGIN_M,
-                   'note': 'Dữ liệu được lưu tới R + margin chỉ để cắt đúng đường tròn khi render; ngoài đường tròn không hiển thị, không đi được.'},
+                   'note': 'Data is stored out to R + margin only so the circle can be clipped exactly when rendering; outside the circle nothing is shown or drivable.'},
         'base': {'xy_m': list(base['xy']), 'height_m': round(base_h, 4), 'lat_deg': round(lat_b, 6), 'lon_east_deg': round(lon_b, 6), 'status': 'SCENARIO'},
-        'local_frame': {'x': 'X − X_base (đông)', 'y': 'h − h_base (lên)', 'z': 'Y_base − Y (nam)', 'inverse': 'X = X_base + x, Y = Y_base − z, h = h_base + y', 'scale': '1 đơn vị = 1 m trên cả ba trục'},
-        'tiling': {'levels': LEVELS, 'tile_cells': TILE_CELLS, 'chunk_cells': CHUNK_CELLS, 'triangulation': 'ô (i,j) chia theo đường chéo (i,j)→(i+1,j+1)',
-                   'chunk_file': 'L{level}/{cx}_{cy}.dem = gzip(header 30 B + delta byte thấp + delta byte cao + bit đỉnh hợp lệ + bit ô hợp lệ)',
-                   'cell_rule': 'ô chỉ tồn tại khi mọi pixel 5 m bên dưới hợp lệ → không tam giác nào bắc qua NoData'},
+        'local_frame': {'x': 'X − X_base (east)', 'y': 'h − h_base (up)', 'z': 'Y_base − Y (nam)', 'inverse': 'X = X_base + x, Y = Y_base − z, h = h_base + y', 'scale': '1 unit = 1 m on all three axes'},
+        'tiling': {'levels': LEVELS, 'tile_cells': TILE_CELLS, 'chunk_cells': CHUNK_CELLS, 'triangulation': 'cell (i,j) is split along the diagonal (i,j)→(i+1,j+1)',
+                   'chunk_file': 'L{level}/{cx}_{cy}.dem = gzip(30 B header + delta low bytes + delta high bytes + valid-vertex bits + valid-cell bits)',
+                   'cell_rule': 'a cell exists only if every 5 m pixel under it is valid → no triangle bridges NoData'},
         'coverage_in_circle': {'pixels': n_disk, 'site01_percent': round(100 * c['site01'] / n_disk, 4), 'site04_percent': round(100 * c['site04'] / n_disk, 4),
-                               'nodata_percent': round(100 * c['nodata'] / n_disk, 4), 'nodata_label': 'ngoài vùng dữ liệu NASA'},
-        'coverage_map': {'file': 'coverage_20m.bin', 'encoding': 'gzip(uint8[1250×1250])', 'cell_m': 20, 'values': {'0': 'ngoài hình tròn', '1': 'NoData trong hình tròn', '2': 'Site01', '3': 'Site04'},
-                         'sampling': 'mẫu tại pixel (2 + 4i) của lưới 5 m; chỉ dùng cho nhãn UI, không dùng cho va chạm'},
-        'source_mask': {'file': 'source_mask_5m.png', 'values': 'chỉ số bảng màu: 0 ngoài tròn, 1 NoData, 2 Site01, 3 Site04'},
+                               'nodata_percent': round(100 * c['nodata'] / n_disk, 4), 'nodata_label': 'outside NASA data coverage'},
+        'coverage_map': {'file': 'coverage_20m.bin', 'encoding': 'gzip(uint8[1250×1250])', 'cell_m': 20, 'values': {'0': 'outside the circle', '1': 'NoData inside the circle', '2': 'Site01', '3': 'Site04'},
+                         'sampling': 'sampled at pixel (2 + 4i) of the 5 m grid; used only for UI labels, not for collision'},
+        'source_mask': {'file': 'source_mask_5m.png', 'values': 'palette index: 0 outside circle, 1 NoData, 2 Site01, 3 Site04'},
         'seam': seam,
         'sources': {f'{s_}_{l_}': {'file': f'{s_}_final_adj_5mpp_{l_}.tif', 'sha256': sha256(raw / f'{s_}_final_adj_5mpp_{l_}.tif')} for s_ in ('Site01', 'Site04') for l_ in ('surf', 'toterr', 'slp', 'slperr')},
         'total_bytes': total_bytes,

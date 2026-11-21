@@ -287,12 +287,12 @@ function ZoneMarker({ zone, onFocus }: { zone: ScienceZone; onFocus: (x: number,
     marker.toggleAttribute('data-compact', compact)
   })
   const route = zone.route
-  const routeText = !route ? 'tuyến chưa tính' : route.route_status === 'NOMINAL_SLOPE_ROUTE_FOUND' ? `có tuyến dốc ≤ 15°: ${(route.route_length_m / 1000).toFixed(1)} km` : 'không có tuyến dốc ≤ 15° tới điểm này'
+  const routeText = !route ? 'route not computed' : route.route_status === 'NOMINAL_SLOPE_ROUTE_FOUND' ? `route with slope ≤ 15°: ${(route.route_length_m / 1000).toFixed(1)} km` : 'no route with slope ≤ 15° to this point'
   return <Html center position={[zone.local_xz_m[0], y + 6, zone.local_xz_m[1]]} zIndexRange={[26, 11]} style={{ pointerEvents: 'none' }}>
     <div ref={label} className="zone-marker-anchor">
-      <button type="button" className="zone-marker" onClick={() => onFocus(zone.local_xz_m[0], zone.local_xz_m[1])} aria-label={`Điểm ${zone.id}: ${zone.name}. ${zone.UI_label}. ${zone.verification_needed}`}>
+      <button type="button" className="zone-marker" onClick={() => onFocus(zone.local_xz_m[0], zone.local_xz_m[1])} aria-label={`Point ${zone.id}: ${zone.name}. ${zone.UI_label}. ${zone.verification_needed}`}>
         <b>{zone.id}</b>
-        <span>{zone.name}<small>{zone.UI_label}</small><small>{zone.verification_needed} · cách căn cứ {(zone.straight_line_from_base_m / 1000).toFixed(1)} km đường thẳng · {routeText}</small></span>
+        <span>{zone.name}<small>{zone.UI_label}</small><small>{zone.verification_needed} · {(zone.straight_line_from_base_m / 1000).toFixed(1)} km from base in a straight line · {routeText}</small></span>
       </button>
     </div>
   </Html>

@@ -39,7 +39,7 @@ export function Modal({ title, eyebrow, onClose, children, className = '' }: { t
   }, [])
   return <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
     <motion.div ref={panel} className={`modal glass ${className}`} role="dialog" aria-modal="true" aria-labelledby="modal-title" initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.98 }} transition={{ duration: 0.2 }}>
-      <header className="modal-header"><div>{eyebrow && <span className="eyebrow">{eyebrow}</span>}<h2 id="modal-title">{title}</h2></div><IconButton label="Đóng cửa sổ" onClick={onClose}><X size={20} /></IconButton></header>
+      <header className="modal-header"><div>{eyebrow && <span className="eyebrow">{eyebrow}</span>}<h2 id="modal-title">{title}</h2></div><IconButton label="Close window" onClick={onClose}><X size={20} /></IconButton></header>
       {children}
     </motion.div>
   </motion.div>

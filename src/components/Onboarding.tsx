@@ -33,7 +33,7 @@ export function WelcomeScreen({ onNext }: { onNext: () => void }) {
     <motion.div className="onb-card" initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.7 }}>
       <h1 className="onb-logo">{WELCOME.title}</h1>
       {WELCOME.lines.map((l) => <p key={l}>{l}</p>)}
-      <DialogueActionButton label="Tiếp tục" onClick={onNext} />
+      <DialogueActionButton label="Continue" onClick={onNext} />
     </motion.div>
   </motion.div>
 }
@@ -46,14 +46,14 @@ export function ModeSelect({ onReady, advancedUnlocked = false }: { onReady: (mo
   const [mode, setMode] = useState<'basic' | 'advanced' | null>(null)
   return <motion.div className="onb-screen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
     <motion.div className="onb-card wide" initial={{ y: 18, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-      <span className="eyebrow">CHỌN CHẾ ĐỘ CHƠI</span>
+      <span className="eyebrow">CHOOSE A GAME MODE</span>
       <div className="story-modes">{(['basic', 'advanced'] as const).map((m) => {
         const locked = m === 'advanced' && !advancedUnlocked
-        return <button key={m} className={`${mode === m ? 'chosen' : ''} ${locked ? 'locked' : ''}`} aria-pressed={mode === m} aria-disabled={locked} title={locked ? 'Chế độ Nâng cao đang bị khóa' : undefined} onClick={() => { if (!locked) setMode(m) }}>
-          {locked && <span className="mode-lock" aria-label="Đã khóa"><Lock size={15} strokeWidth={2.4} /></span>}
+        return <button key={m} className={`${mode === m ? 'chosen' : ''} ${locked ? 'locked' : ''}`} aria-pressed={mode === m} aria-disabled={locked} title={locked ? 'Advanced mode is locked' : undefined} onClick={() => { if (!locked) setMode(m) }}>
+          {locked && <span className="mode-lock" aria-label="Locked"><Lock size={15} strokeWidth={2.4} /></span>}
           {m === 'basic' ? <Lightbulb size={20} /> : <Gauge size={20} />}<strong>{MODES[m].title}</strong>{MODES[m].lines.map((l) => <span key={l}>{l}</span>)}</button>
       })}</div>
-      <button className="onb-ready" data-dialogue-action="" disabled={!mode} onClick={() => mode && onReady(mode)}><Rocket size={16} /><span>SẴN SÀNG</span></button>
+      <button className="onb-ready" data-dialogue-action="" disabled={!mode} onClick={() => mode && onReady(mode)}><Rocket size={16} /><span>READY</span></button>
     </motion.div>
   </motion.div>
 }
@@ -78,7 +78,7 @@ export function IntroCinematic({ onDone, videoSrc = INTRO_VIDEO }: { onDone: () 
   }, [])
   return <motion.div className="onb-cinematic" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.8 } }}>
     <video ref={video} src={videoSrc} playsInline preload="auto" onEnded={() => done.current()} onError={() => done.current()} />
-    <button className="onb-skip" onClick={() => done.current()}>Bỏ qua<X size={13} /></button>
+    <button className="onb-skip" onClick={() => done.current()}>Skip<X size={13} /></button>
   </motion.div>
 }
 
@@ -87,7 +87,7 @@ export function IntroCinematic({ onDone, videoSrc = INTRO_VIDEO }: { onDone: () 
 export function MascotArt({ expression }: { expression: Expression }) {
   const rects = faceRects(expression)
   return <span className="mascot-art" data-expression={expression}>
-    <img className="mascot-image" src={MASCOT_SRC} width={MASCOT_SIZE.w} height={MASCOT_SIZE.h} alt="Robot trợ lý LUNA-01" draggable={false} />
+    <img className="mascot-image" src={MASCOT_SRC} width={MASCOT_SIZE.w} height={MASCOT_SIZE.h} alt="LUNA-01 robot assistant" draggable={false} />
     {rects && <svg className="mascot-face" viewBox={`0 0 ${MASCOT_SIZE.w} ${MASCOT_SIZE.h}`} shapeRendering="crispEdges" aria-hidden="true">
       <clipPath id="mascot-face-box"><rect x={FACE_BOX.x} y={FACE_BOX.y} width={FACE_BOX.w} height={FACE_BOX.h} /></clipPath>
       <g clipPath="url(#mascot-face-box)">{rects.map((r, i) => <rect key={i} x={r.x} y={r.y} width={r.w} height={r.h} fill={r.color} />)}</g>
@@ -95,12 +95,12 @@ export function MascotArt({ expression }: { expression: Expression }) {
   </span>
 }
 export type MascotMood = 'idle' | Expression
-export function Mascot({ text, mood = 'idle', onNext, nextLabel = 'Tiếp tục', compact = false, onToggle }: { text: string; mood?: MascotMood; onNext?: () => void; nextLabel?: string; compact?: boolean; onToggle?: () => void }) {
+export function Mascot({ text, mood = 'idle', onNext, nextLabel = 'Continue', compact = false, onToggle }: { text: string; mood?: MascotMood; onNext?: () => void; nextLabel?: string; compact?: boolean; onToggle?: () => void }) {
   const [talking, setTalking] = useState(true)
   useEffect(() => { setTalking(true); const t = setTimeout(() => setTalking(false), 1400); return () => clearTimeout(t) }, [text])
   const face: Expression = mood === 'idle' ? (talking ? 'speaking' : 'neutral') : mood
   return <div className={`mascot ${compact ? 'compact' : ''}`}>
-    <button className="mascot-robot" aria-label={compact ? 'Mở lời nhắn của robot trợ lý' : 'Thu gọn lời nhắn'} onClick={onToggle} tabIndex={onToggle ? 0 : -1}><MascotArt expression={face} /></button>
+    <button className="mascot-robot" aria-label={compact ? 'Open the robot assistant’s message' : 'Collapse the message'} onClick={onToggle} tabIndex={onToggle ? 0 : -1}><MascotArt expression={face} /></button>
     <AnimatePresence mode="wait">{!compact && <motion.div key={text} className="mascot-bubble glass" initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} aria-live="polite">
       <p>{text}</p>
       {onNext && <DialogueActionButton label={nextLabel} onClick={onNext} />}
@@ -110,7 +110,7 @@ export function Mascot({ text, mood = 'idle', onNext, nextLabel = 'Tiếp tục'
 
 /** The last tutorial message, in the middle of the screen: "ready to start the first mission?" (button in the dock). */
 export function ReadyFrame({ text, onNext, label }: { text: string; onNext: () => void; label: string }) {
-  return <motion.div className="ready-frame" role="dialog" aria-label="Sẵn sàng bắt đầu nhiệm vụ" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
+  return <motion.div className="ready-frame" role="dialog" aria-label="Ready to start the mission" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
     <span className="ready-art"><MascotArt expression="happy" /></span>
     <p>{text}</p>
     <DialogueActionButton label={label} onClick={onNext} />
@@ -118,7 +118,7 @@ export function ReadyFrame({ text, onNext, label }: { text: string; onNext: () =
 }
 
 /** Advanced mode: a short caption instead of the mascot. */
-export function Caption({ text, onNext, label = 'Tiếp tục' }: { text: string; onNext?: () => void; label?: string }) {
+export function Caption({ text, onNext, label = 'Continue' }: { text: string; onNext?: () => void; label?: string }) {
   return <motion.div className="onb-caption glass" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}><p>{text}</p>{onNext && <DialogueActionButton label={label} onClick={onNext} />}</motion.div>
 }
 

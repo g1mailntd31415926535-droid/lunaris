@@ -91,7 +91,7 @@ export function displayPosition(X: number, Y: number, h: number, baseHeight: num
 type Fetcher = (path: string) => Promise<ArrayBuffer>
 let fetcher: Fetcher = async (path) => {
   const response = await fetch(`/lunar/regional/${path}`)
-  if (!response.ok) throw new Error(`Không tải được địa hình LOLA khu vực: ${path} (${response.status})`)
+  if (!response.ok) throw new Error(`Could not load regional LOLA terrain: ${path} (${response.status})`)
   return response.arrayBuffer()
 }
 export function setRegionalFetcher(next: Fetcher) { fetcher = next }

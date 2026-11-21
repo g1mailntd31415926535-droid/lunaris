@@ -1,7 +1,7 @@
 {
-  "note": "Bốn điểm giữ nguyên tọa độ nguồn. PSR, nhiệt độ thấp, hydro hay phản xạ cao KHÔNG tương đương xác nhận có băng. LCROSS (Cabeus) nằm ngoài bản đồ: REFERENCE_ONLY, không có marker.",
+  "note": "The four points keep their source coordinates. A PSR, low temperature, hydrogen or high reflectance is NOT the same as confirmed ice. LCROSS (Cabeus) lies outside the map: REFERENCE_ONLY, no marker.",
   "route_nominal_slope_limit_deg": 15.0,
-  "slope_limit_provenance": "MEASURED + SCENARIO (docs/EVIDENCE.md G17): 15° là độ dốc vận hành danh định tối đa của NASA VIPER [S10]; LUNARIS dùng làm ngưỡng quy hoạch bảo thủ. Vượt ngưỡng = NOT_NOMINAL, cần xem xét; không phải giới hạn vật lý của mọi rover.",
+  "slope_limit_provenance": "MEASURED + SCENARIO (docs/EVIDENCE.md G17): 15° is NASA VIPER’s maximum nominal operating slope [S10]; LUNARIS uses it as a conservative planning threshold. Above it = NOT_NOMINAL, needs review; it is not a physical limit for every rover.",
   "zones": [
     {
       "id": "A",
@@ -32,8 +32,8 @@
       "position_provenance": "MEASURED",
       "in_mapped_psr_pixel": true,
       "ice_status": "CANDIDATE_UNVERIFIED",
-      "verification_needed": "chờ rover xác minh",
-      "UI_label": "PSR đã lập bản đồ — băng chưa xác nhận",
+      "verification_needed": "awaiting rover verification",
+      "UI_label": "Mapped PSR — ice not confirmed",
       "scientific_evidence": [
         {
           "dataset": "NASA PGDA — LOLA 5 m site DEMs (Site01, Site04)",
@@ -41,7 +41,7 @@
           "resolution": "5 m/pixel",
           "unit": "m",
           "provenance": "MEASURED",
-          "coverage": "điểm nằm trên DEM hợp lệ"
+          "coverage": "point lies on valid DEM"
         },
         {
           "dataset": "NASA PGDA — PSR map (LPSR_80S_20MPP_ADJ)",
@@ -49,7 +49,7 @@
           "resolution": "20 m/pixel",
           "unit": "mask",
           "provenance": "MEASURED",
-          "coverage": "pixel PSR 20 m chứa điểm",
+          "coverage": "20 m PSR pixel containing the point",
           "status": "VERIFIED_FROM_RASTER",
           "raster_value": 1.0
         }
@@ -59,7 +59,7 @@
         "M3",
         "LAMP"
       ],
-      "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
+      "data_layers_note": "NO GEOREFERENCED DATA LAYER YET",
       "straight_line_from_base_m": 6927.9,
       "route_status": "NOMINAL_SLOPE_ROUTE_FOUND",
       "route_check": {
@@ -492,8 +492,8 @@
       "position_provenance": "MEASURED",
       "in_mapped_psr_pixel": true,
       "ice_status": "CANDIDATE_UNVERIFIED",
-      "verification_needed": "chờ rover xác minh",
-      "UI_label": "PSR đã lập bản đồ — băng chưa xác nhận",
+      "verification_needed": "awaiting rover verification",
+      "UI_label": "Mapped PSR — ice not confirmed",
       "scientific_evidence": [
         {
           "dataset": "NASA PGDA — LOLA 5 m site DEMs (Site01, Site04)",
@@ -501,7 +501,7 @@
           "resolution": "5 m/pixel",
           "unit": "m",
           "provenance": "MEASURED",
-          "coverage": "điểm nằm trên DEM hợp lệ"
+          "coverage": "point lies on valid DEM"
         },
         {
           "dataset": "NASA PGDA — PSR map (LPSR_80S_20MPP_ADJ)",
@@ -509,7 +509,7 @@
           "resolution": "20 m/pixel",
           "unit": "mask",
           "provenance": "MEASURED",
-          "coverage": "pixel PSR 20 m chứa điểm",
+          "coverage": "20 m PSR pixel containing the point",
           "status": "VERIFIED_FROM_RASTER",
           "raster_value": 1.0
         }
@@ -519,7 +519,7 @@
         "M3",
         "LAMP"
       ],
-      "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
+      "data_layers_note": "NO GEOREFERENCED DATA LAYER YET",
       "straight_line_from_base_m": 6768.8,
       "route_status": "NOMINAL_SLOPE_ROUTE_FOUND",
       "route_check": {
@@ -1092,8 +1092,8 @@
       "position_provenance": "PUBLISHED_REFERENCE",
       "in_mapped_psr_pixel": false,
       "ice_status": "CANDIDATE_UNVERIFIED",
-      "verification_needed": "chờ rover xác minh",
-      "UI_label": "Vùng nghiên cứu đã công bố — chưa xác nhận điểm băng",
+      "verification_needed": "awaiting rover verification",
+      "UI_label": "Published research area — no confirmed ice spot",
       "scientific_evidence": [
         {
           "dataset": "NASA PGDA — LOLA 5 m site DEMs (Site01, Site04)",
@@ -1101,7 +1101,7 @@
           "resolution": "5 m/pixel",
           "unit": "m",
           "provenance": "MEASURED",
-          "coverage": "điểm nằm trên DEM hợp lệ"
+          "coverage": "point lies on valid DEM"
         },
         {
           "dataset": "Sathyan et al. (2024) — study areas C1 and S",
@@ -1109,7 +1109,7 @@
           "resolution": "study-area anchor",
           "unit": "lat/lon",
           "provenance": "PUBLISHED_REFERENCE",
-          "coverage": "điểm tham chiếu vùng nghiên cứu, không phải pixel băng hay tâm PSR"
+          "coverage": "reference point of the research area, not an ice pixel or PSR centre"
         }
       ],
       "data_layers_missing": [
@@ -1117,7 +1117,7 @@
         "M3",
         "LAMP"
       ],
-      "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
+      "data_layers_note": "NO GEOREFERENCED DATA LAYER YET",
       "straight_line_from_base_m": 1776.0,
       "route_status": "NOMINAL_SLOPE_ROUTE_FOUND",
       "route_check": {
@@ -1190,8 +1190,8 @@
       "position_provenance": "PUBLISHED_REFERENCE",
       "in_mapped_psr_pixel": false,
       "ice_status": "CANDIDATE_UNVERIFIED",
-      "verification_needed": "chờ rover xác minh",
-      "UI_label": "Vùng nghiên cứu đã công bố — chưa xác nhận điểm băng",
+      "verification_needed": "awaiting rover verification",
+      "UI_label": "Published research area — no confirmed ice spot",
       "scientific_evidence": [
         {
           "dataset": "NASA PGDA — LOLA 5 m site DEMs (Site01, Site04)",
@@ -1199,7 +1199,7 @@
           "resolution": "5 m/pixel",
           "unit": "m",
           "provenance": "MEASURED",
-          "coverage": "điểm nằm trên DEM hợp lệ"
+          "coverage": "point lies on valid DEM"
         },
         {
           "dataset": "Sathyan et al. (2024) — study areas C1 and S",
@@ -1207,7 +1207,7 @@
           "resolution": "study-area anchor",
           "unit": "lat/lon",
           "provenance": "PUBLISHED_REFERENCE",
-          "coverage": "điểm tham chiếu vùng nghiên cứu, không phải pixel băng hay tâm PSR"
+          "coverage": "reference point of the research area, not an ice pixel or PSR centre"
         }
       ],
       "data_layers_missing": [
@@ -1215,7 +1215,7 @@
         "M3",
         "LAMP"
       ],
-      "data_layers_note": "CHƯA CÓ LỚP DỮ LIỆU ĐỊA THAM CHIẾU",
+      "data_layers_note": "NO GEOREFERENCED DATA LAYER YET",
       "straight_line_from_base_m": 10034.3,
       "route_status": "NO_NOMINAL_ROUTE",
       "route_check": {
@@ -2258,7 +2258,7 @@
         "mean_slope_deg": 10.28,
         "detour_factor_vs_straight_line": 1.16,
         "closest_reachable_distance_to_anchor_m": 4.7,
-        "no_route_reason": "pixel anchor dốc hơn ngưỡng"
+        "no_route_reason": "anchor pixel is steeper than the limit"
       }
     }
   ]

@@ -208,7 +208,7 @@ export function ArtemisMarker({ onFocus }: { onFocus: () => void }) {
   })
 
   return <Html position={BASE_ANCHOR} zIndexRange={[28, 12]} style={{ pointerEvents: 'none' }}>
-    <button ref={marker} type="button" className="artemis-pin" aria-label="Về căn cứ Artemis" title="Căn cứ Artemis" onClick={onFocus}>
+    <button ref={marker} type="button" className="artemis-pin" aria-label="Back to Artemis Base" title="Artemis Base" onClick={onFocus}>
       <MapPin size={24} aria-hidden="true" />
     </button>
   </Html>

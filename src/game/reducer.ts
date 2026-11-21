@@ -29,7 +29,7 @@ export function createInitialState(): GameState {
     supply: { stage: 'none', method: null, jobDoneAt: null, roverPhase: 'none', landingEndsAt: null, phaseStartedAt: null },
     radiation: { active: false, endsAt: null, roverChoice: null },
     fired: [], decisions: [], history: [],
-    log: [{ id: 'evt-1', atMinute: 0, kind: 'system', title: 'Chào mừng tới căn cứ Artemis!', detail: 'Bạn tiếp quản căn cứ. Cây trong nhà kính đã được trồng từ trước.', causeIds: [] }],
+    log: [{ id: 'evt-1', atMinute: 0, kind: 'system', title: 'Welcome to Artemis Base!', detail: 'You are taking charge of the base. The greenhouse plants were planted before you arrived.', causeIds: [] }],
     inbox: [], effects: [], foodWarned: false, ending: null, nextId: 2,
   }
 }
@@ -141,21 +141,21 @@ function simulate(state: GameState, minutes: number): GameState {
   const phase = p.lightFactor < 1 ? 'd1' : stowed ? 'a3' : 'other'
   const phaseCause = phase === 'd1' ? decisionId(s, 'D1') : phase === 'a3' ? decisionId(s, 'A3') : []
   if (stowed) {   // A3 "stow": no solar power; how far did the battery fall?
-    if (!s.effects.some((e) => e.key === 'a3.stowOutage')) s = effect(s, 'a3.stowOutage', 'phút', { set: 0, causeIds: decisionId(s, 'A3'), facts: { batteryStartKwh: +state.resources.battery.toFixed(1) } })
-    s = effect(s, 'a3.stowOutage', 'phút', { add: minutes })
+    if (!s.effects.some((e) => e.key === 'a3.stowOutage')) s = effect(s, 'a3.stowOutage', 'min', { set: 0, causeIds: decisionId(s, 'A3'), facts: { batteryStartKwh: +state.resources.battery.toFixed(1) } })
+    s = effect(s, 'a3.stowOutage', 'min', { add: minutes })
     s = effect(s, 'a3.stowBattery', 'kWh', { min: +s.resources.battery.toFixed(1), causeIds: decisionId(s, 'A3') })
   }
-  if (s.food.stage === 'growing' && !p.greenhouseOn) s = effect(s, `lamp.off.${phase}`, 'phút', { add: minutes, causeIds: phaseCause, facts: phase === 'd1' ? { priority: p.d1Priority ?? 'none' } : {} })
-  if (roverNeedsCharge && s.ice.stage === 'charging' && !on.rover) s = effect(s, `rover.chargeDenied.${phase}`, 'phút', { add: minutes, causeIds: phaseCause, facts: phase === 'd1' ? { priority: p.d1Priority ?? 'none' } : {} })
+  if (s.food.stage === 'growing' && !p.greenhouseOn) s = effect(s, `lamp.off.${phase}`, 'min', { add: minutes, causeIds: phaseCause, facts: phase === 'd1' ? { priority: p.d1Priority ?? 'none' } : {} })
+  if (roverNeedsCharge && s.ice.stage === 'charging' && !on.rover) s = effect(s, `rover.chargeDenied.${phase}`, 'min', { add: minutes, causeIds: phaseCause, facts: phase === 'd1' ? { priority: p.d1Priority ?? 'none' } : {} })
   if (s.supply.stage === 'pickup' && s.supply.method === 'crew') s = effect(s, 'd2.crewO2', 'kg', { add: LIFE.o2KgPerCrewDay * CREW * minutes / DAY * 0.25, causeIds: decisionId(s, 'D2') })
-  if (s.supply.method === 'rover' && (s.supply.stage === 'pickup' || s.supply.roverPhase === 'unconfig') && s.ice.zone && !s.ice.report) s = effect(s, 'd2.roverInterrupted', 'phút', { add: minutes, causeIds: decisionId(s, 'D2') })
+  if (s.supply.method === 'rover' && (s.supply.stage === 'pickup' || s.supply.roverPhase === 'unconfig') && s.ice.zone && !s.ice.report) s = effect(s, 'd2.roverInterrupted', 'min', { add: minutes, causeIds: decisionId(s, 'D2') })
 
   // B2: the greenhouse records every change of its lamp supply by itself (no player journal).
   if (s.food.stage === 'growing' && wasGreenhouse !== p.greenhouseOn) {
     const causes = [...decisionId(s, 'D1'), ...decisionId(s, 'A3')]
-    const reason = p.greenhouseOn ? 'đủ điện trở lại' : p.lightFactor < 1 ? 'ánh sáng giảm, điện tùy chọn bị cắt để bảo vệ hệ thống thiết yếu' : 'pin xuống mức dự trữ'
+    const reason = p.greenhouseOn ? 'enough power again' : p.lightFactor < 1 ? 'light dropped, optional power was cut to protect essential systems' : 'battery fell to its reserve level'
     s = { ...s, food: { ...s.food, lightLog: [...s.food.lightLog, { atMinute: now, on: p.greenhouseOn, reason }] } }
-    s = log(s, { kind: 'research', tag: 'B2', title: p.greenhouseOn ? 'Đèn nhà kính bật lại' : 'Đèn nhà kính tắt', detail: `Nhà kính tự ghi: ${reason}.`, causeIds: causes })
+    s = log(s, { kind: 'research', tag: 'B2', title: p.greenhouseOn ? 'Greenhouse lights back on' : 'Greenhouse lights off', detail: `Greenhouse log: ${reason}.`, causeIds: causes })
   }
 
   // Greenhouse plants (research crop, never the crew's food supply).
@@ -170,11 +170,11 @@ function simulate(state: GameState, minutes: number): GameState {
     // Growth lost, attributed in order: water first, then lamps (so the two parts add up exactly).
     const grow = minutes / (FOOD.growDays * DAY)
     if (!irrigated) {
-      s = effect(s, 'b1.waterStress', 'phút', { add: minutes, causeIds: decisionId(s, 'B1') })
-      s = effect(s, 'growth.lostWater', 'chỉ số', { add: grow * 0.75, causeIds: decisionId(s, 'B1') })
+      s = effect(s, 'b1.waterStress', 'min', { add: minutes, causeIds: decisionId(s, 'B1') })
+      s = effect(s, 'growth.lostWater', 'index', { add: grow * 0.75, causeIds: decisionId(s, 'B1') })
     }
     const lampLoss = grow * (irrigated ? 1 : 0.25) * (p.greenhouseOn ? 0 : 0.7)
-    if (lampLoss > 0) s = effect(s, `growth.lostLamp.${phase}`, 'chỉ số', { add: lampLoss, causeIds: phaseCause })
+    if (lampLoss > 0) s = effect(s, `growth.lostLamp.${phase}`, 'index', { add: lampLoss, causeIds: phaseCause })
   }
 
   // Rover: charge at the depot, drive the chosen verified route, survey, come back.
@@ -184,7 +184,7 @@ function simulate(state: GameState, minutes: number): GameState {
   const driven = Math.abs(s.ice.distanceM - ice0.distanceM)
   if (s.ice.slow && driven > 0 && (ice0.stage === 'outbound' || ice0.stage === 'returning' || ice0.stage === 'recalled')) {
     const normal = ROVER.speedKmh * 1000 / 60, slow = normal * ROVER.slowFactor
-    s = effect(s, 'c31.slow.minutes', 'phút', { add: driven / slow - driven / normal, causeIds: decisionId(s, 'C31') })
+    s = effect(s, 'c31.slow.minutes', 'min', { add: driven / slow - driven / normal, causeIds: decisionId(s, 'C31') })
     s = effect(s, 'c31.slow.kwh', 'kWh', { add: driven / 1000 * ROVER.kwhPerKm * (ROVER.slowEnergyFactor - 1), causeIds: decisionId(s, 'C31') })
   }
   return s
@@ -196,7 +196,7 @@ function roverStep(state: GameState, minutes: number): GameState {
   if (s.power.roverChargingOn) ice.roverBattery = Math.min(ROVER.batteryKwh, ice.roverBattery + POWER.roverChargeKw * 0.9 * h)
   if (ice.stage === 'charging' && ice.route && ice.roverBattery >= roverEnergyNeed(ice.route.lengthM + ice.detourM)) {
     ice.stage = 'outbound'
-    s = log(effect({ ...s, ice }, 'rover.chargeWait', 'phút', { set: now - (ice.chargeStartedAt ?? now), causeIds: decisionId(s, 'C2') }), { kind: 'research', tag: 'C2', title: 'MILO xuất phát', detail: `Pin rover đã đủ cho cả chuyến đi và về khu ${ice.zone}.`, causeIds: decisionId(s, 'C2') }, true)
+    s = log(effect({ ...s, ice }, 'rover.chargeWait', 'min', { set: now - (ice.chargeStartedAt ?? now), causeIds: decisionId(s, 'C2') }), { kind: 'research', tag: 'C2', title: 'MILO sets off', detail: `The rover battery is enough for the round trip to Zone ${ice.zone}.`, causeIds: decisionId(s, 'C2') }, true)
     return s
   }
   const speed = ROVER.speedKmh * 1000 / 60 * (ice.slow ? ROVER.slowFactor : 1)           // m per minute
@@ -208,12 +208,12 @@ function roverStep(state: GameState, minutes: number): GameState {
     ice.roverBattery = Math.max(0, ice.roverBattery - energy(ice.distanceM - before))
     if (!ice.anomalyDone && ice.distanceM >= total * ROVER.anomalyAt) {
       ice.stage = 'anomaly'; ice.distanceM = total * ROVER.anomalyAt
-      s = log({ ...s, ice }, { kind: 'event', tag: 'C3.1', title: 'MILO dừng: địa hình bất thường', detail: 'Camera thấy một bãi đá vụn nhỏ hơn ô 5 m của bản đồ (tình huống giả định).', causeIds: decisionId(s, 'C2') })
+      s = log({ ...s, ice }, { kind: 'event', tag: 'C3.1', title: 'MILO stops: unexpected ground', detail: 'The camera sees rubble smaller than the map’s 5 m cells (a made-up situation).', causeIds: decisionId(s, 'C2') })
       return ask(s, 'C31', ['slow', 'detour', 'return'], { atM: Math.round(ice.distanceM), zone: ice.zone ?? '' })
     }
     if (ice.distanceM >= total) {
       ice.stage = 'surveying'
-      s = log({ ...s, ice }, { kind: 'research', tag: 'C3.2', title: `MILO tới khu ${ice.zone}`, detail: `Rover bắt đầu đo ${Math.round(ice.surveyTargetMin / 60)} giờ tại đúng vị trí bạn chọn.`, causeIds: [...decisionId(s, 'C1'), ...decisionId(s, 'C31')] }, true)
+      s = log({ ...s, ice }, { kind: 'research', tag: 'C3.2', title: `MILO reaches Zone ${ice.zone}`, detail: `The rover starts ${Math.round(ice.surveyTargetMin / 60)} hours of measurements at exactly the spot you chose.`, causeIds: [...decisionId(s, 'C1'), ...decisionId(s, 'C31')] }, true)
       return s
     }
   } else if (ice.stage === 'surveying') {
@@ -221,10 +221,10 @@ function roverStep(state: GameState, minutes: number): GameState {
     const before = Math.floor(ice.surveyMin / 60)
     ice.surveyMin += minutes
     for (let hour = before + 1; hour <= Math.floor(ice.surveyMin / 60); hour++) ice.samples = [...ice.samples, ...takeSamples(s, ice, now, hour)]
-    if (ice.surveyMin >= ice.surveyTargetMin && ice.waitingRadiation && s.radiation.active) s = effect(s, 'd3.surveyHold', 'phút', { add: minutes, causeIds: decisionId(s, 'D3') })   // MILO keeps waiting for the radiation to end
+    if (ice.surveyMin >= ice.surveyTargetMin && ice.waitingRadiation && s.radiation.active) s = effect(s, 'd3.surveyHold', 'min', { add: minutes, causeIds: decisionId(s, 'D3') })   // MILO keeps waiting for the radiation to end
     if (ice.surveyMin >= ice.surveyTargetMin && !(ice.waitingRadiation && s.radiation.active)) {
       ice.stage = 'returning'; ice.waitingRadiation = false
-      s = log({ ...s, ice }, { kind: 'research', tag: 'C3.3', title: 'Khảo sát xong, MILO quay về', detail: `${ice.samples.filter((x) => x.valid).length} mẫu đo hợp lệ.`, causeIds: decisionId(s, 'C1') })
+      s = log({ ...s, ice }, { kind: 'research', tag: 'C3.3', title: 'Survey done, MILO heads home', detail: `${ice.samples.filter((x) => x.valid).length} valid measurements.`, causeIds: decisionId(s, 'C1') })
       return s
     }
   } else if (ice.stage === 'returning' || ice.stage === 'recalled') {
@@ -234,7 +234,7 @@ function roverStep(state: GameState, minutes: number): GameState {
     if (ice.distanceM <= 0) {
       if (ice.stage === 'recalled') {
         ice.stage = 'cargo'
-        s = log({ ...s, ice, supply: { ...s.supply, roverPhase: 'config', jobDoneAt: now + SCHEDULE.d2RoverConfigMin } }, { kind: 'consequence', tag: 'D2', title: 'MILO về căn cứ để chở hàng', detail: 'Rover đổi sang cấu hình vận tải. Khảo sát băng tạm dừng; dữ liệu đã đo được giữ nguyên.', causeIds: decisionId(s, 'D2') }, true)
+        s = log({ ...s, ice, supply: { ...s.supply, roverPhase: 'config', jobDoneAt: now + SCHEDULE.d2RoverConfigMin } }, { kind: 'consequence', tag: 'D2', title: 'MILO returns to carry cargo', detail: 'The rover is refitted for hauling. The ice survey pauses; the data already measured is kept.', causeIds: decisionId(s, 'D2') }, true)
         return s
       }
       return finishIce({ ...s, ice })
@@ -250,7 +250,7 @@ function takeSamples(s: GameState, ice: IceState, now: number, hour: number): Sa
   const seed = hour * 7 + (ice.zone ? ice.zone.charCodeAt(0) : 0)
   const rad = s.radiation.active
   return [
-    { atMinute: now, instrument: 'neutron', value: +(base + noise(seed) * 0.12).toFixed(3), valid: !rad, flag: rad ? 'nhiễu bức xạ' : undefined },
+    { atMinute: now, instrument: 'neutron', value: +(base + noise(seed) * 0.12).toFixed(3), valid: !rad, flag: rad ? 'radiation noise' : undefined },
     { atMinute: now, instrument: 'nir', value: +(0.4 + noise(seed + 1) * 0.1).toFixed(3), valid: true },
     { atMinute: now, instrument: 'thermal', value: Math.round((psr ? 52 : 118) + noise(seed + 2) * 14), valid: true },
   ]
@@ -262,15 +262,15 @@ function finishIce(state: GameState): GameState {
   const valid = neutron.filter((x) => x.valid)
   const meanIndex = valid.length ? valid.reduce((a, x) => a + x.value, 0) / valid.length : 0
   const reasons: string[] = []
-  if (ice.route) reasons.push(`Khu ${ice.zone} (${ice.route.name}): dữ liệu NASA cho biết ${ice.route.inPsr ? 'nằm trong vùng tối vĩnh cửu (PSR)' : 'không nằm trong PSR'}.`)
-  if (neutron.length - valid.length) reasons.push(`${neutron.length - valid.length} lần đo neutron bị loại vì nhiễu bức xạ (D3); các mẫu đo trước đó vẫn giữ.`)
-  if (ice.slow) reasons.push('Đi chậm sau đoạn địa hình bất thường nên tốn thêm thời gian và pin.')
-  if (ice.detourM) reasons.push(`Đi vòng thêm ${Math.round(ice.detourM)} m quanh bãi đá.`)
-  const confidence = valid.length >= 6 ? 'cao' : valid.length >= 3 ? 'trung bình' : 'thấp'
+  if (ice.route) reasons.push(`Zone ${ice.zone} (${ice.route.name}): NASA data shows it is ${ice.route.inPsr ? 'inside a permanently shadowed region (PSR)' : 'not inside a PSR'}.`)
+  if (neutron.length - valid.length) reasons.push(`${neutron.length - valid.length} neutron readings were rejected because of radiation noise (D3); earlier samples were kept.`)
+  if (ice.slow) reasons.push('Driving slowly after the rough ground cost extra time and battery.')
+  if (ice.detourM) reasons.push(`Detoured an extra ${Math.round(ice.detourM)} m around the rubble.`)
+  const confidence = valid.length >= 6 ? 'high' : valid.length >= 3 ? 'medium' : 'low'
   ice.stage = 'done'; ice.report = { validNeutron: valid.length, invalidNeutron: neutron.length - valid.length, meanIndex: +meanIndex.toFixed(3), confidence, reasons }
   let s2: GameState = { ...state, ice }
-  if (neutron.length - valid.length) s2 = effect(s2, 'd3.invalidNeutron', 'mẫu', { set: neutron.length - valid.length, causeIds: decisionId(state, 'D3'), facts: { valid: valid.length } })
-  return log(s2, { kind: 'research', tag: 'C4', title: 'MILO đã về căn cứ an toàn', detail: `Báo cáo băng hoàn tất: ${valid.length} mẫu neutron hợp lệ, độ tin cậy ${confidence}.`, causeIds: [...decisionId(state, 'C1'), ...decisionId(state, 'C31'), ...decisionId(state, 'D3')] }, true)
+  if (neutron.length - valid.length) s2 = effect(s2, 'd3.invalidNeutron', 'samples', { set: neutron.length - valid.length, causeIds: decisionId(state, 'D3'), facts: { valid: valid.length } })
+  return log(s2, { kind: 'research', tag: 'C4', title: 'MILO is safely back at base', detail: `Ice report complete: ${valid.length} valid neutron samples, ${confidence} confidence.`, causeIds: [...decisionId(state, 'C1'), ...decisionId(state, 'C31'), ...decisionId(state, 'D3')] }, true)
 }
 
 // ── scheduled events ────────────────────────────────────────────────────────
@@ -281,7 +281,7 @@ function events(state: GameState): GameState {
 
   // A3: physical hazard to the array (SCENARIO; not a historical NASA event). Only after the A2 tutorial.
   if (s.stage === 'A3' && now >= SCHEDULE.a3At && !eventBusy(s) && (f = fire(s, 'A3'))) {
-    s = log(f, { kind: 'event', tag: 'A3', title: 'Dự báo: sắp có nhiều mảnh đá nhỏ bay qua', detail: 'Hệ thống theo dõi của căn cứ vừa dự báo một khoảng thời gian có nhiều mảnh đá không gian nhỏ đi qua khu vực Mặt Trăng hơn bình thường. Mặt Trăng gần như không có không khí để làm chúng cháy hết, nên mảnh nhỏ có thể đập thẳng vào giàn pin. (Mốc giờ trong game là giả định.)', causeIds: [] })
+    s = log(f, { kind: 'event', tag: 'A3', title: 'Forecast: a shower of tiny space rocks', detail: 'The base’s tracking system forecasts a period when more tiny space rocks than usual will pass near the Moon. The Moon has almost no air to burn them up, so the small grains can hit the solar array directly. (The timing in the game is an assumption.)', causeIds: [] })
     s = ask(s, 'A3', ['keep', 'stow'])
   }
   if (s.a3HazardEndsAt !== null && now >= s.a3HazardEndsAt && (f = fire(s, 'A3-end'))) {
@@ -289,39 +289,39 @@ function events(state: GameState): GameState {
     if (s.a3Choice === 'keep') {
       s = { ...s, power: { ...s.power, capacityFactor: 1 - POWER.a3LossFraction } }
       s = effect(s, 'a3.capacity', '%', { set: POWER.a3LossFraction * 100, causeIds: decisionId(s, 'A3'), facts: { beforePercent: 100, afterPercent: Math.round((1 - POWER.a3LossFraction) * 100) } })
-      s = log(s, { kind: 'consequence', tag: 'A3', title: 'Giàn pin bị hư: mất 10 % công suất vĩnh viễn', detail: 'Giàn pin vẫn mở khi các mảnh đá bay qua, bề mặt bị trầy. Không có cách sửa trong nhiệm vụ này.', causeIds: decisionId(s, 'A3') }, true)
-    } else s = log(s, { kind: 'consequence', tag: 'A3', title: 'Đợt mảnh đá đã qua, giàn pin không bị hư', detail: 'Giàn pin đã gập lại trong lúc đó. Giờ nó mở ra và sẽ phát đủ 100 % công suất.', causeIds: decisionId(s, 'A3') }, true)
-    s = log({ ...s, stage: 'free', ice: { ...s.ice, stage: s.ice.stage === 'locked' ? 'idle' : s.ice.stage } }, { kind: 'stage', tag: 'FREE', title: 'Hoàn thành hướng dẫn! Bạn tự điều hành căn cứ', detail: s.mode === 'basic' ? 'Bạn đã biết cân bằng điện, nước và oxy. Tiếp theo, mình sẽ cùng bạn làm từng nghiên cứu một: trước hết là nghiên cứu thực phẩm trong nhà kính.' : 'Nghiên cứu thực phẩm (nhà kính) và khám phá băng (rover MILO) đã mở.', causeIds: [] }, true)
+      s = log(s, { kind: 'consequence', tag: 'A3', title: 'Solar array damaged: 10 % of its power lost for good', detail: 'The array stayed open while the rocks passed and its surface got scratched. It cannot be repaired during this mission.', causeIds: decisionId(s, 'A3') }, true)
+    } else s = log(s, { kind: 'consequence', tag: 'A3', title: 'The rock shower has passed, the array is unharmed', detail: 'The array was folded away in time. Now it opens again at full 100 % power.', causeIds: decisionId(s, 'A3') }, true)
+    s = log({ ...s, stage: 'free', ice: { ...s.ice, stage: s.ice.stage === 'locked' ? 'idle' : s.ice.stage } }, { kind: 'stage', tag: 'FREE', title: 'Tutorial complete! You run the base now', detail: s.mode === 'basic' ? 'You know how to balance power, water and oxygen. Next we will do the research together, one project at a time: first, food research in the greenhouse.' : 'Food research (greenhouse) and the ice search (rover MILO) are now open.', causeIds: [] }, true)
   }
-  if (s.power.stowedUntil !== null && now >= s.power.stowedUntil && (f = fire(s, 'A3-redeployed'))) s = effect(f, 'a3.stowOutage', 'phút', { causeIds: decisionId(f, 'A3'), facts: { batteryEndKwh: +f.resources.battery.toFixed(1), capacityPercent: Math.round(f.power.capacityFactor * 100) } })
+  if (s.power.stowedUntil !== null && now >= s.power.stowedUntil && (f = fire(s, 'A3-redeployed'))) s = effect(f, 'a3.stowOutage', 'min', { causeIds: decisionId(f, 'A3'), facts: { batteryEndKwh: +f.resources.battery.toFixed(1), capacityPercent: Math.round(f.power.capacityFactor * 100) } })
   // B1: irrigation fault (not on the same moment as D2).
   if (s.food.started && s.food.startedAt !== null && now >= s.food.startedAt + SCHEDULE.b1AfterStartMin && s.food.stage === 'growing' && !eventBusy(s) && (f = fire(s, 'B1'))) {
-    s = log({ ...f, food: { ...f.food, irrigation: 'fault' } }, { kind: 'event', tag: 'B1', title: 'Hệ thống tưới nhà kính bị tắc', detail: 'Cây đang không được tưới.', causeIds: [] })
+    s = log({ ...f, food: { ...f.food, irrigation: 'fault' } }, { kind: 'event', tag: 'B1', title: 'The greenhouse watering system is blocked', detail: 'The plants are not getting water.', causeIds: [] })
     s = ask(s, 'B1', ['now', 'later'])
   }
   const food = s.food
   if (food.irrigation === 'fault' && food.repairStartsAt !== null && now >= food.repairStartsAt && !crewSheltered(s)) s = { ...s, food: { ...food, irrigation: 'repairing', repairDoneAt: now + SCHEDULE.b1RepairMin } }
-  else if (food.irrigation === 'fault' && food.repairStartsAt !== null && now >= food.repairStartsAt) s = effect(s, 'd3.repairDelay', 'phút', { add: STEP, causeIds: decisionId(s, 'D3') })   // crew sheltering from radiation: the repair waits
+  else if (food.irrigation === 'fault' && food.repairStartsAt !== null && now >= food.repairStartsAt) s = effect(s, 'd3.repairDelay', 'min', { add: STEP, causeIds: decisionId(s, 'D3') })   // crew sheltering from radiation: the repair waits
   if (s.food.irrigation === 'repairing' && s.food.repairDoneAt !== null && now >= s.food.repairDoneAt) {
-    s = log({ ...s, food: { ...s.food, irrigation: 'ok' } }, { kind: 'consequence', tag: 'B1', title: 'Đã sửa xong hệ thống tưới', detail: `Cây đã thiếu nước tổng cộng ${Math.round(s.food.waterStressMin / 60)} giờ.`, causeIds: decisionId(s, 'B1') }, true)
+    s = log({ ...s, food: { ...s.food, irrigation: 'ok' } }, { kind: 'consequence', tag: 'B1', title: 'The watering system is fixed', detail: `In total the plants went without water for ${Math.round(s.food.waterStressMin / 60)} hours.`, causeIds: decisionId(s, 'B1') }, true)
   }
   // D2: resupply announced a day ahead so the player can prepare.
   // D2: announced a day ahead (prepare), the lander descends, then the player chooses who brings the cargo in.
   if (now >= SCHEDULE.d2AnnounceAt && s.stage === 'free' && !eventBusy(s) && (f = fire(s, 'D2'))) {
-    s = log({ ...f, supply: { ...f.supply, stage: 'announced' } }, { kind: 'event', tag: 'D2', title: 'Tàu tiếp tế sẽ hạ cánh sau khoảng 24 giờ', detail: 'Tàu hạ xuống một bãi đáp tạm ngoài căn cứ. Thực phẩm và nước chỉ vào kho khi được chở về.', causeIds: [] }, true)
+    s = log({ ...f, supply: { ...f.supply, stage: 'announced' } }, { kind: 'event', tag: 'D2', title: 'A supply lander arrives in about 24 hours', detail: 'It will land on a temporary pad outside the base. Food and water only count once they are brought in.', causeIds: [] }, true)
   }
   if (s.supply.stage === 'announced' && now >= SCHEDULE.d2ArriveAt && !eventBusy(s) && (f = fire(s, 'D2-arrive'))) {
-    s = log({ ...f, supply: { ...f.supply, stage: 'landing', landingEndsAt: now + SCHEDULE.d2LandingMin } }, { kind: 'event', tag: 'D2', title: 'Tàu tiếp tế đang hạ cánh', detail: 'Động cơ hãm giảm tốc độ rơi (Mặt Trăng không có không khí để dùng dù). Bãi đáp này ở phía đông, khuất sau các tòa nhà so với giàn pin, nên lần này không cần thu gọn giàn pin.', causeIds: [] })
+    s = log({ ...f, supply: { ...f.supply, stage: 'landing', landingEndsAt: now + SCHEDULE.d2LandingMin } }, { kind: 'event', tag: 'D2', title: 'The supply lander is landing', detail: 'Braking engines slow its fall (the Moon has no air for parachutes). The pad is to the east, behind the buildings as seen from the solar array, so this time the array does not need to be folded.', causeIds: [] })
   }
   if (s.supply.stage === 'landing' && s.supply.landingEndsAt !== null && now >= s.supply.landingEndsAt) {
-    s = log({ ...s, supply: { ...s.supply, stage: 'waiting' } }, { kind: 'event', tag: 'D2', title: 'Tàu tiếp tế đã hạ cánh an toàn', causeIds: [] })
+    s = log({ ...s, supply: { ...s.supply, stage: 'waiting' } }, { kind: 'event', tag: 'D2', title: 'The supply lander has landed safely', causeIds: [] })
     s = ask(s, 'D2', ['rover', 'crew'], { roverAway: roverAway(s.ice), roverBattery: Math.round(s.ice.roverBattery), tripKwh: Math.round(supplyTripKwh()) })
   }
   s = supplyStep(s)
   // D1: light drops; optional loads must be prioritised if power cannot cover both.
   if (now >= SCHEDULE.d1At && s.stage === 'free' && !eventBusy(s) && (f = fire(s, 'D1'))) {
     s = { ...f, power: { ...f.power, lightFactor: SCHEDULE.d1LightFactor } }
-    s = log(s, { kind: 'event', tag: 'D1', title: 'Ánh sáng giảm trong 30 giờ', detail: 'Mặt Trời xuống thấp sau dãy núi (tình huống giả định cho trò chơi).', causeIds: [] })
+    s = log(s, { kind: 'event', tag: 'D1', title: 'Sunlight drops for 30 hours', detail: 'The Sun sinks low behind the mountains (a made-up situation for the game).', causeIds: [] })
     const prod = POWER.arrayKw * s.power.capacityFactor * SCHEDULE.d1LightFactor
     const essential = POWER.essentialKw + (s.a2Enabled ? POWER.electrolysisKw : 0) + LIFE.recyclerLph * POWER.recyclerKwhPerL
     const hours = SCHEDULE.d1Min / 60
@@ -333,23 +333,23 @@ function events(state: GameState): GameState {
     s = effect(s, 'd1.check', 'kWh', { set: +Math.max(0, demand - Math.max(0, spare)).toFixed(1), causeIds: s.power.capacityFactor < 1 ? decisionId(s, 'A3') : [], facts: { spareKwh: +spare.toFixed(1), demandKwh: +demand.toFixed(1), deficitIfFullArrayKwh: +Math.max(0, demand - Math.max(0, spareFull)).toFixed(1), capacityPercent: Math.round(s.power.capacityFactor * 100), productionKw: +prod.toFixed(1), batteryKwh: +s.resources.battery.toFixed(1) } })
     if (demand > 0 && spare < demand) s = ask(s, 'D1',   // (nothing optional left to prioritise: no question)
       ['greenhouse', 'rover'], { productionKw: +prod.toFixed(1), lost: s.power.capacityFactor < 1, spareKwh: Math.round(spare), demandKwh: Math.round(demand), batteryKwh: Math.round(s.resources.battery) })
-    else s = log(s, { kind: 'consequence', tag: 'D1', title: 'Ánh sáng giảm nhưng vẫn đủ điện cho nhà kính và sạc rover', detail: `Giàn pin còn ${prod.toFixed(1)} kW; pin dự trữ ${Math.round(s.resources.battery)} kWh đủ bù phần thiếu trong 30 giờ.`, causeIds: decisionId(s, 'A3') }, true)
+    else s = log(s, { kind: 'consequence', tag: 'D1', title: 'Less light, but still enough power for the greenhouse and the rover', detail: `The array still makes ${prod.toFixed(1)} kW; the ${Math.round(s.resources.battery)} kWh battery covers the gap for 30 hours.`, causeIds: decisionId(s, 'A3') }, true)
   }
-  if (s.power.lightFactor < 1 && now >= SCHEDULE.d1At + SCHEDULE.d1Min && (f = fire(s, 'D1-end'))) s = log({ ...f, power: { ...f.power, lightFactor: 1 } }, { kind: 'event', tag: 'D1', title: 'Ánh sáng trở lại bình thường', causeIds: [] })
+  if (s.power.lightFactor < 1 && now >= SCHEDULE.d1At + SCHEDULE.d1Min && (f = fire(s, 'D1-end'))) s = log({ ...f, power: { ...f.power, lightFactor: 1 } }, { kind: 'event', tag: 'D1', title: 'Sunlight is back to normal', causeIds: [] })
   // D3: solar particle event. Crew must shelter; the rover decides only if it is measuring.
   if (now >= SCHEDULE.d3At && s.stage === 'free' && !eventBusy(s) && (f = fire(s, 'D3'))) {
     s = { ...f, radiation: { active: true, endsAt: now + SCHEDULE.d3Min, roverChoice: null } }
-    s = log(s, { kind: 'event', tag: 'D3', title: 'Bão bức xạ Mặt Trời: cả đội vào nơi trú ẩn', detail: 'Loại sự kiện có thật (NASA DONKI ghi nhận); thời điểm trong game là giả định. Việc ngoài trời tạm dừng 8 giờ.', causeIds: [] })
+    s = log(s, { kind: 'event', tag: 'D3', title: 'Solar radiation storm: the crew takes shelter', detail: 'A real type of event (recorded in NASA DONKI); its timing in the game is an assumption. Outdoor work stops for 8 hours.', causeIds: [] })
     if (s.ice.stage === 'surveying') s = ask(s, 'D3', ['wait', 'return'])
     else s = { ...s, inbox: [...s.inbox, s.log[s.log.length - 1].id], isPaused: s.mode === 'basic' ? true : s.isPaused }
   }
   if (s.radiation.active && s.radiation.endsAt !== null && now >= s.radiation.endsAt) {
-    s = log({ ...s, radiation: { ...s.radiation, active: false } }, { kind: 'event', tag: 'D3', title: 'Hết bức xạ, phi hành đoàn ra ngoài làm việc lại', causeIds: [] }, true)
+    s = log({ ...s, radiation: { ...s.radiation, active: false } }, { kind: 'event', tag: 'D3', title: 'The storm is over, the crew goes back to work outside', causeIds: [] }, true)
   }
   // Packaged food decides the mission length: warn a day before the reserve, then end.
   const daysLeft = (s.resources.food - LIFE.foodReserveCrewDays) / CREW
-  if (s.stage === 'free' && !s.foodWarned && daysLeft <= 1) s = log({ ...s, foodWarned: true }, { kind: 'event', tag: 'END', title: 'Thực phẩm sắp chạm mức dự trữ', detail: 'Ngày mai nhiệm vụ phải kết thúc và cả đội trở về Trái Đất.', causeIds: [] }, true)
-  if (s.phase === 'playing' && s.resources.food <= LIFE.foodReserveCrewDays + 1e-6) s = log({ ...s, phase: 'returning', ending: { reason: 'food', atMinute: now }, isPaused: true, decisions: [], inbox: [] }, { kind: 'stage', tag: 'END', title: 'Kho thực phẩm chạm mức dự trữ: trở về Trái Đất', causeIds: [] })
+  if (s.stage === 'free' && !s.foodWarned && daysLeft <= 1) s = log({ ...s, foodWarned: true }, { kind: 'event', tag: 'END', title: 'Food is nearly down to its reserve', detail: 'Tomorrow the mission must end and the crew returns to Earth.', causeIds: [] }, true)
+  if (s.phase === 'playing' && s.resources.food <= LIFE.foodReserveCrewDays + 1e-6) s = log({ ...s, phase: 'returning', ending: { reason: 'food', atMinute: now }, isPaused: true, decisions: [], inbox: [] }, { kind: 'stage', tag: 'END', title: 'Food reserve reached: returning to Earth', causeIds: [] })
   return s
 }
 
@@ -370,7 +370,7 @@ function supplyStep(state: GameState): GameState {
     s = { ...s, supply: { ...s.supply, roverPhase: 'unconfig', jobDoneAt: now + SCHEDULE.d2RoverConfigMin } }
   } else if (sup.roverPhase === 'unconfig' && sup.jobDoneAt !== null && now >= sup.jobDoneAt) {
     const resume: IceState['stage'] = s.ice.stage === 'cargo' ? (s.ice.route ? 'charging' : 'idle') : s.ice.stage
-    s = log({ ...s, supply: { ...s.supply, roverPhase: 'none' }, ice: { ...s.ice, stage: resume, distanceM: 0 } }, { kind: 'consequence', tag: 'D2', title: 'MILO trở lại cấu hình khảo sát', detail: s.ice.route ? 'Rover sạc lại rồi tiếp tục chuyến khảo sát đã chọn.' : '', causeIds: decisionId(s, 'D2') })
+    s = log({ ...s, supply: { ...s.supply, roverPhase: 'none' }, ice: { ...s.ice, stage: resume, distanceM: 0 } }, { kind: 'consequence', tag: 'D2', title: 'MILO is back in survey mode', detail: s.ice.route ? 'The rover recharges, then continues the survey you chose.' : '', causeIds: decisionId(s, 'D2') })
   }
   return s
 }
@@ -379,7 +379,7 @@ function deliver(state: GameState): GameState {
   const before = state.resources
   const after = clampResources({ ...before, food: before.food + SUPPLY.food, water: before.water + SUPPLY.water })
   // Delivered exactly once: the supply leaves 'pickup' here, so no later step can add the cargo again.
-  return log({ ...state, resources: after, supply: { ...state.supply, stage: 'delivered', jobDoneAt: null } }, { kind: 'consequence', tag: 'D2', title: 'Hàng tiếp tế đã vào kho', detail: `+${SUPPLY.food / CREW} ngày thực phẩm cho cả đội và +${SUPPLY.water} lít nước, cộng đúng lúc hàng về tới căn cứ.`, deltas: resourceDelta(before, after), causeIds: decisionId(state, 'D2') }, true)
+  return log({ ...state, resources: after, supply: { ...state.supply, stage: 'delivered', jobDoneAt: null } }, { kind: 'consequence', tag: 'D2', title: 'The supplies are in the store', detail: `+${SUPPLY.food / CREW} days of food for the crew and +${SUPPLY.water} litres of water, added the moment the cargo reached the base.`, deltas: resourceDelta(before, after), causeIds: decisionId(state, 'D2') }, true)
 }
 
 // ── decisions ───────────────────────────────────────────────────────────────
@@ -400,23 +400,23 @@ function decide(state: GameState, action: Extract<GameAction, { type: 'decide' }
       else r.battery = Math.min(CAPACITY.battery, r.battery + A1.surplusKwh * A1.chargeEfficiency)
       const after = clampResources(r)
       s = record({ ...s, resources: after, a1Choice: action.choice }, d, action.choice, resourceDelta(before, after))
-      s = log(s, { kind: 'decision', tag: 'A1', title: action.choice === 'recycle' ? 'Đã dùng điện dư để tái chế nước' : 'Đã dùng điện dư để sạc pin dự trữ', deltas: resourceDelta(before, after), causeIds: decisionId(s, 'A1') })
-      return log({ ...s, stage: 'A2' }, { kind: 'stage', tag: 'A2', title: 'Chặng A2: nước + điện → oxy', detail: 'Hãy bật máy điện phân ở trạm hỗ trợ sự sống.', causeIds: [] })
+      s = log(s, { kind: 'decision', tag: 'A1', title: action.choice === 'recycle' ? 'Used the extra power to recycle water' : 'Used the extra power to charge the battery', deltas: resourceDelta(before, after), causeIds: decisionId(s, 'A1') })
+      return log({ ...s, stage: 'A2' }, { kind: 'stage', tag: 'A2', title: 'Stage A2: water + power → oxygen', detail: 'Turn on the electrolyser at the life support station.', causeIds: [] })
     }
     case 'A3': {
       const hazardEnd = now + SCHEDULE.a3PrepMin + SCHEDULE.a3HazardMin
       s = record({ ...s, a3Choice: action.choice as 'keep' | 'stow', a3HazardEndsAt: hazardEnd, power: { ...s.power, stowedUntil: action.choice === 'stow' ? hazardEnd + SCHEDULE.a3RedeployMin : null } }, d, action.choice)
-      return log(s, { kind: 'decision', tag: 'A3', title: action.choice === 'keep' ? 'Giữ giàn pin mở' : 'Thu gọn giàn pin', detail: action.choice === 'keep' ? 'Vẫn phát điện, nhưng có thể bị hư.' : `Không phát điện khoảng ${Math.round((SCHEDULE.a3PrepMin + SCHEDULE.a3HazardMin + SCHEDULE.a3RedeployMin) / 60)} giờ.`, causeIds: decisionId(s, 'A3') })
+      return log(s, { kind: 'decision', tag: 'A3', title: action.choice === 'keep' ? 'Kept the array open' : 'Folded the array away', detail: action.choice === 'keep' ? 'Still making power, but it may get damaged.' : `No solar power for about ${Math.round((SCHEDULE.a3PrepMin + SCHEDULE.a3HazardMin + SCHEDULE.a3RedeployMin) / 60)} hours.`, causeIds: decisionId(s, 'A3') })
     }
     case 'B1': {
       const startsAt = action.choice === 'now' ? now : now + SCHEDULE.b1DelayMin
       s = record({ ...s, food: { ...s.food, repairStartsAt: startsAt } }, d, action.choice)
-      s = effect(s, 'b1.plan', 'phút', { set: startsAt - now, causeIds: decisionId(s, 'B1'), facts: { choice: action.choice } })
-      return log(s, { kind: 'decision', tag: 'B1', title: action.choice === 'now' ? 'Cử phi hành gia sửa ngay' : 'Để sửa sau ca làm việc', detail: action.choice === 'now' ? `Mất khoảng ${SCHEDULE.b1RepairMin / 60} giờ.` : `Cây thiếu nước thêm khoảng ${Math.round((SCHEDULE.b1DelayMin + SCHEDULE.b1RepairMin) / 60)} giờ.`, causeIds: decisionId(s, 'B1') })
+      s = effect(s, 'b1.plan', 'min', { set: startsAt - now, causeIds: decisionId(s, 'B1'), facts: { choice: action.choice } })
+      return log(s, { kind: 'decision', tag: 'B1', title: action.choice === 'now' ? 'Sent an astronaut to fix it now' : 'Left the repair until after the shift', detail: action.choice === 'now' ? `Takes about ${SCHEDULE.b1RepairMin / 60} hours.` : `The plants go without water for about ${Math.round((SCHEDULE.b1DelayMin + SCHEDULE.b1RepairMin) / 60)} more hours.`, causeIds: decisionId(s, 'B1') })
     }
     case 'C1': {
       s = record({ ...s, ice: { ...s.ice, zone: action.choice as IceState['zone'], stage: 'route' } }, d, action.choice)
-      s = log(s, { kind: 'decision', tag: 'C1', title: `Chọn khu nghiên cứu ${action.choice}`, causeIds: decisionId(s, 'C1') })
+      s = log(s, { kind: 'decision', tag: 'C1', title: `Chose research zone ${action.choice}`, causeIds: decisionId(s, 'C1') })
       return ask(s, 'C2', ['go', 'back'], { zone: action.choice })
     }
     case 'C2': {
@@ -425,7 +425,7 @@ function decide(state: GameState, action: Extract<GameAction, { type: 'decide' }
       if (!route || route.zone !== s.ice.zone || !(route.lengthM > 0) || roverEnergyNeed(route.lengthM) > ROVER.batteryKwh) return state   // only real, feasible routes
       s = record({ ...s, ice: { ...s.ice, route, stage: 'charging', distanceM: 0, chargeStartedAt: now } }, d, 'go')
       s = effect(s, 'c2.route', 'm', { set: route.lengthM, causeIds: [...decisionId(s, 'C1'), ...decisionId(s, 'C2')], facts: { zone: route.zone, needKwh: +roverEnergyNeed(route.lengthM).toFixed(1), driveHours: +(2 * route.lengthM / 1000 / ROVER.speedKmh).toFixed(1), inPsr: route.inPsr } })
-      return log(s, { kind: 'decision', tag: 'C2', title: `Chọn tuyến A* tới khu ${route.zone}`, detail: `${(route.lengthM / 1000).toFixed(1)} km một chiều, cần khoảng ${Math.round(roverEnergyNeed(route.lengthM))} kWh pin rover.`, causeIds: decisionId(s, 'C2') })
+      return log(s, { kind: 'decision', tag: 'C2', title: `Chose the A* route to Zone ${route.zone}`, detail: `${(route.lengthM / 1000).toFixed(1)} km one way, needs about ${Math.round(roverEnergyNeed(route.lengthM))} kWh of rover battery.`, causeIds: decisionId(s, 'C2') })
     }
     case 'C31': {
       if (action.choice === 'detour' && !(action.detourM && action.detourM > 0)) return state   // detour only if it was checked on the DEM
@@ -435,12 +435,12 @@ function decide(state: GameState, action: Extract<GameAction, { type: 'decide' }
       else ice.stage = 'returning'
       s = record({ ...s, ice }, d, action.choice)
       if (action.choice === 'detour') s = effect(s, 'c31.detour', 'm', { set: ice.detourM, causeIds: decisionId(s, 'C31'), facts: { extraMinutes: +(2 * ice.detourM / (ROVER.speedKmh * 1000 / 60)).toFixed(1), extraKwh: +(2 * ice.detourM / 1000 * ROVER.kwhPerKm).toFixed(2) } })
-      if (action.choice === 'return') s = effect(s, 'c31.return', 'lần', { set: 1, causeIds: decisionId(s, 'C31'), facts: { validNeutronSoFar: ice.samples.filter((x) => x.instrument === 'neutron' && x.valid).length } })
-      return log(s, { kind: 'decision', tag: 'C3.1', title: action.choice === 'slow' ? 'Đi chậm qua bãi đá trên tuyến đã kiểm tra' : action.choice === 'detour' ? `Đi vòng ${Math.round(ice.detourM)} m (đã kiểm tra độ dốc trên DEM)` : 'Quay về căn cứ', causeIds: decisionId(s, 'C31') })
+      if (action.choice === 'return') s = effect(s, 'c31.return', 'times', { set: 1, causeIds: decisionId(s, 'C31'), facts: { validNeutronSoFar: ice.samples.filter((x) => x.instrument === 'neutron' && x.valid).length } })
+      return log(s, { kind: 'decision', tag: 'C3.1', title: action.choice === 'slow' ? 'Drove slowly through the rubble on the checked route' : action.choice === 'detour' ? `Detoured ${Math.round(ice.detourM)} m (slope checked on the DEM)` : 'Returned to base', causeIds: decisionId(s, 'C31') })
     }
     case 'D1': {
       s = record({ ...s, power: { ...s.power, d1Priority: action.choice as 'greenhouse' | 'rover' } }, d, action.choice)
-      return log(s, { kind: 'decision', tag: 'D1', title: action.choice === 'greenhouse' ? 'Ưu tiên đèn nhà kính' : 'Ưu tiên sạc rover', detail: 'Điện thiết yếu luôn được bảo vệ trước.', causeIds: [...decisionId(s, 'D1'), ...decisionId(s, 'A3')] })
+      return log(s, { kind: 'decision', tag: 'D1', title: action.choice === 'greenhouse' ? 'Greenhouse lights first' : 'Rover charging first', detail: 'Essential power is always protected first.', causeIds: [...decisionId(s, 'D1'), ...decisionId(s, 'A3')] })
     }
     case 'D2': {
       if (action.choice === 'rover' && !roverAway(s.ice) && s.ice.roverBattery < supplyTripKwh()) return state   // not enough charge for the trip
@@ -450,17 +450,17 @@ function decide(state: GameState, action: Extract<GameAction, { type: 'decide' }
       else if (roverAway(s.ice)) s = { ...s, supply: { ...s.supply, stage: 'pickup', roverPhase: 'toBase' }, ice: { ...s.ice, stage: 'recalled' } }
       else s = { ...s, supply: { ...s.supply, stage: 'pickup', roverPhase: 'config', jobDoneAt: now + SCHEDULE.d2RoverConfigMin }, ice: { ...s.ice, stage: s.ice.stage === 'done' ? 'done' : 'cargo' } }
       const away = method === 'rover' && s.ice.stage === 'recalled'
-      if (away) s = effect(s, 'd2.recall', 'lần', { set: 1, causeIds: decisionId(s, 'D2'), facts: { surveyedMin: Math.round(state.ice.surveyMin), distanceM: Math.round(state.ice.distanceM) } })
-      return log(s, { kind: 'decision', tag: 'D2', title: method === 'rover' ? 'Dùng rover MILO chở hàng' : 'Hai phi hành gia ra nhận hàng bằng xe đẩy', detail: method === 'crew' ? `Chuyến đi bộ ngoài căn cứ khoảng ${SCHEDULE.d2CrewPickupMin / 60} giờ; cả đội dùng thêm oxy trong lúc đó.` : away ? 'MILO đang khảo sát nên phải quay về, đổi cấu hình rồi mới đi lấy hàng. Khảo sát băng bị gián đoạn.' : `MILO đổi sang cấu hình chở hàng (${SCHEDULE.d2RoverConfigMin / 60} giờ), đi lấy hàng rồi về; tốn khoảng ${Math.round(supplyTripKwh())} kWh pin rover.`, causeIds: decisionId(s, 'D2') })
+      if (away) s = effect(s, 'd2.recall', 'times', { set: 1, causeIds: decisionId(s, 'D2'), facts: { surveyedMin: Math.round(state.ice.surveyMin), distanceM: Math.round(state.ice.distanceM) } })
+      return log(s, { kind: 'decision', tag: 'D2', title: method === 'rover' ? 'MILO the rover carries the cargo' : 'Two astronauts fetch the cargo with a cart', detail: method === 'crew' ? `A walk outside the base of about ${SCHEDULE.d2CrewPickupMin / 60} hours; the crew uses extra oxygen meanwhile.` : away ? 'MILO is surveying, so it must come back and be refitted before fetching the cargo. The ice survey is interrupted.' : `MILO is refitted for cargo (${SCHEDULE.d2RoverConfigMin / 60} hours), fetches the supplies and returns; about ${Math.round(supplyTripKwh())} kWh of rover battery.`, causeIds: decisionId(s, 'D2') })
     }
     case 'D3': {
       const ice = { ...s.ice }
       if (action.choice === 'wait') { ice.waitingRadiation = true; ice.surveyTargetMin = Math.min(ice.surveyMin + (s.radiation.endsAt ?? now) - now + 60 * 2, ice.surveyTargetMin + ROVER.remeasureMaxHours * 60 + SCHEDULE.d3Min) }
       else { ice.stage = 'returning' }
       s = record({ ...s, ice, radiation: { ...s.radiation, roverChoice: action.choice as 'wait' | 'return' } }, d, action.choice)
-      if (action.choice === 'wait') s = effect(s, 'd3.extraSurvey', 'phút', { set: ice.surveyTargetMin - ROVER.surveyHours * 60, causeIds: decisionId(s, 'D3') })
-      else s = effect(s, 'd3.earlyReturn', 'mẫu', { set: ice.samples.filter((x) => x.instrument === 'neutron' && x.valid).length, causeIds: decisionId(s, 'D3') })
-      return log(s, { kind: 'decision', tag: 'D3', title: action.choice === 'wait' ? 'MILO chờ hết bức xạ để đo lại' : 'MILO kết thúc khảo sát và quay về', causeIds: decisionId(s, 'D3') })
+      if (action.choice === 'wait') s = effect(s, 'd3.extraSurvey', 'min', { set: ice.surveyTargetMin - ROVER.surveyHours * 60, causeIds: decisionId(s, 'D3') })
+      else s = effect(s, 'd3.earlyReturn', 'samples', { set: ice.samples.filter((x) => x.instrument === 'neutron' && x.valid).length, causeIds: decisionId(s, 'D3') })
+      return log(s, { kind: 'decision', tag: 'D3', title: action.choice === 'wait' ? 'MILO waits for the storm to pass and measures again' : 'MILO ends the survey and heads home', causeIds: decisionId(s, 'D3') })
     }
   }
   return s
@@ -471,7 +471,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'game/start': {
       if (state.phase !== 'opening') return state
-      const s = log({ ...state, phase: 'playing', mode: action.mode, isPaused: action.mode === 'basic' }, { kind: 'stage', tag: 'A1', title: 'Chặng A1: điện dư và tái chế nước', detail: action.mode === 'basic' ? 'Chế độ Cơ bản: Commander Luna hướng dẫn, thời gian tự dừng khi cần quyết định.' : 'Chế độ Nâng cao: thời gian không tự dừng.', causeIds: [] })
+      const s = log({ ...state, phase: 'playing', mode: action.mode, isPaused: action.mode === 'basic' }, { kind: 'stage', tag: 'A1', title: 'Stage A1: extra power and water recycling', detail: action.mode === 'basic' ? 'Basic mode: Commander Luna guides you, and time pauses whenever a decision is needed.' : 'Advanced mode: time does not pause on its own.', causeIds: [] })
       return ask(s, 'A1', ['recycle', 'battery'])
     }
     case 'clock/setPaused':
@@ -511,14 +511,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'a2/activate': {
       if (state.stage !== 'A2' || state.a2Enabled) return state
-      const s = log({ ...state, a2Enabled: true, stage: 'A3' }, { kind: 'stage', tag: 'A2', title: 'Máy điện phân đã bật', detail: 'Từ giờ máy tự tạo oxy từ nước và điện khi oxy xuống dưới 90 %.', causeIds: [] }, true)
-      return log(s, { kind: 'event', tag: 'A3', title: 'Hãy để thời gian trôi và theo dõi căn cứ', detail: 'Hệ thống theo dõi không gian của căn cứ sẽ báo ngay nếu có điều gì đe dọa giàn pin mặt trời. Khi đó bạn sẽ được hỏi cách xử lý.', causeIds: [] }, true)
+      const s = log({ ...state, a2Enabled: true, stage: 'A3' }, { kind: 'stage', tag: 'A2', title: 'The electrolyser is on', detail: 'From now on it makes oxygen from water and power whenever oxygen drops below 90 %.', causeIds: [] }, true)
+      return log(s, { kind: 'event', tag: 'A3', title: 'Let time run and keep an eye on the base', detail: 'The base’s space-watch system will warn you right away if anything threatens the solar array. Then you will be asked what to do.', causeIds: [] }, true)
     }
     case 'food/repairNow': {
       // "Sửa sau" can still be changed: the crew starts now. Hours already without water stay counted.
       const f = state.food, now = state.clock.elapsedMinutes
       if (f.irrigation !== 'fault' || f.repairStartsAt === null || f.repairStartsAt <= now || crewSheltered(state) || state.phase !== 'playing') return state
-      return log(effect({ ...state, food: { ...f, repairStartsAt: now } }, 'b1.plan', 'phút', { set: 0, causeIds: decisionId(state, 'B1'), facts: { changedLater: true } }), { kind: 'consequence', tag: 'B1', title: 'Đổi kế hoạch: bắt đầu sửa hệ thống tưới ngay', detail: `Một phi hành gia dừng việc đang làm để sửa (khoảng ${SCHEDULE.b1RepairMin / 60} giờ). ${Math.round(f.waterStressMin / 60)} giờ cây đã thiếu nước thì không lấy lại được.`, causeIds: decisionId(state, 'B1') }, true)
+      return log(effect({ ...state, food: { ...f, repairStartsAt: now } }, 'b1.plan', 'min', { set: 0, causeIds: decisionId(state, 'B1'), facts: { changedLater: true } }), { kind: 'consequence', tag: 'B1', title: 'Change of plan: fixing the watering system now', detail: `An astronaut stops their work to fix it (about ${SCHEDULE.b1RepairMin / 60} hours). The ${Math.round(f.waterStressMin / 60)} hours the plants already went without water cannot be undone.`, causeIds: decisionId(state, 'B1') }, true)
     }
     case 'clock/skip': {
       // Fast-forward through pure waiting: stops at the first new decision or result, never answers for the player.
@@ -529,13 +529,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'food/begin': {
       if (state.stage !== 'free' || state.food.started || state.phase !== 'playing') return state
-      return log({ ...state, food: { ...state.food, started: true, startedAt: state.clock.elapsedMinutes } }, { kind: 'stage', tag: 'B', title: 'Bắt đầu nghiên cứu thực phẩm', detail: `Cây trong nhà kính đã được trồng từ trước, hiện lớn ${Math.round(state.food.growth * 100)} %.`, causeIds: [] })
+      return log({ ...state, food: { ...state.food, started: true, startedAt: state.clock.elapsedMinutes } }, { kind: 'stage', tag: 'B', title: 'Food research begins', detail: `The greenhouse plants were planted earlier and have grown ${Math.round(state.food.growth * 100)} %.`, causeIds: [] })
     }
     case 'food/observe': {
       if (state.food.stage !== 'growing' || state.stage !== 'free' || crewSheltered(state) || !foodOpen(state)) return state
       const f = state.food, now = state.clock.elapsedMinutes
       const obs = { atMinute: now, day: dayOf(now), irrigationOk: f.irrigation === 'ok', lightPercent: state.power.greenhouseOn ? 100 : 0, growthPercent: Math.round(f.growth * 100), heightCm: +(4 + f.growth * 18 - Math.min(5, f.waterStressMin / 120)).toFixed(1) }
-      return log({ ...state, food: { ...f, observations: [...f.observations, obs] } }, { kind: 'research', tag: 'B3', title: 'Đã quan sát cây trong nhà kính', detail: `Thiết bị tự ghi: cao ${obs.heightCm} cm, tưới ${obs.irrigationOk ? 'bình thường' : 'đang hỏng'}, đèn ${obs.lightPercent ? 'bật' : 'tắt'}.`, causeIds: [] })
+      return log({ ...state, food: { ...f, observations: [...f.observations, obs] } }, { kind: 'research', tag: 'B3', title: 'Observed the greenhouse plants', detail: `Sensor log: height ${obs.heightCm} cm, watering ${obs.irrigationOk ? 'normal' : 'broken'}, lights ${obs.lightPercent ? 'on' : 'off'}.`, causeIds: [] })
     }
     case 'food/harvest': {
       const f = state.food
@@ -548,18 +548,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         expectedGrams: FOOD.expectedGrams, growthPercent: Math.round(f.growth * 100), stressPercent: Math.round(stress * 100),
         gramsLostToWaterStress: Math.round(FOOD.expectedGrams * f.growth * stress), gramsLostToSlowerGrowthWater: Math.round(FOOD.expectedGrams * lostWater * (1 - stress)), gramsLampD1: lampG('d1'), gramsLampA3: lampG('a3'), gramsLampOther: lampG('other'),
       } })
-      return log(harvested, { kind: 'research', tag: 'B4', title: `Đã thu hoạch và cân mẫu: ${grams} g`, detail: `Cây khỏe mạnh khoảng ${FOOD.expectedGrams} g. Cây đã thiếu nước ${Math.round(f.waterStressMin / 60)} giờ và thiếu đèn ${Math.round(f.lightDeficitMin / 60)} giờ.`, causeIds: [...decisionId(state, 'B1'), ...decisionId(state, 'D1')] }, true)
+      return log(harvested, { kind: 'research', tag: 'B4', title: `Harvested and weighed the sample: ${grams} g`, detail: `A healthy plant is about ${FOOD.expectedGrams} g. These plants went ${Math.round(f.waterStressMin / 60)} hours without water and ${Math.round(f.lightDeficitMin / 60)} hours without light.`, causeIds: [...decisionId(state, 'B1'), ...decisionId(state, 'D1')] }, true)
     }
     case 'food/report': {
       const f = state.food
       if (f.stage !== 'harvested' || f.harvestGrams === null) return state
       const days = new Set(f.observations.map((o) => o.day)).size
       const reasons: string[] = []
-      if (f.waterStressMin) reasons.push(`Cây thiếu nước ${Math.round(f.waterStressMin / 60)} giờ do hệ thống tưới hỏng (B1).`)
-      if (f.lightDeficitMin) reasons.push(`Đèn nhà kính tắt ${Math.round(f.lightDeficitMin / 60)} giờ vì thiếu điện (B2${state.power.d1Priority ? ', D1' : ''}${state.power.capacityFactor < 1 ? ', ảnh hưởng của A3' : ''}).`)
-      reasons.push(days >= FOOD.minObservationDays ? `Có quan sát trong ${days} ngày khác nhau nên dữ liệu đáng tin hơn.` : `Chỉ quan sát trong ${days} ngày nên khó biết cây thay đổi thế nào.`)
-      const reliability = days >= 3 ? 'cao' : days >= FOOD.minObservationDays ? 'trung bình' : 'thấp'
-      return log({ ...state, food: { ...f, stage: 'reported', report: { grams: f.harvestGrams, expected: FOOD.expectedGrams, growthPercent: Math.round(f.growth * 100), reliability, reasons } } }, { kind: 'research', tag: 'B4', title: 'Báo cáo thực phẩm hoàn tất', detail: `${f.harvestGrams} g / kỳ vọng ${FOOD.expectedGrams} g; độ tin cậy dữ liệu: ${reliability}.`, causeIds: decisionId(state, 'B1') }, true)
+      if (f.waterStressMin) reasons.push(`The plants went ${Math.round(f.waterStressMin / 60)} hours without water because the watering system broke (B1).`)
+      if (f.lightDeficitMin) reasons.push(`The greenhouse lights were off for ${Math.round(f.lightDeficitMin / 60)} hours because of a power shortage (B2${state.power.d1Priority ? ', D1' : ''}${state.power.capacityFactor < 1 ? ', effect of A3' : ''}).`)
+      reasons.push(days >= FOOD.minObservationDays ? `Observations on ${days} different days make the data more reliable.` : `Observations on only ${days} day(s) make it hard to know how the plants changed.`)
+      const reliability = days >= 3 ? 'high' : days >= FOOD.minObservationDays ? 'medium' : 'low'
+      return log({ ...state, food: { ...f, stage: 'reported', report: { grams: f.harvestGrams, expected: FOOD.expectedGrams, growthPercent: Math.round(f.growth * 100), reliability, reasons } } }, { kind: 'research', tag: 'B4', title: 'Food report complete', detail: `${f.harvestGrams} g of an expected ${FOOD.expectedGrams} g; data reliability: ${reliability}.`, causeIds: decisionId(state, 'B1') }, true)
     }
     case 'ice/start': {
       const ice = state.ice
@@ -570,7 +570,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case 'mission/submit':
       if (state.phase !== 'playing' || state.stage !== 'free') return state
-      return log({ ...state, phase: 'returning', ending: { reason: 'submitted', atMinute: state.clock.elapsedMinutes }, isPaused: true, decisions: [], inbox: [] }, { kind: 'stage', tag: 'END', title: 'Đã nộp báo cáo: cả đội trở về Trái Đất', causeIds: [] })
+      return log({ ...state, phase: 'returning', ending: { reason: 'submitted', atMinute: state.clock.elapsedMinutes }, isPaused: true, decisions: [], inbox: [] }, { kind: 'stage', tag: 'END', title: 'Reports submitted: the crew returns to Earth', causeIds: [] })
     case 'mission/finishReturn':
       return state.phase === 'returning' ? { ...state, phase: 'ended' } : state
     case 'game/restart': return createInitialState()

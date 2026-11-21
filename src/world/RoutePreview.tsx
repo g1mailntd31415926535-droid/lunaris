@@ -48,13 +48,13 @@ export function RoutePreview({ zone }: { zone: string | null }) {
   return <group name="c2-route-preview">
     <Line points={samples.map((s) => s.p)} color="#ffd36b" lineWidth={5} transparent opacity={0.95} depthTest={false} renderOrder={5} onPointerMove={onMove} onPointerOut={() => setHover(null)} />
     {arrows.map((a, i) => <mesh key={i} position={a.p} rotation={[Math.PI / 2, a.yaw, 0, 'YXZ']} scale={size} renderOrder={6}><coneGeometry args={[0.35, 0.9, 3]} /><meshBasicMaterial color="#fff2c4" depthTest={false} /></mesh>)}
-    <Html position={first.p} center zIndexRange={[30, 20]} style={{ pointerEvents: 'none' }}><span className="route-pin start">MILO · xuất phát</span></Html>
-    <Html position={last.p} center zIndexRange={[30, 20]} style={{ pointerEvents: 'none' }}><span className="route-pin end">Khu {leg.site.id} · đích</span></Html>
+    <Html position={first.p} center zIndexRange={[30, 20]} style={{ pointerEvents: 'none' }}><span className="route-pin start">MILO · start</span></Html>
+    <Html position={last.p} center zIndexRange={[30, 20]} style={{ pointerEvents: 'none' }}><span className="route-pin end">Zone {leg.site.id} · destination</span></Html>
     {hover && <Html position={hover.p} zIndexRange={[40, 30]} style={{ pointerEvents: 'none' }}><div className="route-tip">
-      <b>Tại điểm này · {(hover.along / 1000).toFixed(2)} / {(leg.length / 1000).toFixed(1)} km</b>
-      <span>Độ dốc bề mặt (DEM NASA 5 m): <em className={hover.slope > limit ? 'warn' : ''}>{hover.slope.toFixed(1)}°</em></span>
-      <small>Đo trên bản đồ, chưa tính sai số đo.</small>
-      <span>Ước tính tới đây (mô hình rover của game): {(hover.along / 1000 * ROVER.kwhPerKm).toFixed(1)} kWh · {(hover.along / 1000 / ROVER.speedKmh).toFixed(1)} giờ</span>
+      <b>At this point · {(hover.along / 1000).toFixed(2)} / {(leg.length / 1000).toFixed(1)} km</b>
+      <span>Surface slope (NASA 5 m DEM): <em className={hover.slope > limit ? 'warn' : ''}>{hover.slope.toFixed(1)}°</em></span>
+      <small>Measured on the map; measurement error not included.</small>
+      <span>Estimate to here (game rover model): {(hover.along / 1000 * ROVER.kwhPerKm).toFixed(1)} kWh · {(hover.along / 1000 / ROVER.speedKmh).toFixed(1)} h</span>
     </div></Html>}
   </group>
 }

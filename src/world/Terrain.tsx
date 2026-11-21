@@ -36,7 +36,7 @@ function Rocks() {
     place(small.current!, SMALL_ROCKS); place(large.current!, BIG_ROCKS)
     return () => { geometry.dispose(); material.dispose() }
   }, [geometry, material])
-  return <group name="illustrative-rocks" userData={{ provenance: 'ILLUSTRATIVE_RECONSTRUCTION', label: 'chi tiết minh họa tái dựng' }}>
+  return <group name="illustrative-rocks" userData={{ provenance: 'ILLUSTRATIVE_RECONSTRUCTION', label: 'illustrative reconstruction' }}>
     <instancedMesh ref={small} args={[geometry, material, SMALL_ROCKS.length]} castShadow receiveShadow />
     <instancedMesh ref={large} args={[geometry, material, BIG_ROCKS.length]} castShadow receiveShadow />
   </group>

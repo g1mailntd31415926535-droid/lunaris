@@ -169,7 +169,7 @@ def main() -> int:
             target = (int(rr[k]), int(cc[k]))
             entry['closest_reachable_xy_m'] = [float(xs[target[1]]), float(ys[target[0]])]
             entry['closest_reachable_distance_to_anchor_m'] = round(float(math.sqrt(d2[k])), 1)
-            entry['no_route_reason'] = ('pixel anchor dốc hơn ngưỡng' if not anchor_ok else 'pixel anchor đạt ngưỡng nhưng bị các ô dốc hơn ngưỡng/NoData bao quanh, không nối được với căn cứ')
+            entry['no_route_reason'] = ('anchor pixel is steeper than the limit' if not anchor_ok else 'pixel anchor đạt ngưỡng nhưng bị các ô dốc hơn ngưỡng/NoData bao quanh, không nối được với căn cứ')
         t0 = time.time()
         moves, expansions = astar(allowed_bytes, sr * N + sc, target[0] * N + target[1])
         assert moves is not None
@@ -219,10 +219,10 @@ def main() -> int:
 
     header = {'generated_utc': dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'),
               'route_nominal_slope_limit_deg': limit, 'slope_limit_provenance': SLOPE_PROVENANCE,
-              'slope_layer': 'slp 5 m gốc của NASA (nguồn theo source_mask_5m.png), không làm mượt, không resample',
-              'method': 'A* trực tiếp trên lưới 5 m, 8 hướng, không cắt góc; chi phí = quãng đường phẳng; kiểm tra lại bằng lấy mẫu 1 m trên raster gốc',
+              'slope_layer': 'NASA’s native 5 m slp (source per source_mask_5m.png), no smoothing, no resampling',
+              'method': 'A* directly on the 5 m grid, 8 directions, no corner cutting; cost = planar distance; re-checked by 1 m sampling on the native raster',
               'criteria': f'mỗi pixel trên tuyến: trong hình tròn, có DEM, slp ≤ {limit:g}°',
-              'not_assessed': ['footprint/bề rộng xe', 'chiếu sáng và năng lượng', 'nhiệt', 'liên lạc', 'đá và chướng ngại nhỏ hơn 5 m', 'độ bất định slperr (chỉ báo cáo)'],
+              'not_assessed': ['vehicle footprint/width', 'lighting and power', 'temperature', 'communications', 'rocks and obstacles smaller than 5 m', 'slperr uncertainty (reported only)'],
               'safe_route_claimed': False,
               'depot_xy_m': [round(depot_xy[0], 2), round(depot_xy[1], 2)], 'grid': {'x_min': FRAME['x_min'], 'y_max': FRAME['y_max'], 'pixel_m': PX, 'size_px': N},
               'move_codes': 'chuỗi số 0–7 theo thứ tự (di, dj) = ' + str(MOVES) + '; i = cột (đông), j = hàng (nam)',
@@ -248,7 +248,7 @@ def main() -> int:
     md = ['# Task 02 — tuyến rover bằng A* trên lớp độ dốc 5 m', '',
           f'Ngưỡng **{limit:g}°** = độ dốc vận hành danh định tối đa của NASA VIPER (`docs/EVIDENCE.md` G17), LUNARIS dùng làm ngưỡng quy hoạch.',
           'A* chạy trực tiếp trên lưới 5 m gốc (8 hướng, không cắt góc), chỉ đi qua pixel có DEM, trong hình tròn và `slp` ≤ ngưỡng. Mỗi tuyến được kiểm tra lại bằng cách lấy mẫu 1 m trên raster gốc.',
-          '**"Có tuyến" chỉ có nghĩa: không pixel nào trên tuyến dốc hơn ngưỡng và không cắt NoData.** Chưa xét bề rộng xe, chiếu sáng, nhiệt, liên lạc, đá nhỏ hơn 5 m. Không tuyến nào được gắn `SAFE_ROUTE`.', '',
+          '**"Có tuyến" chỉ có nghĩa: không pixel nào trên tuyến dốc hơn ngưỡng và không cắt NoData.** Chưa xét bề rộng xe, chiếu sáng, temperature, communications, đá nhỏ hơn 5 m. Không tuyến nào được gắn `SAFE_ROUTE`.', '',
           f"- Pixel đạt ngưỡng: {header['allowed_percent_of_valid']} % số pixel có DEM trong hình tròn.",
           f"- Pixel nối được với căn cứ qua các ô đạt ngưỡng: {header['reachable_from_depot_percent_of_valid']} %.", '',
           '| Khu | Có tuyến ≤ 15° tới anchor? | Dài tuyến (km) | Dài theo địa hình 3D (km) | Đường thẳng (km) | Dốc lớn nhất trên tuyến | Dốc TB | Lên / xuống (m) | Cắt đường nối | Kiểm tra lại 5 m |',
